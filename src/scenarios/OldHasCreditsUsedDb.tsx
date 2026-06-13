@@ -62,7 +62,7 @@ export function OldHasCreditsUsedDb({ totalLeads, applicantCount }: ScenarioProp
 
       {/* High Matches container */}
       <div className="border border-purple-200 rounded-xl bg-purple-50/40 mb-3 overflow-hidden">
-        <div className="px-4 py-3 border-b border-purple-100">
+        <div className="px-4 py-3">
           <div className="flex items-center gap-2">
             <svg width="18" height="18" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M33.8395 24.7483C22.4049 26.6287 20.3721 29.0173 18.8474 42.9421C18.7966 43.3995 18.136 43.3995 18.0851 42.9421C16.5605 29.0173 14.5277 26.6795 3.09304 24.7483C2.63565 24.6975 2.63565 24.0368 3.09304 23.986C14.5277 22.1057 16.5605 19.7679 18.0851 5.84304C18.136 5.38565 18.7966 5.38565 18.8474 5.84304C20.3721 19.7679 22.4049 22.0548 33.8395 23.986C34.2461 24.0368 34.2461 24.6467 33.8395 24.7483Z" fill="url(#hm0)"/>
@@ -89,7 +89,7 @@ export function OldHasCreditsUsedDb({ totalLeads, applicantCount }: ScenarioProp
 
       {/* Medium Matches container */}
       <div className="border border-amber-200 rounded-xl bg-amber-50/40 mb-3 overflow-hidden">
-        <div className="px-4 py-3 border-b border-amber-100">
+        <div className="px-4 py-3">
           <div className="flex items-center gap-2">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             <span className="text-sm font-semibold text-gray-900">Medium Matches with Minor Gaps</span>
@@ -146,7 +146,7 @@ function CandidateCard({ candidate, status, onShortlist, onReject }: {
           </div>
           {isHigh ? (
             <div className="flex-shrink-0 flex items-center gap-1 px-3 h-6 rounded-full" style={{ background: 'linear-gradient(to right, #f1eafa, #ebf3fe)' }}>
-              <span className="text-[14px]">✦</span>
+              <span className="text-[14px] bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(170deg, #3e7bfa 7%, #6600cc 93%)' }}>✦</span>
               <span className="text-[14px] font-semibold bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(170deg, #3e7bfa 7%, #6600cc 93%)' }}>High Match</span>
             </div>
           ) : (
