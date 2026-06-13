@@ -208,8 +208,8 @@ export function JobDetail() {
 
       {/* Content */}
       <JobTabContext.Provider value={{ goToDatabase: () => setTab('database') }}>
-      <div className="flex-1 overflow-hidden bg-gray-50 flex justify-center" style={{ padding: '12px 32px 23px' }}>
-        <div className="flex w-full max-w-[1060px] gap-3 min-h-0">
+      <div className="flex-1 overflow-hidden bg-gray-50 flex justify-center" style={{ padding: '12px 20px 23px' }}>
+        <div className="flex w-full max-w-[1400px] gap-3 min-h-0">
         {tab === 'applied' && scenario.applicationsCount > 0 && <FiltersPanel mode="applied" />}
         {tab === 'database' && dbTotal > 0 && <FiltersPanel mode="database" totalLeads={dbTotal} />}
 
