@@ -527,8 +527,7 @@ function HighlightedText({ text }: { text: string; keywords?: string[] }) {
   return <span className="text-gray-700">{text}</span>;
 }
 
-function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, remaining, onToggleSelect, onUnlock, isActiveLead, isPreview, isHighlighted, cardRef, ftueVersion }: ProfileRowProps) {
-  const v2Blur = ftueVersion === 'v2' && !isUnlocked;
+function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, remaining, onToggleSelect, onUnlock, isActiveLead, isPreview, isHighlighted, cardRef }: ProfileRowProps) {
   if (isActiveLead) {
     return (
       <div
