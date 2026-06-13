@@ -194,9 +194,11 @@ interface DatabaseTabProps {
   creditsRemaining?: number;
   onUnlock?: (id: string) => void;
   onFreeUnlock?: (id: string) => void;
+  ftueVersion?: 'v1' | 'v2';
+  inlineTip?: React.ReactNode;
 }
 
-export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highlightLeadId, onHighlightClear, unlockedIds, creditsRemaining, onUnlock, onFreeUnlock }: DatabaseTabProps) {
+export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highlightLeadId, onHighlightClear, unlockedIds, creditsRemaining, onUnlock, onFreeUnlock, ftueVersion, inlineTip }: DatabaseTabProps) {
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
   const [viewing, setViewing] = useState<Set<string>>(new Set());
   const [remaining, setRemaining] = useState(credits);
@@ -433,6 +435,8 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
           </p>
         </div>
 
+        {inlineTip}
+
         {totalLeads > 0 ? (
           /* Cards inside the green container */
           <div className="p-3 flex flex-col gap-2">
@@ -451,6 +455,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
                 isPreview={profile.id === 'al0'}
                 isHighlighted={highlightActive === profile.id}
                 cardRef={el => { cardRefs.current[profile.id] = el; }}
+                ftueVersion={ftueVersion}
               />
             ))}
           </div>
@@ -488,6 +493,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
           onToggleSelect={() => toggleSelect(profile.id)}
           onUnlock={() => handleUnlock(profile.id)}
           isActiveLead={false}
+          ftueVersion={ftueVersion}
         />
       ))}
 
@@ -517,13 +523,15 @@ interface ProfileRowProps {
   isPreview?: boolean;
   isHighlighted?: boolean;
   cardRef?: (el: HTMLDivElement | null) => void;
+  ftueVersion?: 'v1' | 'v2';
 }
 
 function HighlightedText({ text }: { text: string; keywords?: string[] }) {
   return <span className="text-gray-700">{text}</span>;
 }
 
-function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, remaining, onToggleSelect, onUnlock, isActiveLead, isPreview, isHighlighted, cardRef }: ProfileRowProps) {
+function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, remaining, onToggleSelect, onUnlock, isActiveLead, isPreview, isHighlighted, cardRef, ftueVersion }: ProfileRowProps) {
+  const v2Blur = ftueVersion === 'v2' && !isUnlocked;
   if (isActiveLead) {
     return (
       <div
@@ -569,7 +577,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
           </div>
 
           {/* Name + meta */}
-          <div className="flex-1 min-w-0">
+          <div className={`flex-1 min-w-0 transition-all duration-300 ${v2Blur ? 'blur-sm select-none pointer-events-none' : ''}`}>
             <div className="flex items-center gap-1">
               <span className="text-[15px] font-bold text-gray-900">{profile.name}</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#172B4D" strokeWidth="2.5" className="flex-shrink-0">
@@ -752,7 +760,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
           {profile.initials}
         </div>
 
-        <div className="flex-1 min-w-0">
+        <div className={`flex-1 min-w-0 transition-all duration-300 ${v2Blur ? 'blur-sm select-none pointer-events-none' : ''}`}>
           <div className="flex items-center gap-1">
             <span className="text-[15px] font-bold text-gray-900">{profile.name}</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#172B4D" strokeWidth="2.5" className="flex-shrink-0">

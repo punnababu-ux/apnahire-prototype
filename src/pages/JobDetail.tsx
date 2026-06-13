@@ -5,6 +5,8 @@ import { SCENARIOS } from '../types';
 import type { UserScenario, ScenarioProps } from '../types';
 import { FiltersPanel } from '../components/FiltersPanel';
 import { FtueModal } from '../components/FtueModal';
+import { ProgressStrip } from '../components/ftue/ProgressStrip';
+import { InlineTip } from '../components/ftue/InlineTip';
 import { ActiveLeadsTab } from '../components/ActiveLeadsTab';
 import { DatabaseTab } from '../components/DatabaseTab';
 import { NewNoCredits } from '../scenarios/NewNoCredits';
@@ -71,9 +73,14 @@ export function JobDetail() {
     ? (APPLIED_TAB_CONTENT[scenarioId] ?? NewNoCredits)
     : getAppliedComponent(scenario);
 
+  const ftueVersion = (params.get('ftue') ?? 'v2') as 'v1' | 'v2';
+
   const [tab, setTab] = useState<Tab>('applied');
   const [ftueCompleted, setFtueCompleted] = useState(false);
   const [ftueOpen, setFtueOpen] = useState(true);
+  const [stripDismissed, setStripDismissed] = useState(false);
+  const [tipDismissed, setTipDismissed] = useState(false);
+  const [dbTabVisited, setDbTabVisited] = useState(false);
   const [highlightLeadId, setHighlightLeadId] = useState<string | null>(null);
 
   // Shared unlock state — persists across tab switches
@@ -107,8 +114,13 @@ export function JobDetail() {
     const leadId = CANDIDATE_TO_LEAD_ID[candidateId];
     if (leadId) {
       setHighlightLeadId(leadId);
-      setTab('database');
+      switchToDatabase();
     }
+  }
+
+  function switchToDatabase() {
+    if (!dbTabVisited) setDbTabVisited(true);
+    setTab('database');
   }
 
   function handleFtueComplete() {
@@ -118,8 +130,8 @@ export function JobDetail() {
 
   return (
     <div className="flex flex-col flex-1" style={{ margin: '-23px -32px 0' }}>
-      {/* FTUE Modal */}
-      {showFtue && ftueOpen && (
+      {/* FTUE v1 — modal */}
+      {ftueVersion === 'v1' && showFtue && ftueOpen && (
         <FtueModal hasCredits={scenario.dbCredits > 0} onComplete={handleFtueComplete} />
       )}
 
@@ -157,11 +169,16 @@ export function JobDetail() {
             <TabBtn active={tab === 'applied'} onClick={() => setTab('applied')}>
               Applied to job ({scenario.applicationsCount})
             </TabBtn>
-            <TabBtn active={tab === 'database'} onClick={() => setTab('database')} highlight={dbTotal > 0} disabled={dbTotal === 0}>
+            <TabBtn active={tab === 'database'} onClick={switchToDatabase} highlight={dbTotal > 0} disabled={dbTotal === 0}>
               Database ({dbTotal})
             </TabBtn>
           </div>
         </div>
+
+        {/* FTUE v2 — progress strip */}
+        {ftueVersion === 'v2' && showFtue && !stripDismissed && (
+          <ProgressStrip unlockedCount={unlockedIds.size} onDismiss={() => setStripDismissed(true)} />
+        )}
       </div>
 
       {/* Content */}
@@ -191,8 +208,8 @@ export function JobDetail() {
                   unlockedCount={unlockedIds.size}
                   lockedCount={Math.max(totalLeads - unlockedIds.size, 0)}
                   showBuyCredits={scenario.dbCredits === 0}
-                  onExploreAll={() => dbTotal > 0 && setTab('database')}
-                  onGoToDatabase={() => dbTotal > 0 && setTab('database')}
+                  onExploreAll={() => dbTotal > 0 && switchToDatabase()}
+                  onGoToDatabase={() => dbTotal > 0 && switchToDatabase()}
                   onUnlockAndView={handleUnlockAndView}
                   unlockedIds={unlockedIds}
                   creditsRemaining={creditsRemaining}
@@ -230,6 +247,10 @@ export function JobDetail() {
               creditsRemaining={creditsRemaining}
               onUnlock={handleUnlock}
               onFreeUnlock={handleFreeUnlock}
+              ftueVersion={ftueVersion}
+              inlineTip={ftueVersion === 'v2' && showFtue && dbTabVisited && !tipDismissed
+                ? <InlineTip creditsRemaining={creditsRemaining} onDismiss={() => setTipDismissed(true)} />
+                : null}
             />
           )}
         </div>

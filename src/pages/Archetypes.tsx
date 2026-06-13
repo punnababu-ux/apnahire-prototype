@@ -127,6 +127,7 @@ function configToParams(c: Config): string {
 export function Archetypes() {
   const navigate = useNavigate();
   const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
+  const [ftueVersion, setFtueVersion] = useState<'v1' | 'v2'>('v2');
 
   function set<K extends keyof Config>(key: K, val: Config[K]) {
     setConfig(prev => {
@@ -142,7 +143,7 @@ export function Archetypes() {
   const activePreset = PRESETS.findIndex(p => configMatches(p.config, config));
 
   function handleExperience() {
-    navigate(`/job/1?${configToParams(config)}`);
+    navigate(`/job/1?${configToParams(config)}&ftue=${ftueVersion}`);
   }
 
   return (
@@ -274,6 +275,20 @@ export function Archetypes() {
               onChange={v => set('apps', v as AppVol)}
             />
           </ConfigRow>
+
+          {/* Divider */}
+          <div className="border-t border-gray-800 pt-4">
+            <ConfigRow label="FTUE style" hint="First-time user experience version">
+              <ToggleGroup
+                options={[
+                  { value: 'v2', label: 'Guided (v2)' },
+                  { value: 'v1', label: 'Modal (v1)' },
+                ]}
+                value={ftueVersion}
+                onChange={v => setFtueVersion(v as 'v1' | 'v2')}
+              />
+            </ConfigRow>
+          </div>
 
         </div>
 
