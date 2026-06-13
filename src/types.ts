@@ -101,10 +101,10 @@ export const SCENARIOS: UserScenario[] = [
   },
 ];
 
-export const JOB_LISTINGS = [
-  { id: '1', title: 'Field Sales Executive', location: 'Saket, Delhi-NCR', status: 'active' as const },
-  { id: '2', title: 'Business Development Manager', location: 'Andheri, Mumbai', status: 'active' as const },
-  { id: '3', title: 'Sales Team Lead', location: 'Koramangala, Bangalore', status: 'active' as const },
+export const JOB_LISTINGS: { id: string; title: string; location: string; status: 'active' | 'expired' }[] = [
+  { id: '1', title: 'Field Sales Executive', location: 'Saket, Delhi-NCR', status: 'active' },
+  { id: '2', title: 'Business Development Manager', location: 'Andheri, Mumbai', status: 'active' },
+  { id: '3', title: 'Sales Team Lead', location: 'Koramangala, Bangalore', status: 'active' },
 ];
 
 export interface ScenarioProps {
