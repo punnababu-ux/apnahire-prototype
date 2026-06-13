@@ -1,0 +1,35 @@
+import type { ScenarioProps } from '../types';
+import { useJobTab } from '../context/JobTabContext';
+import { ActiveLeadsTab } from '../components/ActiveLeadsTab';
+import { AppliedCandidateList } from '../components/AppliedCandidateList';
+
+export function OldHasCreditsNeverDb({ totalLeads, dbCredits, applicantCount, dbTotal }: ScenarioProps) {
+  const jobTab = useJobTab();
+
+  if (applicantCount === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-3">
+      {totalLeads > 0 && (
+        <ActiveLeadsTab
+          totalLeads={totalLeads}
+          hasCredits={true}
+          credits={dbCredits}
+          headerTitle={`Only ${applicantCount} applicant${applicantCount === 1 ? '' : 's'} so far — but ${totalLeads} live leads are ready`}
+          headerSubtitle={`These candidates are actively looking and match your job. You have ${dbCredits} credits — reach them before someone else does.`}
+          onExploreAll={() => jobTab?.goToDatabase()}
+          onGoToDatabase={() => jobTab?.goToDatabase()}
+        />
+      )}
+
+      <AppliedCandidateList
+        applicantCount={applicantCount}
+        totalLeads={totalLeads}
+        dbCredits={dbCredits}
+        hasUsedDb={false}
+        nudgeVariant="first_try"
+        insertLeadsAfter={dbTotal > 0 ? 2 : undefined}
+      />
+    </div>
+  );
+}
