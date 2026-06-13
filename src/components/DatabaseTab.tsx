@@ -195,10 +195,9 @@ interface DatabaseTabProps {
   onUnlock?: (id: string) => void;
   onFreeUnlock?: (id: string) => void;
   ftueVersion?: 'v1' | 'v2';
-  inlineTip?: React.ReactNode;
 }
 
-export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highlightLeadId, onHighlightClear, unlockedIds, creditsRemaining, onUnlock, onFreeUnlock, ftueVersion, inlineTip }: DatabaseTabProps) {
+export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highlightLeadId, onHighlightClear, unlockedIds, creditsRemaining, onUnlock, onFreeUnlock, ftueVersion }: DatabaseTabProps) {
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
   const [viewing, setViewing] = useState<Set<string>>(new Set());
   const [remaining, setRemaining] = useState(credits);
@@ -434,8 +433,6 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
               : 'Candidates from the database who are currently active on the app will appear here'}
           </p>
         </div>
-
-        {inlineTip}
 
         {totalLeads > 0 ? (
           /* Cards inside the green container */
@@ -675,6 +672,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
           ) : isPreview ? (
             /* ── Preview free unlock ── */
             <button
+              data-ftue="first-unlock-btn"
               onClick={onUnlock}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1F8268] hover:bg-[#186b55] text-white text-sm font-semibold rounded-xl transition-colors"
             >

@@ -5,8 +5,8 @@ import { SCENARIOS } from '../types';
 import type { UserScenario, ScenarioProps } from '../types';
 import { FiltersPanel } from '../components/FiltersPanel';
 import { FtueModal } from '../components/FtueModal';
-import { ProgressStrip } from '../components/ftue/ProgressStrip';
-import { InlineTip } from '../components/ftue/InlineTip';
+import { CoachMarks } from '../components/ftue/CoachMarks';
+import type { CoachStep } from '../components/ftue/CoachMarks';
 import { ActiveLeadsTab } from '../components/ActiveLeadsTab';
 import { DatabaseTab } from '../components/DatabaseTab';
 import { NewNoCredits } from '../scenarios/NewNoCredits';
@@ -78,9 +78,6 @@ export function JobDetail() {
   const [tab, setTab] = useState<Tab>('applied');
   const [ftueCompleted, setFtueCompleted] = useState(false);
   const [ftueOpen, setFtueOpen] = useState(true);
-  const [stripDismissed, setStripDismissed] = useState(false);
-  const [tipDismissed, setTipDismissed] = useState(false);
-  const [dbTabVisited, setDbTabVisited] = useState(false);
   const [highlightLeadId, setHighlightLeadId] = useState<string | null>(null);
 
   // Shared unlock state — persists across tab switches
@@ -119,7 +116,6 @@ export function JobDetail() {
   }
 
   function switchToDatabase() {
-    if (!dbTabVisited) setDbTabVisited(true);
     setTab('database');
   }
 
@@ -169,17 +165,35 @@ export function JobDetail() {
             <TabBtn active={tab === 'applied'} onClick={() => setTab('applied')}>
               Applied to job ({scenario.applicationsCount})
             </TabBtn>
-            <TabBtn active={tab === 'database'} onClick={switchToDatabase} highlight={dbTotal > 0} disabled={dbTotal === 0}>
-              Database ({dbTotal})
-            </TabBtn>
+            <span data-ftue="database-tab">
+              <TabBtn active={tab === 'database'} onClick={switchToDatabase} highlight={dbTotal > 0} disabled={dbTotal === 0}>
+                Database ({dbTotal})
+              </TabBtn>
+            </span>
           </div>
         </div>
 
-        {/* FTUE v2 — progress strip */}
-        {ftueVersion === 'v2' && showFtue && !stripDismissed && (
-          <ProgressStrip unlockedCount={unlockedIds.size} onDismiss={() => setStripDismissed(true)} />
-        )}
       </div>
+
+      {/* FTUE v2 — coach marks */}
+      {ftueVersion === 'v2' && showFtue && ftueOpen && (() => {
+        const coachSteps: CoachStep[] = [
+          {
+            selector: '[data-ftue="database-tab"]',
+            title: `${totalLeads} live candidates matched your job`,
+            body: 'These are people actively looking for work right now — not a static list. Take a look.',
+            cta: 'Open Database',
+            onCta: switchToDatabase,
+          },
+          {
+            selector: '[data-ftue="first-unlock-btn"]',
+            title: 'First unlock is free',
+            body: "Tap to reveal their phone number and reach out directly — no credits needed for this one.",
+            cta: 'Got it!',
+          },
+        ];
+        return <CoachMarks steps={coachSteps} onComplete={handleFtueComplete} />;
+      })()}
 
       {/* Content */}
       <JobTabContext.Provider value={{ goToDatabase: () => setTab('database') }}>
@@ -248,9 +262,6 @@ export function JobDetail() {
               onUnlock={handleUnlock}
               onFreeUnlock={handleFreeUnlock}
               ftueVersion={ftueVersion}
-              inlineTip={ftueVersion === 'v2' && showFtue && dbTabVisited && !tipDismissed
-                ? <InlineTip creditsRemaining={creditsRemaining} onDismiss={() => setTipDismissed(true)} />
-                : null}
             />
           )}
         </div>
