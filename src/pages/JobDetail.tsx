@@ -194,8 +194,7 @@ export function JobDetail() {
             selector: '[data-ftue="database-tab"]',
             title: `${dbTotal}+ more in the database`,
             body: 'Browse all matching candidates and unlock anyone that looks like a fit.',
-            cta: 'Open Database',
-            onCta: switchToDatabase,
+            cta: 'Got it!',
           },
         ];
         return <CoachMarks steps={coachSteps} onComplete={handleFtueComplete} />;
