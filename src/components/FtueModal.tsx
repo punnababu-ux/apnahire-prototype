@@ -117,36 +117,55 @@ export function FtueModal({ onComplete, hasCredits }: FtueModalProps) {
   );
 }
 
+const MINI_CANDIDATES = [
+  { initials: 'SS', color: '#fde68a', name: 'Simran S.', role: 'BDE', exp: '4 yr', loc: 'Mumbai' },
+  { initials: 'RR', color: '#bfdbfe', name: 'Rohan R.', role: 'Sales Exec', exp: '2 yr', loc: 'Delhi' },
+  { initials: 'SM', color: '#d9f99d', name: 'Suresh M.', role: 'Sr. BDE', exp: '6 yr', loc: 'Pune' },
+];
+
+function MiniCandidateCard({ initials, color, name, role, exp, loc, locked, accent }: {
+  initials: string; color: string; name: string; role: string; exp: string; loc: string; locked?: boolean; accent?: string;
+}) {
+  return (
+    <div className="bg-white rounded-lg overflow-hidden border border-gray-100 flex flex-col" style={{ minWidth: 90 }}>
+      <div className="h-8 bg-[#EAF8F4] relative flex-shrink-0">
+        <div
+          className="absolute bottom-0 left-2 translate-y-1/2 w-7 h-7 rounded-full border border-white flex items-center justify-center text-[8px] font-bold text-gray-700"
+          style={{ background: color }}
+        >
+          {initials}
+        </div>
+      </div>
+      <div className="px-2 pt-4 pb-2 flex flex-col gap-1">
+        <div className="text-[8px] font-semibold text-gray-800 truncate">{name}</div>
+        <div className="text-[7px] text-gray-500 truncate">{role}</div>
+        <div className="text-[7px] text-gray-400">{exp} · {loc}</div>
+        {locked ? (
+          <div className="mt-1 w-full py-1 text-center text-[7px] font-semibold border rounded-md" style={{ borderColor: accent ?? '#1f8268', color: accent ?? '#1f8268' }}>
+            Unlock · 1 credit
+          </div>
+        ) : (
+          <div className="mt-1 w-full py-1 text-center text-[7px] font-semibold rounded-md text-white" style={{ background: '#1f8268' }}>
+            View Contact
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function PreviewCard({ step, accentLight, accent }: { step: string; accentLight: string; accent: string }) {
   if (step === 'intro') {
     return (
-      <div className="w-[340px] bg-white rounded-xl shadow-lg overflow-hidden scale-90">
-        <div className="h-6 bg-gray-800 rounded-t-xl flex items-center px-3 gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
-          <div className="w-16 h-1.5 rounded bg-white/30" />
+      <div className="flex flex-col items-center gap-2 scale-90">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 rounded-full">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span className="text-[9px] font-semibold text-white">9 live leads from apna database</span>
         </div>
-        <div className="p-3 flex gap-3">
-          <div className="flex-1">
-            <div className="text-[9px] font-semibold text-gray-500 mb-1.5">Pending actions</div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className="w-4 h-4 rounded" style={{ background: accentLight }}>
-                <div className="w-full h-full rounded" style={{ background: accent, opacity: 0.6 }} />
-              </div>
-              <div className="flex-1 h-1.5 bg-gray-100 rounded" />
-              <div className="px-1.5 py-0.5 text-[7px] font-semibold rounded border border-gray-200">Select Plan</div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-amber-100" />
-              <div className="flex-1 h-1.5 bg-gray-100 rounded" />
-              <div className="px-1.5 py-0.5 text-[7px] font-semibold rounded border border-gray-200">View</div>
-            </div>
-          </div>
-          <div className="w-[90px]">
-            <div className="text-[9px] font-semibold text-gray-500 mb-1.5">Quick actions</div>
-            <div className="h-16 rounded-lg flex items-center justify-center" style={{ background: accent }}>
-              <div className="text-[8px] text-white font-medium text-center px-2">Live leads from database</div>
-            </div>
-          </div>
+        <div className="flex gap-2">
+          {MINI_CANDIDATES.map(c => (
+            <MiniCandidateCard key={c.initials} {...c} locked accent={accent} />
+          ))}
         </div>
       </div>
     );
@@ -154,37 +173,24 @@ function PreviewCard({ step, accentLight, accent }: { step: string; accentLight:
 
   if (step === 'respond') {
     return (
-      <div className="w-[340px] bg-white rounded-xl shadow-lg overflow-hidden scale-90">
-        <div className="h-6 bg-gray-800 rounded-t-xl flex items-center px-3 gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
-          <div className="w-16 h-1.5 rounded bg-white/30" />
-        </div>
-        <div className="p-3">
-          <div className="text-[9px] font-semibold text-gray-500 mb-2">Pending actions</div>
-          <div className="flex flex-col gap-1.5">
-            {[1, 2].map(i => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded-full" style={{ background: i === 1 ? accentLight : '#fef3c7' }} />
-                <div className="flex-1">
-                  <div className="h-1.5 bg-gray-100 rounded mb-1 w-3/4" />
-                  <div className="h-1 bg-gray-50 rounded w-1/2" />
-                </div>
-                <div
-                  className="px-2 py-1 text-[7px] font-semibold rounded text-white"
-                  style={{ background: i === 1 ? accent : '#d97706' }}
-                >
-                  {i === 1 ? 'View leads' : 'View'}
-                </div>
-              </div>
-            ))}
+      <div className="scale-90 flex flex-col items-center gap-2">
+        <div className="bg-white rounded-xl shadow-md overflow-hidden w-[280px]">
+          {/* Card header */}
+          <div className="h-10 bg-[#EAF8F4] relative">
+            <div className="absolute bottom-0 left-4 translate-y-1/2 w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-gray-700" style={{ background: '#fde68a' }}>
+              SS
+            </div>
           </div>
-          <div className="mt-2 p-2 rounded-lg" style={{ background: accentLight }}>
-            <div className="text-[8px] font-semibold mb-1" style={{ color: accent }}>Live Leads matched</div>
-            <div className="flex gap-1">
-              {[0, 1, 2].map(i => (
-                <div key={i} className="w-6 h-6 rounded-full bg-white border-2 border-white" style={{ background: ['#a7f3d0', '#bfdbfe', '#fde68a'][i] }} />
+          <div className="px-3 pt-6 pb-3">
+            <div className="text-[10px] font-semibold text-gray-800">Simran Sharma</div>
+            <div className="text-[8px] text-gray-500 mt-0.5">Business Dev. Executive · Mumbai</div>
+            {/* Match tags */}
+            <div className="flex flex-wrap gap-1 mt-2">
+              {['Active this week', 'Applied to similar jobs', 'Matches salary'].map(tag => (
+                <span key={tag} className="text-[7px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: accentLight, color: accent }}>
+                  ✓ {tag}
+                </span>
               ))}
-              <div className="text-[8px] text-gray-500 self-center ml-1">+12 more</div>
             </div>
           </div>
         </div>
@@ -192,36 +198,51 @@ function PreviewCard({ step, accentLight, accent }: { step: string; accentLight:
     );
   }
 
-  // unlock step
+  // unlock step — before/after
   return (
-    <div className="w-[340px] bg-white rounded-xl shadow-lg overflow-hidden scale-90">
-      <div className="h-6 bg-gray-800 rounded-t-xl flex items-center px-3 gap-1.5">
-        <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
-        <div className="w-16 h-1.5 rounded bg-white/30" />
-      </div>
-      <div className="p-3">
-        <div className="mb-2">
-          <div className="text-[9px] font-semibold text-gray-700 mb-1">Job posting</div>
-          <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-            <div className="flex-1 h-1.5 bg-gray-200 rounded" />
-            <span className="text-[7px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Under review</span>
-            <div className="text-[7px] text-gray-400">0 To Review</div>
-            <div className="text-[7px] text-gray-400">0 Total</div>
-            <div className="px-1.5 py-0.5 text-[7px] font-semibold rounded border border-gray-200">View</div>
+    <div className="scale-90 flex items-center gap-3">
+      {/* Locked card */}
+      <div className="bg-white rounded-xl shadow-md overflow-hidden w-[120px]">
+        <div className="h-9 bg-[#EAF8F4] relative">
+          <div className="absolute bottom-0 left-3 translate-y-1/2 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-bold text-gray-700" style={{ background: '#bfdbfe' }}>
+            RR
           </div>
         </div>
-        <div>
-          <div className="text-[9px] font-semibold text-gray-700 mb-1">Database</div>
-          <div className="flex gap-3 text-[8px] text-gray-500 border-b border-gray-100 pb-1 mb-1">
-            <span className="font-semibold" style={{ color: accent }}>Recent searches</span>
-            <span>Saved searches</span>
-            <span>Invites</span>
+        <div className="px-2.5 pt-5 pb-2.5">
+          <div className="text-[9px] font-semibold text-gray-800">Rohan Roy</div>
+          <div className="text-[7px] text-gray-500 mt-0.5">Sales Exec · Delhi</div>
+          <div className="mt-2 flex items-center gap-1 px-1.5 py-1 bg-gray-100 rounded-md">
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.06 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16l.92.92z"/></svg>
+            <span className="text-[8px] text-gray-400 blur-[2.5px] select-none">+91 98765</span>
           </div>
-          <div className="flex gap-1.5">
-            {[0, 1, 2].map(i => (
-              <div key={i} className="flex-1 h-8 rounded-lg" style={{ background: accentLight }} />
-            ))}
+          <button className="mt-1.5 w-full py-1 text-[7px] font-semibold rounded-md border" style={{ borderColor: accent, color: accent }}>
+            Unlock · 1 credit
+          </button>
+        </div>
+      </div>
+
+      {/* Arrow */}
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+        <polyline points="5 12 12 12 19 12"/><polyline points="13 6 19 12 13 18"/>
+      </svg>
+
+      {/* Unlocked card */}
+      <div className="bg-white rounded-xl shadow-md overflow-hidden w-[120px]">
+        <div className="h-9 bg-[#EAF8F4] relative">
+          <div className="absolute bottom-0 left-3 translate-y-1/2 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-bold text-gray-700" style={{ background: '#bfdbfe' }}>
+            RR
           </div>
+        </div>
+        <div className="px-2.5 pt-5 pb-2.5">
+          <div className="text-[9px] font-semibold text-gray-800">Rohan Roy</div>
+          <div className="text-[7px] text-gray-500 mt-0.5">Sales Exec · Delhi</div>
+          <div className="mt-2 flex items-center gap-1 px-1.5 py-1 rounded-md" style={{ background: accentLight }}>
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.06 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16l.92.92z"/></svg>
+            <span className="text-[8px] font-semibold" style={{ color: accent }}>+91 98765 43210</span>
+          </div>
+          <button className="mt-1.5 w-full py-1 text-[7px] font-semibold rounded-md text-white" style={{ background: '#1f8268' }}>
+            View Contact
+          </button>
         </div>
       </div>
     </div>
