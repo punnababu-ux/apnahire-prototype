@@ -589,7 +589,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-3 mt-0.5">
+            <div className="flex items-center gap-4 mt-1">
               <span className="flex items-center gap-1 text-[14px] font-semibold text-[#5e6c84]">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2">
                   <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
@@ -622,7 +622,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
         </div>
 
         {/* Detail rows */}
-        <div className="px-4 pb-3 space-y-1.5">
+        <div className="px-4 pb-3 flex flex-col gap-3">
           <IconDetailRow icon="briefcase" label="Pref. Title">
             <HighlightedText text={profile.title} keywords={profile.matchedKeywords} />
           </IconDetailRow>
@@ -1005,10 +1005,12 @@ const ICON_PATHS: Record<string, React.ReactNode> = {
 
 function IconDetailRow({ icon, label, children }: { icon: string; label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-2">
-      <span className="flex-shrink-0 text-[#42526e]">{ICON_PATHS[icon]}</span>
-      <span className="text-[14px] font-semibold text-[#42526e] w-[136px] flex-shrink-0">{label}</span>
-      <span className="text-[14px] text-[#172b4d] leading-snug flex-1">{children}</span>
+    <div className="flex gap-4 items-start">
+      <div className="flex items-center gap-2 w-[136px] flex-shrink-0">
+        <span className="flex-shrink-0 text-[#42526e]">{ICON_PATHS[icon]}</span>
+        <span className="text-[14px] font-semibold text-[#42526e]">{label}</span>
+      </div>
+      <span className="text-[14px] text-[#172b4d] flex-1 min-w-0">{children}</span>
     </div>
   );
 }
