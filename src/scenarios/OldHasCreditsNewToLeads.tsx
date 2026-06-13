@@ -3,7 +3,7 @@ import { useJobTab } from '../context/JobTabContext';
 import { ActiveLeadsTab } from '../components/ActiveLeadsTab';
 import { AppliedCandidateList } from '../components/AppliedCandidateList';
 
-export function OldHasCreditsNeverDb({ totalLeads, dbCredits, applicantCount, dbTotal, unlockedIds, creditsRemaining, onUnlock, onUnlockAndView }: ScenarioProps) {
+export function OldHasCreditsNewToLeads({ totalLeads, dbCredits, applicantCount, dbTotal, unlockedIds, creditsRemaining, onUnlock, onUnlockAndView }: ScenarioProps) {
   const jobTab = useJobTab();
 
   if (applicantCount === 0) return null;
@@ -16,8 +16,8 @@ export function OldHasCreditsNeverDb({ totalLeads, dbCredits, applicantCount, db
           dbMatchCount={dbTotal}
           hasCredits={true}
           credits={dbCredits}
-          headerTitle={`Only ${applicantCount} applicant${applicantCount === 1 ? '' : 's'} so far — but ${totalLeads} live leads are ready`}
-          headerSubtitle={`These candidates are actively looking and match your job. You have ${dbCredits} credits — reach them before someone else does.`}
+          headerTitle={`New: ${totalLeads} candidate${totalLeads === 1 ? ' is' : 's are'} actively looking for this role`}
+          headerSubtitle={`Live Leads are candidates from the apna database who are currently active and match your job — ready to contact now with your credits.`}
           onExploreAll={() => jobTab?.goToDatabase()}
           onGoToDatabase={() => jobTab?.goToDatabase()}
           unlockedIds={unlockedIds}
@@ -26,13 +26,12 @@ export function OldHasCreditsNeverDb({ totalLeads, dbCredits, applicantCount, db
           onUnlockAndView={onUnlockAndView}
         />
       )}
-
       <AppliedCandidateList
         applicantCount={applicantCount}
         totalLeads={totalLeads}
         dbCredits={dbCredits}
-        hasUsedDb={false}
-        nudgeVariant="first_try"
+        hasUsedDb={true}
+        nudgeVariant="engage"
         insertLeadsAfter={dbTotal > 0 ? 2 : undefined}
       />
     </div>

@@ -194,7 +194,7 @@ interface DatabaseTabProps {
   creditsRemaining?: number;
   onUnlock?: (id: string) => void;
   onFreeUnlock?: (id: string) => void;
-  ftueVersion?: 'v1' | 'v2';
+  ftueVersion?: 'v1' | 'v2' | 'off';
 }
 
 export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highlightLeadId, onHighlightClear, unlockedIds, creditsRemaining, onUnlock, onFreeUnlock, ftueVersion }: DatabaseTabProps) {
@@ -520,7 +520,7 @@ interface ProfileRowProps {
   isPreview?: boolean;
   isHighlighted?: boolean;
   cardRef?: (el: HTMLDivElement | null) => void;
-  ftueVersion?: 'v1' | 'v2';
+  ftueVersion?: 'v1' | 'v2' | 'off';
 }
 
 function HighlightedText({ text }: { text: string; keywords?: string[] }) {

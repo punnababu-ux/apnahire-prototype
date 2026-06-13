@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 type Tenure   = 'new' | 'old';
 type Credits  = 'none' | 'has';
-type DbExp    = 'never' | 'used';
+type DbExp    = 'never' | 'used' | 'used_leads';
 type DbSize   = 'none' | 'low' | 'normal';
 type LeadVol  = 'zero' | 'low' | 'normal';
 type AppVol   = 'zero' | 'few' | 'many';
@@ -47,7 +47,7 @@ const PRESETS: Array<{ label: string; color: string; config: Config }> = [
   {
     label: 'Power User',
     color: 'border-emerald-500/40 text-emerald-400 hover:border-emerald-400 hover:bg-emerald-500/10',
-    config: { tenure: 'old', credits: 'has', exp: 'used', db: 'normal', leads: 'normal', apps: 'many', age: 'active' },
+    config: { tenure: 'old', credits: 'has', exp: 'used_leads', db: 'normal', leads: 'normal', apps: 'many', age: 'active' },
   },
 ];
 
@@ -74,7 +74,9 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
                  :                     'A good pool are actively looking (6+).';
   const creditPart = c.credits === 'none'
     ? (c.exp === 'never' ? 'Has never tried DB and has no credits.' : 'Credits depleted after past DB use.')
-    : (c.exp === 'never' ? 'Has credits sitting unused — never tried DB.' : 'Active DB user with credits remaining.');
+    : c.exp === 'never' ? 'Has credits sitting unused — never tried DB.'
+    : c.exp === 'used_leads' ? 'Has used live leads before and has credits. Knows the feature, ready to act.'
+    : 'Active DB user with credits remaining.';
 
   const situation = [tenure, agePart, appPart, dbPart, leadPart, creditPart].filter(Boolean).join(' ');
 
@@ -95,12 +97,14 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
     goal = 'Reinforce past DB value. Drive credit top-up.';
   } else if (c.credits === 'has' && c.exp === 'never') {
     goal = 'Surface leads prominently. Make the first unlock feel effortless.';
+  } else if (c.credits === 'has' && c.exp === 'used_leads') {
+    goal = 'Show live leads directly — no hand-holding. They know what to do.';
   } else {
     goal = 'Surface best matches quickly. Keep hiring momentum going.';
   }
 
   const warnings: string[] = [];
-  if (c.tenure === 'new' && c.exp === 'used')
+  if (c.tenure === 'new' && (c.exp === 'used' || c.exp === 'used_leads'))
     warnings.push('New users cannot have used DB before — DB history reset to Never tried.');
   if (c.db === 'none' && c.leads !== 'zero')
     warnings.push('No database means no live leads — live leads reset to Zero.');
@@ -116,7 +120,7 @@ function configToParams(c: Config): string {
   return new URLSearchParams({
     tenure:  c.tenure,
     credits: c.credits === 'none' ? '0' : '10',
-    exp:     c.exp,
+    exp:     c.exp === 'used' ? 'used_before' : c.exp,
     db:      dbTotal,
     leads,
     apps:    c.apps === 'zero' ? '0' : c.apps === 'few' ? '3' : '8',
@@ -127,7 +131,7 @@ function configToParams(c: Config): string {
 export function Archetypes() {
   const navigate = useNavigate();
   const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
-  const [ftueVersion, setFtueVersion] = useState<'v1' | 'v2'>('v2');
+  const [ftueVersion, setFtueVersion] = useState<'v1' | 'v2' | 'off'>('v2');
 
   function set<K extends keyof Config>(key: K, val: Config[K]) {
     setConfig(prev => {
@@ -150,7 +154,7 @@ export function Archetypes() {
     <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center py-14 px-6">
 
       {/* Header */}
-      <div className="w-full max-w-xl mb-10 text-center">
+      <div className="w-full max-w-3xl mb-10 text-center">
         <div className="flex items-center justify-center gap-2 mb-5 text-sm text-gray-500 font-medium">
           <span className="text-white font-bold text-base">apna<span className="text-emerald-400">Hire</span></span>
           <span className="text-gray-700">·</span>
@@ -163,7 +167,7 @@ export function Archetypes() {
       </div>
 
       {/* Presets */}
-      <div className="w-full max-w-xl mb-8">
+      <div className="w-full max-w-3xl mb-8">
         <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-3 text-center">Quick presets</p>
         <div className="flex flex-wrap gap-2 justify-center">
           {PRESETS.map((p, i) => (
@@ -181,7 +185,7 @@ export function Archetypes() {
       </div>
 
       {/* Configurator card */}
-      <div className="w-full max-w-xl bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+      <div className="w-full max-w-3xl bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-800">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Configure state</p>
         </div>
@@ -216,8 +220,9 @@ export function Archetypes() {
           <ConfigRow label="DB history" hint="Whether they've unlocked a profile before">
             <ToggleGroup
               options={[
-                { value: 'never', label: 'Never tried DB' },
-                { value: 'used',  label: 'Used DB before', disabled: config.tenure === 'new' },
+                { value: 'never',      label: 'Never tried DB' },
+                { value: 'used',       label: 'Used DB, new to Live Leads', disabled: config.tenure === 'new' },
+                { value: 'used_leads', label: 'Used Live Leads before',     disabled: config.tenure === 'new' },
               ]}
               value={config.exp}
               onChange={v => set('exp', v as DbExp)}
@@ -281,11 +286,12 @@ export function Archetypes() {
             <ConfigRow label="FTUE style" hint="First-time user experience version">
               <ToggleGroup
                 options={[
-                  { value: 'v2', label: 'Guided (v2)' },
-                  { value: 'v1', label: 'Modal (v1)' },
+                  { value: 'v2',  label: 'Coach mark' },
+                  { value: 'v1',  label: 'Modal' },
+                  { value: 'off', label: 'Off' },
                 ]}
                 value={ftueVersion}
-                onChange={v => setFtueVersion(v as 'v1' | 'v2')}
+                onChange={v => setFtueVersion(v as 'v1' | 'v2' | 'off')}
               />
             </ConfigRow>
           </div>

@@ -14,6 +14,8 @@ import { NewHasCredits } from '../scenarios/NewHasCredits';
 import { OldNoCreditsUsedDb } from '../scenarios/OldNoCreditsUsedDb';
 import { OldHasCreditsNeverDb } from '../scenarios/OldHasCreditsNeverDb';
 import { OldHasCreditsUsedDb } from '../scenarios/OldHasCreditsUsedDb';
+import { OldHasCreditsUsedLeads } from '../scenarios/OldHasCreditsUsedLeads';
+import { OldHasCreditsNewToLeads } from '../scenarios/OldHasCreditsNewToLeads';
 
 type Tab = 'applied' | 'database';
 
@@ -42,7 +44,7 @@ function buildDynamicScenario(params: URLSearchParams): UserScenario {
     tag: 'Custom',
     userType: tenure as 'new' | 'old',
     dbCredits: credits,
-    dbExperience: exp as 'never' | 'used_before',
+    dbExperience: exp as 'never' | 'used_before' | 'used_leads',
     jobLeads: leads,
     dbTotal,
     applicationsCount: apps,
@@ -55,8 +57,12 @@ function buildDynamicScenario(params: URLSearchParams): UserScenario {
 }
 
 function getAppliedComponent(scenario: UserScenario): React.ComponentType<ScenarioProps> {
-  if (scenario.dbCredits === 0)               return OldNoCreditsUsedDb;
-  if (scenario.dbExperience === 'never')      return OldHasCreditsNeverDb;
+  if (scenario.userType === 'new' && scenario.dbCredits === 0) return NewNoCredits;
+  if (scenario.userType === 'new')                             return NewHasCredits;
+  if (scenario.dbCredits === 0)                               return OldNoCreditsUsedDb;
+  if (scenario.dbExperience === 'never')                      return OldHasCreditsNeverDb;
+  if (scenario.dbExperience === 'used_before')                return OldHasCreditsNewToLeads;
+  if (scenario.dbExperience === 'used_leads')                 return OldHasCreditsUsedLeads;
   return OldHasCreditsUsedDb;
 }
 
@@ -73,7 +79,7 @@ export function JobDetail() {
     ? (APPLIED_TAB_CONTENT[scenarioId] ?? NewNoCredits)
     : getAppliedComponent(scenario);
 
-  const ftueVersion = (params.get('ftue') ?? 'v2') as 'v1' | 'v2';
+  const ftueVersion = (params.get('ftue') ?? 'v2') as 'v1' | 'v2' | 'off';
 
   const [tab, setTab] = useState<Tab>('applied');
   const [ftueCompleted, setFtueCompleted] = useState(false);
@@ -87,7 +93,7 @@ export function JobDetail() {
   const jobAge = (params.get('age') ?? 'active') as 'fresh' | 'active' | 'aging';
   const totalLeads = scenario.jobLeads;
   const dbTotal = scenario.dbTotal;
-  const showFtue = (scenario.userType === 'new' || scenario.dbExperience === 'never') && !ftueCompleted && totalLeads > 0;
+  const showFtue = ftueVersion !== 'off' && (scenario.userType === 'new' || scenario.dbExperience === 'never' || scenario.dbExperience === 'used_before') && !ftueCompleted && totalLeads > 0;
 
   // Maps CANDIDATES ids to ACTIVE_LEADS ids in DatabaseTab
   const CANDIDATE_TO_LEAD_ID: Record<string, string> = {
@@ -247,8 +253,12 @@ export function JobDetail() {
                 totalLeads={totalLeads}
                 dbCredits={scenario.dbCredits}
                 applicantCount={scenario.applicationsCount}
-                hasUsedDb={scenario.dbExperience === 'used_before'}
+                hasUsedDb={scenario.dbExperience === 'used_before' || scenario.dbExperience === 'used_leads'}
                 dbTotal={dbTotal}
+                unlockedIds={unlockedIds}
+                creditsRemaining={creditsRemaining}
+                onUnlock={handleUnlock}
+                onUnlockAndView={handleUnlockAndView}
               />
             </div>
           )}

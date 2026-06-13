@@ -199,6 +199,7 @@ export function ActiveLeadsTab({
                   </button>
                 ) : hasCredits ? (
                   <button
+                    {...(idx === 0 ? { 'data-ftue': 'first-lead-unlock-btn' } : {})}
                     onClick={e => { e.stopPropagation(); handleUnlock(c.id); onUnlockAndView?.(c.id); }}
                     className="mt-2 w-full py-2 text-[10px] font-semibold border border-[#1f8268] text-[#1f8268] rounded-xl hover:bg-[#eaf8f4] transition-colors"
                   >

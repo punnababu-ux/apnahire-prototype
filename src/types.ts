@@ -1,5 +1,5 @@
 export type UserType = 'new' | 'old';
-export type DbExperience = 'never' | 'used_before';
+export type DbExperience = 'never' | 'used_before' | 'used_leads';
 
 export interface UserScenario {
   id: string;
@@ -113,6 +113,11 @@ export interface ScenarioProps {
   applicantCount: number;
   hasUsedDb: boolean;
   dbTotal: number;
+  // Lifted unlock state — passed from JobDetail so it survives tab switches
+  unlockedIds?: Set<string>;
+  creditsRemaining?: number;
+  onUnlock?: (id: string) => void;
+  onUnlockAndView?: (candidateId: string) => void;
 }
 
 export interface Candidate {
