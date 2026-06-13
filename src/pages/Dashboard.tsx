@@ -1,43 +1,31 @@
 import { Link } from 'react-router-dom';
-import { SCENARIOS } from '../types';
+import { JOB_LISTINGS, SCENARIOS } from '../types';
 
-const JOBS = [
-  {
-    id: 'field-sales',
-    title: 'Field Sales Executive',
-    locationShort: 'Saket, Delhi-NCR',
-    postedOn: 'Dec 10, 2022',
-    postedBy: 'Rahul pandey',
-    appliedCount: 50,
-    toReview: 20,
-    matchesCount: 10293,
-    status: 'active',
-  },
-  {
-    id: 'graphic-designer',
-    title: 'Graphic Designer',
-    locationShort: 'Narayana guda, Hyderabad',
-    postedOn: 'Nov 30, 2022',
-    postedBy: 'Rahul pandey',
-    appliedCount: 0,
-    toReview: 0,
-    matchesCount: 12150,
-    status: 'active',
-  },
-  {
-    id: 'customer-support',
-    title: 'Customer Support Executive',
-    locationShort: 'Koramangala, Bengaluru',
-    postedOn: 'Nov 15, 2022',
-    postedBy: 'Priya sharma',
-    appliedCount: 78,
-    toReview: 35,
-    matchesCount: 8420,
-    status: 'expired',
-  },
-];
+// Each job is paired with a scenario so dashboard stats stay coherent with JobDetail.
+const SCENARIO_BY_JOB: Record<string, string> = {
+  '1': 'old-has-credits-used-db',   // Field Sales Executive  — experienced power user
+  '2': 'new-has-credits',           // Business Dev Manager   — new user, credits ready
+  '3': 'old-no-credits-used-db',    // Sales Team Lead        — needs repurchase
+};
 
-const defaultScenario = SCENARIOS[0].id;
+const JOB_META: Record<string, { postedOn: string; postedBy: string }> = {
+  '1': { postedOn: 'Dec 10, 2022', postedBy: 'Rahul Pandey' },
+  '2': { postedOn: 'Nov 30, 2022', postedBy: 'Rahul Pandey' },
+  '3': { postedOn: 'Nov 15, 2022', postedBy: 'Priya Sharma' },
+};
+
+const JOBS = JOB_LISTINGS.map(job => {
+  const scenarioId = SCENARIO_BY_JOB[job.id];
+  const scenario = SCENARIOS.find(s => s.id === scenarioId)!;
+  return {
+    ...job,
+    ...JOB_META[job.id],
+    scenarioId,
+    appliedCount: scenario.applicationsCount,
+    toReview: Math.round(scenario.applicationsCount * 0.4),
+    matchesCount: scenario.dbTotal,
+  };
+});
 
 export function Dashboard() {
   return (
@@ -57,7 +45,7 @@ export function Dashboard() {
           <div className="job-row" key={job.id}>
             <div className="job-row-info">
               <div className="job-row-title-line">
-                <Link to={`/job/${job.id}?scenario=${defaultScenario}`} className="job-row-title">
+                <Link to={`/job/${job.id}?scenario=${job.scenarioId}`} className="job-row-title">
                   {job.title}
                 </Link>
                 <span className={`pill ${job.status === 'expired' ? 'expired' : 'active'}`}>
@@ -65,7 +53,7 @@ export function Dashboard() {
                 </span>
               </div>
               <div className="job-row-meta">
-                <span>{job.locationShort}</span>
+                <span>{job.location}</span>
                 <span className="job-row-sep" aria-hidden="true"/>
                 <span>Posted on : {job.postedOn}</span>
                 <span className="job-row-sep" aria-hidden="true"/>
@@ -74,7 +62,7 @@ export function Dashboard() {
             </div>
 
             <div className="job-row-stats">
-              <Link to={`/job/${job.id}?scenario=${defaultScenario}`} className="job-row-stat">
+              <Link to={`/job/${job.id}?scenario=${job.scenarioId}`} className="job-row-stat">
                 <div className="job-row-stat-top">
                   <span className="job-row-stat-num">{job.appliedCount}</span>
                   <span className="job-row-stat-chevron" aria-hidden="true">›</span>
@@ -87,7 +75,7 @@ export function Dashboard() {
 
               <div className="job-row-stat-divider" aria-hidden="true"/>
 
-              <Link to={`/job/${job.id}?scenario=${defaultScenario}`} className="job-row-stat">
+              <Link to={`/job/${job.id}?scenario=${job.scenarioId}`} className="job-row-stat">
                 <div className="job-row-stat-top">
                   <span className="job-row-stat-num">{job.matchesCount.toLocaleString()}</span>
                   <span className="job-row-stat-chevron" aria-hidden="true">›</span>
