@@ -90,7 +90,7 @@ export function ActiveLeadsTab({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-[#dfe1e6] overflow-hidden">
+    <div data-ftue="live-leads-section" className="bg-white rounded-xl border border-[#dfe1e6] overflow-hidden">
       {/* Header */}
       <div className="px-5 pt-5 pb-4">
         <p className="text-base font-semibold text-gray-900 mb-1">
@@ -206,6 +206,7 @@ export function ActiveLeadsTab({
                   </button>
                 ) : isPreview ? (
                   <button
+                    data-ftue="first-lead-unlock-btn"
                     onClick={e => { e.stopPropagation(); onUnlockAndView?.(c.id); }}
                     className="mt-2 w-full py-2 text-[10px] font-semibold bg-[#1f8268] hover:bg-[#186b55] text-white rounded-xl transition-colors"
                   >

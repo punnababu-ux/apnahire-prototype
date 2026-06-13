@@ -179,17 +179,23 @@ export function JobDetail() {
       {ftueVersion === 'v2' && showFtue && ftueOpen && (() => {
         const coachSteps: CoachStep[] = [
           {
-            selector: '[data-ftue="database-tab"]',
-            title: `${totalLeads} live candidates matched your job`,
-            body: 'These are people actively looking for work right now — not a static list. Take a look.',
-            cta: 'Open Database',
-            onCta: switchToDatabase,
+            selector: '[data-ftue="live-leads-section"]',
+            title: 'Meet your Live Leads',
+            body: `These ${totalLeads} candidates aren't a static list — they're actively looking for work right now and match your job.`,
+            cta: 'Got it',
           },
           {
-            selector: '[data-ftue="first-unlock-btn"]',
-            title: 'First unlock is free',
-            body: "Tap to reveal their phone number and reach out directly — no credits needed for this one.",
-            cta: 'Got it!',
+            selector: '[data-ftue="first-lead-unlock-btn"]',
+            title: 'Unlock to reach out directly',
+            body: 'Tap unlock to see their phone number and contact them before someone else does. First one is free.',
+            cta: 'Got it',
+          },
+          {
+            selector: '[data-ftue="database-tab"]',
+            title: `${dbTotal}+ more in the database`,
+            body: 'Browse all matching candidates and unlock anyone that looks like a fit.',
+            cta: 'Open Database',
+            onCta: switchToDatabase,
           },
         ];
         return <CoachMarks steps={coachSteps} onComplete={handleFtueComplete} />;
