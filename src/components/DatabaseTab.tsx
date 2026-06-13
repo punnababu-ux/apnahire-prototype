@@ -576,7 +576,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
           {/* Name + meta */}
           <div className={`flex-1 min-w-0 transition-all duration-300 ${v2Blur ? 'blur-sm select-none pointer-events-none' : ''}`}>
             <div className="flex items-center gap-1">
-              <span className="text-[15px] font-semibold text-[#172b4d]">{profile.name}</span>
+              <span className="text-[16px] font-semibold text-[#172b4d]">{profile.name}</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#172B4D" strokeWidth="2.5" className="flex-shrink-0">
                 <polyline points="9 18 15 12 9 6"/>
               </svg>
@@ -590,14 +590,14 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
               )}
             </div>
             <div className="flex items-center gap-3 mt-0.5">
-              <span className="flex items-center gap-1 text-xs text-[#5e6c84]">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <span className="flex items-center gap-1 text-[14px] font-semibold text-[#5e6c84]">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2">
                   <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
                 </svg>
                 {profile.freshness}
               </span>
-              <span className="flex items-center gap-1 text-xs text-[#5e6c84]">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <span className="flex items-center gap-1 text-[14px] font-semibold text-[#5e6c84]">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                 </svg>
                 {profile.location}
@@ -760,25 +760,25 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
 
         <div className={`flex-1 min-w-0 transition-all duration-300 ${v2Blur ? 'blur-sm select-none pointer-events-none' : ''}`}>
           <div className="flex items-center gap-1">
-            <span className="text-[15px] font-semibold text-[#172b4d]">{profile.name}</span>
+            <span className="text-[16px] font-semibold text-[#172b4d]">{profile.name}</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#172B4D" strokeWidth="2.5" className="flex-shrink-0">
               <polyline points="9 18 15 12 9 6"/>
             </svg>
           </div>
           <div className="flex items-center gap-3 mt-0.5">
-            <span className="flex items-center gap-1 text-xs text-[#5e6c84]">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <span className="flex items-center gap-1 text-[14px] font-semibold text-[#5e6c84]">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2">
                 <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
               </svg>
               {profile.freshness}
             </span>
-            <span className="flex items-center gap-1 text-xs text-[#5e6c84]">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <span className="flex items-center gap-1 text-[14px] font-semibold text-[#5e6c84]">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
               </svg>
               {profile.location}
             </span>
-            <span className="text-xs text-gray-400">{profile.salary}</span>
+            <span className="text-[14px] font-semibold text-[#5e6c84]">{profile.salary}</span>
           </div>
         </div>
       </div>
@@ -996,19 +996,19 @@ function PhoneViewingCTA({ phone }: { phone: string }) {
 }
 
 const ICON_PATHS: Record<string, React.ReactNode> = {
-  briefcase: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>,
-  education: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>,
-  location:  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
-  skills:    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>,
-  language:  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+  briefcase: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#42526e" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>,
+  education: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#42526e" strokeWidth="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>,
+  location:  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#42526e" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  skills:    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#42526e" strokeWidth="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>,
+  language:  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#42526e" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
 };
 
 function IconDetailRow({ icon, label, children }: { icon: string; label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-start gap-2">
-      <span className="flex-shrink-0 text-[#5e6c84] mt-px">{ICON_PATHS[icon]}</span>
-      <span className="text-xs font-medium text-[#5e6c84] w-[120px] flex-shrink-0 pt-px">{label}</span>
-      <span className="text-xs text-[#42526e] leading-snug flex-1">{children}</span>
+      <span className="flex-shrink-0 text-[#42526e]">{ICON_PATHS[icon]}</span>
+      <span className="text-[14px] font-semibold text-[#42526e] w-[136px] flex-shrink-0">{label}</span>
+      <span className="text-[14px] text-[#172b4d] leading-snug flex-1">{children}</span>
     </div>
   );
 }
