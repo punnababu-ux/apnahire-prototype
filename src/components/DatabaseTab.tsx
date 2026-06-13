@@ -576,7 +576,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
           {/* Name + meta */}
           <div className={`flex-1 min-w-0 transition-all duration-300 ${v2Blur ? 'blur-sm select-none pointer-events-none' : ''}`}>
             <div className="flex items-center gap-1">
-              <span className="text-[15px] font-bold text-gray-900">{profile.name}</span>
+              <span className="text-[15px] font-semibold text-[#172b4d]">{profile.name}</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#172B4D" strokeWidth="2.5" className="flex-shrink-0">
                 <polyline points="9 18 15 12 9 6"/>
               </svg>
@@ -590,13 +590,13 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
               )}
             </div>
             <div className="flex items-center gap-3 mt-0.5">
-              <span className="flex items-center gap-1 text-xs text-gray-500">
+              <span className="flex items-center gap-1 text-xs text-[#5e6c84]">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
                 </svg>
                 {profile.freshness}
               </span>
-              <span className="flex items-center gap-1 text-xs text-gray-500">
+              <span className="flex items-center gap-1 text-xs text-[#5e6c84]">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                 </svg>
@@ -612,7 +612,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
             <span className="text-xs font-semibold text-[#172b4d]">Matching:</span>
             {profile.tags.map(tag => (
               <span key={tag} className="flex items-center gap-1 bg-white border border-[#dfe1e6] rounded-full px-2.5 py-0.5 text-xs text-[#172b4d]">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#172b4d" strokeWidth="3">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#172b4d" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
                 {tag}
@@ -628,20 +628,20 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
           </IconDetailRow>
           {profile.prevTitle && (
             <IconDetailRow icon="briefcase" label="Pref. Roles">
-              <span className="text-gray-600">{profile.prevTitle}</span>
+              <span className="text-[#42526e]">{profile.prevTitle}</span>
             </IconDetailRow>
           )}
           <IconDetailRow icon="education" label="Education">
-            <span className="text-gray-600">{profile.education}</span>
+            <span className="text-[#42526e]">{profile.education}</span>
           </IconDetailRow>
           <IconDetailRow icon="location" label="Pref. Location">
-            <span className="text-gray-600">{profile.location}</span>
+            <span className="text-[#42526e]">{profile.location}</span>
           </IconDetailRow>
           <IconDetailRow icon="skills" label="Skills">
             <HighlightedText text={profile.skills} keywords={profile.matchedKeywords} />
           </IconDetailRow>
           <IconDetailRow icon="language" label="Languages">
-            <span className="text-gray-600">{profile.keySkills}</span>
+            <span className="text-[#42526e]">{profile.keySkills}</span>
           </IconDetailRow>
         </div>
 
@@ -760,19 +760,19 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
 
         <div className={`flex-1 min-w-0 transition-all duration-300 ${v2Blur ? 'blur-sm select-none pointer-events-none' : ''}`}>
           <div className="flex items-center gap-1">
-            <span className="text-[15px] font-bold text-gray-900">{profile.name}</span>
+            <span className="text-[15px] font-semibold text-[#172b4d]">{profile.name}</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#172B4D" strokeWidth="2.5" className="flex-shrink-0">
               <polyline points="9 18 15 12 9 6"/>
             </svg>
           </div>
           <div className="flex items-center gap-3 mt-0.5">
-            <span className="flex items-center gap-1 text-xs text-gray-500">
+            <span className="flex items-center gap-1 text-xs text-[#5e6c84]">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
               </svg>
               {profile.freshness}
             </span>
-            <span className="flex items-center gap-1 text-xs text-gray-500">
+            <span className="flex items-center gap-1 text-xs text-[#5e6c84]">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
               </svg>
@@ -790,7 +790,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
             <span className="text-xs font-semibold text-[#172b4d]">Matching:</span>
             {profile.tags.map(tag => (
               <span key={tag} className="flex items-center gap-1 bg-white border border-[#dfe1e6] rounded-full px-2.5 py-0.5 text-xs text-[#172b4d]">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#172b4d" strokeWidth="3">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#172b4d" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
                 {tag}
@@ -1006,8 +1006,8 @@ const ICON_PATHS: Record<string, React.ReactNode> = {
 function IconDetailRow({ icon, label, children }: { icon: string; label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-start gap-2">
-      <span className="flex-shrink-0 text-gray-400 mt-px">{ICON_PATHS[icon]}</span>
-      <span className="text-[11px] font-medium text-[#5e6c84] w-[120px] flex-shrink-0 pt-px">{label}</span>
+      <span className="flex-shrink-0 text-[#5e6c84] mt-px">{ICON_PATHS[icon]}</span>
+      <span className="text-xs font-medium text-[#5e6c84] w-[120px] flex-shrink-0 pt-px">{label}</span>
       <span className="text-xs text-[#42526e] leading-snug flex-1">{children}</span>
     </div>
   );

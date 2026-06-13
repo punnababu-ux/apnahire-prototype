@@ -45,9 +45,9 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4 }: FiltersPanelP
               <svg width="16" height="16" viewBox="0 0 24 24" fill="#172b4d" stroke="none">
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
               </svg>
-              <span className="text-base font-semibold text-[#172b4d]">Filters ({chips.size})</span>
+              <span className="text-sm font-semibold text-[#172b4d]">Filters ({chips.size})</span>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" className={`transition-transform ${filtersExpanded ? 'rotate-180' : ''}`}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2" className={`transition-transform ${filtersExpanded ? 'rotate-180' : ''}`}>
               <polyline points="6 9 12 15 18 9"/>
             </svg>
           </button>
@@ -83,7 +83,7 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4 }: FiltersPanelP
               className="w-full flex items-center justify-between px-4 py-3"
             >
               <span className="text-xs font-semibold text-[#172b4d]">Hide candidates that are</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" className={`transition-transform ${hideExpanded ? 'rotate-180' : ''}`}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2" className={`transition-transform ${hideExpanded ? 'rotate-180' : ''}`}>
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
             </button>
@@ -176,11 +176,11 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4 }: FiltersPanelP
 
   return (
     <aside className="w-[280px] bg-white rounded-xl border border-[#dfe1e6] flex-shrink-0 overflow-y-auto self-start">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-[#dfe1e6]">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#172b4d" stroke="none">
           <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
         </svg>
-        <span className="text-xs font-semibold text-gray-800">Filters (0)</span>
+        <span className="text-sm font-semibold text-[#172b4d]">Filters (0)</span>
       </div>
       <FilterSection
         title="Show candidates who"
@@ -193,7 +193,7 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4 }: FiltersPanelP
       </FilterSection>
       <FilterSection title="WhatsApp Connect" expanded={false} onToggle={() => {}} />
       <FilterSection title="Call status marked by you" expanded={false} onToggle={() => {}} />
-      <button className="w-full py-3 text-xs font-medium text-emerald-600 text-center hover:bg-gray-50 transition-colors">
+      <button className="w-full py-3 text-xs font-medium text-[#1f8268] text-center hover:bg-gray-50 transition-colors">
         See more
       </button>
     </aside>
@@ -206,14 +206,14 @@ function FilterSection({
   title: string; expanded: boolean; onToggle: () => void; children?: React.ReactNode;
 }) {
   return (
-    <div className="border-b border-gray-100">
+    <div className="border-b border-[#dfe1e6]">
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between px-4 py-3 text-left"
       >
-        <span className="text-xs font-semibold text-gray-800">{title}</span>
+        <span className="text-xs font-semibold text-[#172b4d]">{title}</span>
         <svg
-          width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2"
+          width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2"
           className={`transition-transform ${expanded ? 'rotate-180' : ''}`}
         >
           <polyline points="6 9 12 15 18 9"/>
@@ -243,9 +243,9 @@ function CheckRow({
           </svg>
         )}
       </div>
-      <span className="text-xs text-gray-600">{label}</span>
+      <span className="text-xs text-[#5e6c84]">{label}</span>
       {info && (
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
           <line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
