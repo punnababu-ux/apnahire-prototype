@@ -128,10 +128,25 @@ function configToParams(c: Config): string {
   }).toString();
 }
 
+const STORAGE_KEY = 'apnahire_archetype_config';
+
+function loadSaved(): { config: Config; ftueVersion: 'v1' | 'v2' | 'off' } {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return { config: DEFAULT_CONFIG, ftueVersion: 'v2' };
+}
+
 export function Archetypes() {
   const navigate = useNavigate();
-  const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
-  const [ftueVersion, setFtueVersion] = useState<'v1' | 'v2' | 'off'>('v2');
+  const saved = loadSaved();
+  const [config, setConfig] = useState<Config>(saved.config);
+  const [ftueVersion, setFtueVersion] = useState<'v1' | 'v2' | 'off'>(saved.ftueVersion);
+
+  function persist(nextConfig: Config, nextFtue: 'v1' | 'v2' | 'off') {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ config: nextConfig, ftueVersion: nextFtue })); } catch {}
+  }
 
   function set<K extends keyof Config>(key: K, val: Config[K]) {
     setConfig(prev => {
@@ -139,6 +154,7 @@ export function Archetypes() {
       if (key === 'tenure' && val === 'new') next.exp = 'never';
       if (key === 'db' && val === 'none') next.leads = 'zero';
       if (key === 'age' && val === 'fresh') next.apps = 'zero';
+      persist(next, ftueVersion);
       return next;
     });
   }
@@ -173,7 +189,7 @@ export function Archetypes() {
           {PRESETS.map((p, i) => (
             <button
               key={p.label}
-              onClick={() => setConfig(p.config)}
+              onClick={() => { setConfig(p.config); persist(p.config, ftueVersion); }}
               className={`px-4 py-1.5 rounded-full border text-xs font-semibold transition-all ${p.color} ${
                 activePreset === i ? 'ring-1 ring-offset-1 ring-offset-gray-950 ring-current' : ''
               }`}
@@ -291,7 +307,7 @@ export function Archetypes() {
                   { value: 'off', label: 'Off' },
                 ]}
                 value={ftueVersion}
-                onChange={v => setFtueVersion(v as 'v1' | 'v2' | 'off')}
+                onChange={v => { const f = v as 'v1' | 'v2' | 'off'; setFtueVersion(f); persist(config, f); }}
               />
             </ConfigRow>
           </div>
