@@ -58,7 +58,6 @@ export function ActiveLeadsTab({
   hasCredits,
   credits,
   hasUsedDb = false,
-  unlockedCount = 2,
   lockedCount = 13,
   onCreditSpend,
   onExploreAll,
