@@ -283,42 +283,29 @@ export function ActiveLeadsTab({
         ) : null}
       </div>
 
-      {/* Footer */}
-      <div className="px-5 pb-5">
-        <p className="text-xs text-gray-500">
-          <span className="text-[#1f8268] font-medium">{totalLeads} live leads</span>
-          {' '}shortlisted from{' '}
-          <strong className="text-gray-800">{(dbMatchCount ?? 42321).toLocaleString()}</strong>
-          {' '}matching database profiles
-        </p>
-      </div>
-
-      {/* Has-credits nudge */}
-      {hasCredits && (
-        <div className="mx-4 mb-4 flex items-center justify-between gap-3 px-3 py-2.5 bg-[#eaf8f4] border border-[#b6ecec] rounded-xl">
-          <div className="flex items-center gap-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" className="flex-shrink-0">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
-            <p className="text-xs text-[#42526e]">
-              <span className="font-semibold text-[#172b4d]">{remaining} DB credits ready.</span>{' '}Don't wait for applications — click any lead to unlock their profile.
-            </p>
+      {/* Merged footer + nudge bar */}
+      <div className="mx-4 mb-4">
+        {hasCredits ? (
+          <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-[#eaf8f4] border border-[#b6ecec] rounded-xl">
+            <div className="flex items-center gap-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" className="flex-shrink-0">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              <p className="text-xs text-[#42526e]">
+                <span className="font-semibold text-[#172b4d]">{remaining} DB credits ready.</span>
+                {' '}<span className="text-[#1f8268] font-medium">{totalLeads} live leads</span> shortlisted from <strong className="text-[#172b4d]">{(dbMatchCount ?? 42321).toLocaleString()}</strong> matches — click any to unlock.
+              </p>
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* No-credits notice */}
-      {!hasCredits && (
-        hasUsedDb ? (
-          /* Repurchase: red alert inside the card */
-          <div className="mx-4 mb-4 flex items-center justify-between gap-3 px-3 py-2.5 bg-red-50 border border-red-200 rounded-xl">
+        ) : hasUsedDb ? (
+          <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-red-50 border border-red-200 rounded-xl">
             <div className="flex items-center gap-2">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" className="flex-shrink-0">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                 <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
               </svg>
               <p className="text-xs text-red-800">
-                <span className="font-semibold">0 credits remaining.</span>{' '}You've already unlocked {unlockedCount} profiles — {lockedCount} more matched candidates are locked.
+                <span className="font-semibold">0 credits remaining.</span>{' '}<span className="font-medium">{totalLeads} live leads</span> from <strong>{(dbMatchCount ?? 42321).toLocaleString()}</strong> matches — {lockedCount} profiles locked.
               </p>
             </div>
             <button className="flex-shrink-0 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition-colors">
@@ -326,22 +313,21 @@ export function ActiveLeadsTab({
             </button>
           </div>
         ) : (
-          /* Cold start: plain gray notice */
-          <div className="mx-4 mb-4 flex items-center justify-between gap-3 px-3 py-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xl">
+          <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xl">
             <div className="flex items-center gap-2">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2" className="flex-shrink-0">
                 <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
               <p className="text-xs text-[#42526e]">
-                <span className="font-semibold text-[#172b4d]">0 DB credits.</span>{' '}Buy credits to unlock these leads and reach out first.
+                <span className="font-semibold text-[#172b4d]">0 DB credits.</span>{' '}<span className="text-[#1f8268] font-medium">{totalLeads} live leads</span> from <strong className="text-[#172b4d]">{(dbMatchCount ?? 42321).toLocaleString()}</strong> matches — buy credits to unlock first.
               </p>
             </div>
             <button className="flex-shrink-0 px-3 py-1.5 bg-[#1f8268] hover:bg-[#186b55] text-white text-xs font-semibold rounded-xl transition-colors">
               Buy credits
             </button>
           </div>
-        )
-      )}
+        )}
+      </div>
     </div>
   );
 }
