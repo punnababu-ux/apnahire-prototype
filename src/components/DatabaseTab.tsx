@@ -181,7 +181,6 @@ const DB_PROFILES: Profile[] = [
   },
 ];
 
-const ACTIVE_FILTER_PILLS = ['Last 7 days', 'Shortlisted', 'Resume'];
 
 interface DatabaseTabProps {
   hasCredits: boolean;
@@ -217,7 +216,6 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
     if (creditsRemaining !== undefined) setRemaining(creditsRemaining);
   }, [creditsRemaining]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set(ACTIVE_FILTER_PILLS));
   const [allLoaded, setAllLoaded] = useState(false);
   const [activePeriod, setActivePeriod] = useState('7d');
   const [perPage, setPerPage] = useState(20);
@@ -254,7 +252,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
     setViewing(prev => new Set(prev).add(id));
     if (!isFree) {
       setRemaining(r => r - 1);
-      globalUnlock();
+      globalUnlock(id);
       onUnlock?.(id);
     } else {
       onFreeUnlock?.(id);
@@ -269,16 +267,11 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
     });
   }
 
-  function removeFilter(f: string) {
-    setActiveFilters(prev => { const n = new Set(prev); n.delete(f); return n; });
-  }
-
   const shownLeads = Array.from({ length: totalLeads }, (_, i) =>
     i < ACTIVE_LEADS.length
       ? ACTIVE_LEADS[i]
       : { ...ACTIVE_LEADS[i % ACTIVE_LEADS.length], id: `${ACTIVE_LEADS[i % ACTIVE_LEADS.length].id}_${i}` }
   );
-  const filterCount = activeFilters.size;
 
   if (dbTotal === 0) {
     return (
@@ -1010,15 +1003,6 @@ function IconDetailRow({ icon, label, children }: { icon: string; label: string;
       <span className="flex-shrink-0 text-gray-400 mt-px">{ICON_PATHS[icon]}</span>
       <span className="text-[11px] font-medium text-[#5e6c84] w-[120px] flex-shrink-0 pt-px">{label}</span>
       <span className="text-xs text-[#42526e] leading-snug flex-1">{children}</span>
-    </div>
-  );
-}
-
-function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-start gap-1.5">
-      <span className="text-[10px] font-medium text-gray-400 w-16 flex-shrink-0 pt-px">{label}</span>
-      <span className="text-xs text-gray-700 leading-snug">{children}</span>
     </div>
   );
 }

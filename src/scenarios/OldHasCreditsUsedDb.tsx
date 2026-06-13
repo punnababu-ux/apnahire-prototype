@@ -13,7 +13,7 @@ const MEDIUM_MATCHES = [
 ];
 
 type ApplicantStatus = 'none' | 'shortlisted' | 'rejected';
-type Candidate = typeof APPLICANTS[0];
+type Candidate = Omit<typeof APPLICANTS[0], 'tier'> & { tier: 'high' | 'medium' };
 
 import type { ScenarioProps } from '../types';
 
