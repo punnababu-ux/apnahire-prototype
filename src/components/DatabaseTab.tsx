@@ -758,7 +758,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
           {profile.initials}
         </div>
 
-        <div className={`flex-1 min-w-0 transition-all duration-300 ${v2Blur ? 'blur-sm select-none pointer-events-none' : ''}`}>
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1">
             <span className="text-[16px] font-semibold text-[#172b4d]">{profile.name}</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#172B4D" strokeWidth="2.5" className="flex-shrink-0">

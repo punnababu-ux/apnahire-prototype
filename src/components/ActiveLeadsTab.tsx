@@ -291,8 +291,10 @@ export function ActiveLeadsTab({
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
               </svg>
               <p className="text-xs text-[#42526e]">
-                <span className="font-semibold text-[#172b4d]">{remaining} DB credits ready.</span>
-                {' '}<span className="text-[#1f8268] font-medium">{totalLeads} live leads</span> shortlisted from <strong className="text-[#172b4d]">{(dbMatchCount ?? 42321).toLocaleString()}</strong> matches — click any to unlock.
+                <span className="text-[#1f8268] font-semibold">{totalLeads} candidates shortlisted for you</span>
+                {' · '}
+                <span className="font-semibold text-[#172b4d]">{remaining} credits available</span>
+                {' — click any to unlock & contact'}
               </p>
             </div>
           </div>
@@ -304,7 +306,10 @@ export function ActiveLeadsTab({
                 <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
               </svg>
               <p className="text-xs text-red-800">
-                <span className="font-semibold">0 credits remaining.</span>{' '}<span className="font-medium">{totalLeads} live leads</span> from <strong>{(dbMatchCount ?? 42321).toLocaleString()}</strong> matches — {lockedCount} profiles locked.
+                <span className="font-semibold text-red-900">{totalLeads} candidates shortlisted for you</span>
+                {' · '}
+                <span className="font-semibold">0 credits available</span>
+                {` — ${lockedCount} profiles locked`}
               </p>
             </div>
             <button className="flex-shrink-0 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition-colors">
@@ -318,7 +323,10 @@ export function ActiveLeadsTab({
                 <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
               <p className="text-xs text-[#42526e]">
-                <span className="font-semibold text-[#172b4d]">0 DB credits.</span>{' '}<span className="text-[#1f8268] font-medium">{totalLeads} live leads</span> from <strong className="text-[#172b4d]">{(dbMatchCount ?? 42321).toLocaleString()}</strong> matches — buy credits to unlock first.
+                <span className="text-[#1f8268] font-semibold">{totalLeads} candidates shortlisted for you</span>
+                {' · '}
+                <span className="font-semibold text-[#172b4d]">0 credits available</span>
+                {' — buy credits to unlock & contact'}
               </p>
             </div>
             <button className="flex-shrink-0 px-3 py-1.5 bg-[#1f8268] hover:bg-[#186b55] text-white text-xs font-semibold rounded-xl transition-colors">
