@@ -56,7 +56,7 @@ function configMatches(a: Config, b: Config) {
     a.exp === b.exp && a.db === b.db && a.leads === b.leads && a.apps === b.apps && a.age === b.age;
 }
 
-function computeSummary(c: Config): { situation: string; goal: string; warning?: string } {
+function computeSummary(c: Config): { situation: string; goal: string; warnings: string[] } {
   const tenure  = c.tenure === 'new' ? 'First-time recruiter.' : 'Returning recruiter.';
   const agePart = c.age === 'fresh' && c.leads !== 'zero' ? 'Job just posted (< 1 day) — some DB candidates are already active as live leads.'
                 : c.age === 'fresh'  ? 'Job just posted (< 1 day) — no active leads yet.'

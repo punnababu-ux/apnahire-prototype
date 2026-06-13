@@ -27,7 +27,6 @@ function buildDynamicScenario(params: URLSearchParams): UserScenario {
   const tenure  = params.get('tenure')  ?? 'new';
   const credits = Number(params.get('credits') ?? 0);
   const exp     = params.get('exp')     ?? 'never';
-  const age     = params.get('age')     ?? 'active';
   const leads   = Number(params.get('leads') ?? 6);
   const apps    = Number(params.get('apps')    ?? 0);
   const nudge   = credits === 0
@@ -177,7 +176,7 @@ export function JobDetail() {
             <div className="flex flex-col gap-3">
               {/* Job posted success card — only when no applicants yet */}
               {scenario.applicationsCount === 0 && (
-                <JobPostedCard totalLeads={totalLeads} dbTotal={dbTotal} jobAge={jobAge} onGoToDatabase={() => setTab('database')} />
+                <JobPostedCard totalLeads={totalLeads} dbTotal={dbTotal} jobAge={jobAge} />
               )}
 
               {/* Live leads widget — only when no applicants yet and leads exist */}
@@ -329,7 +328,7 @@ function NoLeadsCard({ dbTotal, jobAge, onGoToDatabase }: { dbTotal: number; job
   );
 }
 
-function JobPostedCard({ totalLeads, dbTotal, jobAge, onGoToDatabase }: { totalLeads: number; dbTotal: number; jobAge: JobAge; onGoToDatabase: () => void }) {
+function JobPostedCard({ totalLeads, dbTotal, jobAge }: { totalLeads: number; dbTotal: number; jobAge: JobAge }) {
   let title: string;
   let body: ReactNode;
   let iconColor = '#1F8268';

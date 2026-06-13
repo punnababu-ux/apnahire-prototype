@@ -10,7 +10,7 @@ export function NewNoCredits({ totalLeads, dbCredits, applicantCount, dbTotal }:
         totalLeads={totalLeads}
         dbCredits={dbCredits}
         hasUsedDb={false}
-        nudgeVariant="buy_credits"
+        nudgeVariant="educate_buy"
         insertLeadsAfter={dbTotal > 0 ? 2 : undefined}
       />
     </div>
