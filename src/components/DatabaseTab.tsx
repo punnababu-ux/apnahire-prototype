@@ -294,7 +294,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
   }
 
   return (
-    <div className="flex flex-col gap-0 max-w-3xl">
+    <div className="flex flex-col gap-0">
       <style>{SHIMMER_STYLE}</style>
 
       {/* ── Filter toolbar ── */}

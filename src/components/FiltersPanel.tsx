@@ -175,7 +175,7 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4 }: FiltersPanelP
   }
 
   return (
-    <aside className="w-[260px] bg-white rounded-xl border border-[#dfe1e6] flex-shrink-0 overflow-y-auto self-start">
+    <aside className="w-[280px] bg-white rounded-xl border border-[#dfe1e6] flex-shrink-0 overflow-y-auto self-start">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2">
           <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
