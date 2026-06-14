@@ -24,16 +24,32 @@ export function CoachMarks({ steps, onComplete }: { steps: CoachStep[]; onComple
   }, [step.selector]);
 
   useEffect(() => {
-    // Delay lets React finish rendering new tab content before measuring
-    const t = setTimeout(measure, 100);
+    let cancelled = false;
+    const el = document.querySelector(step.selector) as HTMLElement | null;
+
+    // If this step's target isn't on the current screen, skip to the next
+    // resolvable step instead of leaving the tour stuck on an invisible anchor.
+    if (!el) {
+      const skip = setTimeout(() => {
+        if (cancelled) return;
+        if (stepIdx < steps.length - 1) setStepIdx(i => i + 1);
+        else onComplete();
+      }, 120);
+      return () => { cancelled = true; clearTimeout(skip); };
+    }
+
+    // Bring the target into view, then measure once it settles.
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const t = setTimeout(() => { if (!cancelled) measure(); }, 250);
     window.addEventListener('resize', measure);
     window.addEventListener('scroll', measure, true);
     return () => {
+      cancelled = true;
       clearTimeout(t);
       window.removeEventListener('resize', measure);
       window.removeEventListener('scroll', measure, true);
     };
-  }, [measure]);
+  }, [step.selector, stepIdx, steps.length, measure, onComplete]);
 
   function advance() {
     step.onCta?.();
@@ -116,7 +132,7 @@ export function CoachMarks({ steps, onComplete }: { steps: CoachStep[]; onComple
       }} />
 
       {/* Tooltip bubble */}
-      <div style={tooltipStyle} className="bg-white rounded-2xl shadow-2xl overflow-visible">
+      <div role="dialog" aria-modal="true" aria-label={step.title} style={tooltipStyle} className="bg-white rounded-2xl shadow-2xl overflow-visible">
         <div style={arrowStyle} />
 
         <div className="p-4">

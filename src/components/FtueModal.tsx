@@ -9,7 +9,7 @@ const STEPS = [
   {
     accent: '#1a56db',
     accentLight: '#dbeafe',
-    title: 'Introducing Live leads from apna database',
+    title: 'Introducing Live Leads from apna database',
     body: "Find candidates from apna's database who are actively looking and match your job requirements.",
     preview: 'intro',
     cta: 'Next',
@@ -28,7 +28,7 @@ const STEPS = [
     title: 'Unlock with database credits',
     body: '',
     preview: 'unlock',
-    cta: 'See all live leads',
+    cta: 'See all Live Leads',
   },
 ];
 
@@ -59,6 +59,7 @@ export function FtueModal({ onComplete, hasCredits }: FtueModalProps) {
       <div className="relative bg-white rounded-xl w-[440px] shadow-2xl overflow-hidden">
         {/* Close */}
         <button
+          aria-label="Close"
           onClick={onComplete}
           className="absolute top-3 right-3 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/80 hover:bg-white text-gray-600"
         >
@@ -108,7 +109,7 @@ export function FtueModal({ onComplete, hasCredits }: FtueModalProps) {
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors"
               style={{ background: current.accent }}
             >
-              {step === STEPS.length - 1 ? (hasCredits ? 'See all live leads' : 'View live leads') : 'Next'}
+              {step === STEPS.length - 1 ? (hasCredits ? 'See all Live Leads' : 'View Live Leads') : 'Next'}
             </button>
           </div>
         </div>
@@ -128,7 +129,7 @@ function MiniCandidateCard({ initials, color, name, role, exp, loc, locked, acce
 }) {
   return (
     <div className="bg-white rounded-xl overflow-hidden border border-gray-100 flex flex-col" style={{ minWidth: 110 }}>
-      <div className="h-10 bg-[#EAF8F4] relative flex-shrink-0">
+      <div className="h-10 bg-[#eaf8f4] relative flex-shrink-0">
         <div
           className="absolute bottom-0 left-3 translate-y-1/2 w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-gray-700"
           style={{ background: color }}
@@ -146,7 +147,7 @@ function MiniCandidateCard({ initials, color, name, role, exp, loc, locked, acce
           </div>
         ) : (
           <div className="mt-1.5 w-full py-1 text-center text-[8px] font-semibold rounded-lg text-white" style={{ background: '#1f8268' }}>
-            View Contact
+            View number
           </div>
         )}
       </div>
@@ -160,7 +161,7 @@ function PreviewCard({ step, accentLight, accent }: { step: string; accentLight:
       <div className="flex flex-col items-center gap-2 scale-100">
         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 rounded-full">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span className="text-[9px] font-semibold text-white">9 live leads from apna database</span>
+          <span className="text-[9px] font-semibold text-white">9 Live Leads from apna database</span>
         </div>
         <div className="flex gap-2">
           {MINI_CANDIDATES.map(c => (
@@ -176,7 +177,7 @@ function PreviewCard({ step, accentLight, accent }: { step: string; accentLight:
       <div className="scale-100 flex flex-col items-center gap-2">
         <div className="bg-white rounded-xl shadow-md overflow-hidden w-[300px]">
           {/* Card header */}
-          <div className="h-12 bg-[#EAF8F4] relative">
+          <div className="h-12 bg-[#eaf8f4] relative">
             <div className="absolute bottom-0 left-4 translate-y-1/2 w-11 h-11 rounded-full border-2 border-white flex items-center justify-center text-[12px] font-bold text-gray-700" style={{ background: '#fde68a' }}>
               SS
             </div>
@@ -203,7 +204,7 @@ function PreviewCard({ step, accentLight, accent }: { step: string; accentLight:
     <div className="scale-100 flex items-center gap-3">
       {/* Locked card */}
       <div className="bg-white rounded-xl shadow-md overflow-hidden w-[148px]">
-        <div className="h-11 bg-[#EAF8F4] relative">
+        <div className="h-11 bg-[#eaf8f4] relative">
           <div className="absolute bottom-0 left-3 translate-y-1/2 w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-[11px] font-bold text-gray-700" style={{ background: '#bfdbfe' }}>
             RR
           </div>
@@ -228,7 +229,7 @@ function PreviewCard({ step, accentLight, accent }: { step: string; accentLight:
 
       {/* Unlocked card */}
       <div className="bg-white rounded-xl shadow-md overflow-hidden w-[148px]">
-        <div className="h-11 bg-[#EAF8F4] relative">
+        <div className="h-11 bg-[#eaf8f4] relative">
           <div className="absolute bottom-0 left-3 translate-y-1/2 w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-[11px] font-bold text-gray-700" style={{ background: '#bfdbfe' }}>
             RR
           </div>
@@ -241,7 +242,7 @@ function PreviewCard({ step, accentLight, accent }: { step: string; accentLight:
             <span className="text-[9px] font-semibold" style={{ color: accent }}>+91 98765 43210</span>
           </div>
           <button className="mt-2 w-full py-1.5 text-[9px] font-semibold rounded-lg text-white" style={{ background: '#1f8268' }}>
-            View Contact
+            View number
           </button>
         </div>
       </div>

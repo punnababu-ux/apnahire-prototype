@@ -39,7 +39,7 @@ const HOW_IT_WORKS = [
       </svg>
     ),
     title: 'Unlock who you want to contact',
-    body: '1 DB credit per candidate. Only pay for profiles you choose.',
+    body: '1 credit per candidate. Only pay for profiles you choose.',
   },
   {
     icon: (
@@ -48,7 +48,7 @@ const HOW_IT_WORKS = [
       </svg>
     ),
     title: 'Reach out before someone else does',
-    body: 'Live leads get hired fast. Contact them directly via call or WhatsApp.',
+    body: 'Live Leads get hired fast. Contact them directly via call or WhatsApp.',
   },
 ];
 
@@ -58,7 +58,6 @@ export function ActiveLeadsTab({
   hasCredits,
   credits,
   hasUsedDb = false,
-  lockedCount = 13,
   onCreditSpend,
   onExploreAll,
   onGoToDatabase,
@@ -93,7 +92,7 @@ export function ActiveLeadsTab({
       {/* Header */}
       <div className="px-5 pt-5 pb-4">
         <p className="text-base font-semibold text-gray-900 mb-1">
-          {headerTitle ?? `${totalLeads} live leads from apna database`}
+          {headerTitle ?? `${totalLeads} Live Leads from apna database`}
         </p>
         <p className="text-sm text-gray-500">
           {headerSubtitle ?? 'Candidates actively looking for jobs, recently applied to similar roles, and matching your requirements.'}
@@ -111,7 +110,7 @@ export function ActiveLeadsTab({
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
-              <span className="text-xs font-semibold text-[#172b4d]">How live leads work</span>
+              <span className="text-xs font-semibold text-[#172b4d]">How Live Leads and credits work</span>
             </div>
             <svg
               width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2"
@@ -147,18 +146,15 @@ export function ActiveLeadsTab({
           return (
             <div
               key={c.id}
-              className={`rounded-xl overflow-hidden hover:shadow-sm transition-all cursor-pointer flex flex-col ${
+              className={`rounded-xl overflow-hidden hover:shadow-sm transition-all flex flex-col ${
                 isPreview
-                  ? 'border-2 border-[#1f8268]'
+                  ? 'border-2 border-[#1f8268] cursor-pointer'
                   : 'border border-[#dfe1e6] hover:border-[#1f8268]'
               }`}
-              onClick={() => {
-                if (!hasCredits) { onUnlockAndView?.(c.id); return; }
-                if (!isUnlocked) { handleUnlock(c.id); onUnlockAndView?.(c.id); }
-              }}
+              onClick={isPreview ? () => onUnlockAndView?.(c.id) : undefined}
             >
               {/* Teal banner with avatar */}
-              <div className="relative h-14 bg-[#EAF8F4] flex-shrink-0">
+              <div className="relative h-14 bg-[#eaf8f4] flex-shrink-0">
                 {isPreview && (
                   <span className="absolute top-2 right-2 text-[10px] font-semibold bg-[#1f8268] text-white px-2 py-0.5 rounded-full">
                     Free
@@ -193,28 +189,28 @@ export function ActiveLeadsTab({
                 <div className="flex-1" />
 
                 {isUnlocked ? (
-                  <button className="mt-2 w-full py-2 text-[10px] font-semibold bg-[#1f8268] text-white rounded-xl">
-                    View Contact
-                  </button>
-                ) : hasCredits ? (
-                  <button
-                    {...(idx === 0 ? { 'data-ftue': 'first-lead-unlock-btn' } : {})}
-                    onClick={e => { e.stopPropagation(); handleUnlock(c.id); onUnlockAndView?.(c.id); }}
-                    className="mt-2 w-full py-2 text-[10px] font-semibold border border-[#1f8268] text-[#1f8268] rounded-xl hover:bg-[#eaf8f4] transition-colors"
-                  >
-                    Unlock · 1 credit
+                  <button className="mt-2 w-full py-2 text-xs font-semibold bg-[#1f8268] text-white rounded-xl">
+                    View number
                   </button>
                 ) : isPreview ? (
                   <button
                     data-ftue="first-lead-unlock-btn"
                     onClick={e => { e.stopPropagation(); onUnlockAndView?.(c.id); }}
-                    className="mt-2 w-full py-2 text-[10px] font-semibold bg-[#1f8268] hover:bg-[#186b55] text-white rounded-xl transition-colors"
+                    className="mt-2 w-full py-2 text-xs font-semibold bg-[#1f8268] hover:bg-[#186b55] text-white rounded-xl transition-colors"
                   >
-                    Unlock · 1 DB credit (Free)
+                    Unlock for free · Preview
+                  </button>
+                ) : remaining > 0 ? (
+                  <button
+                    {...(idx === 0 ? { 'data-ftue': 'first-lead-unlock-btn' } : {})}
+                    onClick={e => { e.stopPropagation(); handleUnlock(c.id); onUnlockAndView?.(c.id); }}
+                    className="mt-2 w-full py-2 text-xs font-semibold border border-[#1f8268] text-[#1f8268] rounded-xl hover:bg-[#eaf8f4] transition-colors"
+                  >
+                    Unlock · 1 credit
                   </button>
                 ) : (
-                  <button className="mt-2 w-full py-2 text-[10px] font-semibold border border-[#dfe1e6] text-[#5e6c84] rounded-xl hover:bg-gray-50 transition-colors">
-                    Buy DB credits to unlock
+                  <button className="mt-2 w-full py-2 text-xs font-semibold border border-[#dfe1e6] text-[#5e6c84] rounded-xl hover:bg-gray-50 transition-colors">
+                    Buy credits to unlock
                   </button>
                 )}
               </div>
@@ -225,7 +221,7 @@ export function ActiveLeadsTab({
         {/* +more card — pivots to DB promo when all live leads are already shown */}
         {totalLeads > 3 ? (
           <div className="border border-[#b6ecec] rounded-xl overflow-hidden flex flex-col">
-            <div className="relative h-14 bg-[#EAF8F4] flex-shrink-0">
+            <div className="relative h-14 bg-[#eaf8f4] flex-shrink-0">
               <div className="absolute bottom-0 left-4 translate-y-1/2 flex -space-x-2">
                 {['#a7f3d0', '#bfdbfe', '#fde68a'].map((bg, i) => (
                   <div
@@ -240,14 +236,14 @@ export function ActiveLeadsTab({
             </div>
             <div className="px-3 pt-9 pb-3 flex flex-col flex-1">
               <p className="text-sm font-bold text-gray-800">+ {totalLeads - 3} more</p>
-              <p className="text-[11px] text-gray-500 leading-snug mt-1">Connect with candidates instantly</p>
+              <p className="text-[11px] text-gray-500 leading-snug mt-1">See all matching candidates</p>
               <div className="flex-1" />
-              <button onClick={onExploreAll} className={`mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] font-semibold rounded-xl transition-colors ${
+              <button onClick={onExploreAll} className={`mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl transition-colors ${
                 hasCredits
                   ? 'bg-[#1f8268] hover:bg-[#186b55] text-white'
                   : 'border border-[#1f8268] text-[#1f8268] hover:bg-[#eaf8f4]'
               }`}>
-                Explore all live leads
+                See all Live Leads
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="5 12 12 12 19 12"/><polyline points="13 6 19 12 13 18"/>
                 </svg>
@@ -257,7 +253,7 @@ export function ActiveLeadsTab({
         ) : (dbMatchCount ?? 0) > 0 ? (
           <div className="border border-[#dfe1e6] rounded-xl overflow-hidden hover:shadow-sm transition-all cursor-pointer flex flex-col" onClick={onGoToDatabase}>
             {/* Same teal banner as candidate cards */}
-            <div className="relative h-14 bg-[#EAF8F4] flex-shrink-0">
+            <div className="relative h-14 bg-[#eaf8f4] flex-shrink-0">
               <div
                 className="absolute bottom-0 left-4 translate-y-1/2 w-12 h-12 rounded-full border-2 border-white flex items-center justify-center shadow-sm bg-[#d1f5ec]"
               >
@@ -273,7 +269,7 @@ export function ActiveLeadsTab({
               <div className="flex-1" />
               <button
                 onClick={e => { e.stopPropagation(); onGoToDatabase?.(); }}
-                className="mt-2 w-full py-2 text-[10px] font-semibold border border-[#1f8268] text-[#1f8268] rounded-xl hover:bg-[#eaf8f4] transition-colors"
+                className="mt-2 w-full py-2 text-xs font-semibold border border-[#1f8268] text-[#1f8268] rounded-xl hover:bg-[#eaf8f4] transition-colors"
               >
                 Browse profiles
               </button>
@@ -282,9 +278,9 @@ export function ActiveLeadsTab({
         ) : null}
       </div>
 
-      {/* Merged footer + nudge bar */}
+      {/* Merged footer + nudge bar — state follows the live credit balance */}
       <div className="mx-4 mb-4">
-        {hasCredits ? (
+        {remaining > 0 ? (
           <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-[#eaf8f4] border border-[#b6ecec] rounded-xl">
             <div className="flex items-center gap-2">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" className="flex-shrink-0">
@@ -298,22 +294,21 @@ export function ActiveLeadsTab({
               </p>
             </div>
           </div>
-        ) : hasUsedDb ? (
-          <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-red-50 border border-red-200 rounded-xl">
+        ) : (hasCredits || hasUsedDb) ? (
+          <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-[#eaf8f4] border border-[#b6ecec] rounded-xl">
             <div className="flex items-center gap-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" className="flex-shrink-0">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" className="flex-shrink-0">
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
-              <p className="text-xs text-red-800">
-                <span className="font-semibold text-red-900">{totalLeads} candidates shortlisted for you</span>
-                {' · '}
-                <span className="font-semibold">0 credits available</span>
-                {` — ${lockedCount} profiles locked`}
+              <p className="text-xs text-[#42526e]">
+                <span className="font-semibold text-[#172b4d]">All credits used.</span>
+                {' '}
+                <span className="text-[#1f8268] font-semibold">{totalLeads} Live Leads still waiting</span>
+                {' — top up to keep contacting.'}
               </p>
             </div>
-            <button className="flex-shrink-0 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition-colors">
-              Top up now
+            <button className="flex-shrink-0 px-3 py-1.5 bg-[#1f8268] hover:bg-[#186b55] text-white text-xs font-semibold rounded-xl transition-colors">
+              Top up credits
             </button>
           </div>
         ) : (
@@ -325,8 +320,7 @@ export function ActiveLeadsTab({
               <p className="text-xs text-[#42526e]">
                 <span className="text-[#1f8268] font-semibold">{totalLeads} candidates shortlisted for you</span>
                 {' · '}
-                <span className="font-semibold text-[#172b4d]">0 credits available</span>
-                {' — buy credits to unlock & contact'}
+                <span className="font-semibold text-[#172b4d]">buy credits to unlock & contact</span>
               </p>
             </div>
             <button className="flex-shrink-0 px-3 py-1.5 bg-[#1f8268] hover:bg-[#186b55] text-white text-xs font-semibold rounded-xl transition-colors">

@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useCredits } from '../context/CreditsContext';
 
 const SHIMMER_STYLE = `
 @keyframes shimmer-sweep {
@@ -42,7 +41,7 @@ const ACTIVE_LEADS: Profile[] = [
   {
     id: 'al0', name: 'Simran Sharma', initials: 'SS', color: '#a7f3d0',
     freshness: '4 Yrs', salary: '₹7L/yr', location: 'Mumbai',
-    tags: ['Field Sales', 'Business Development', 'B2B Sales', 'Mumbai'],
+    tags: ['Field Sales', 'Business Development', 'B2B Sales'],
     title: 'Business Development Executive · Reliance Industries · +2 more',
     prevTitle: 'Sales Executive · Bajaj Finserv · 2 Yrs',
     education: 'B.Com, University of Mumbai - 2019',
@@ -52,52 +51,52 @@ const ACTIVE_LEADS: Profile[] = [
     matchedKeywords: ['Field Sales', 'Business Development', 'B2B Sales'],
   },
   {
-    id: 'al1', name: 'Shankar Gopal', initials: 'SG', color: '#a7f3d0',
-    freshness: 'Fresher', salary: '₹15–18k/m', location: 'Near Koramangala, Bangalore',
-    tags: ['Graphic Design', 'Video Editing', 'eMarketing', 'Mumbai'],
-    title: 'Video Editing Expert · Video Editing, Graphic Design · +2 more',
-    prevTitle: 'Video Editor · Video Editing, Graphic Design · +2 more',
-    education: 'B.Tech, Metallurgy, at Anna Institute of Technology, Mumbai - 2021',
-    skills: 'UI/UX, Figma · Illustrator, Photoshop, Wireframing, Web development',
+    id: 'al1', name: 'Rohan Roy', initials: 'RR', color: '#bfdbfe',
+    freshness: '4 Yrs', salary: '₹7L/yr', location: 'Mumbai',
+    tags: ['Field Sales', 'B2B Sales', 'Telecalling'],
+    title: 'Field Sales Executive · Game-berry · +1 more',
+    prevTitle: 'Sales Executive · Policybazaar · 2 Yrs',
+    education: 'BBA, Marketing, University of Mumbai - 2020',
+    skills: 'Field Sales · Cold Calling · Client Acquisition · CRM',
     keySkills: 'English (Good) · Hindi',
     isActiveLead: true,
-    matchedKeywords: ['Video Editing', 'Graphic Design', 'Figma'],
+    matchedKeywords: ['Field Sales', 'B2B Sales', 'Telecalling'],
   },
   {
-    id: 'al2', name: 'Shankar Gopal', initials: 'SG', color: '#a7f3d0',
-    freshness: 'Fresher', salary: '₹15–18k/m', location: 'Near Koramangala, Bangalore',
-    tags: ['Graphic Design', 'Video Editing', 'eMarketing', 'Mumbai'],
-    title: 'Video Editing Expert · Video Editing, Graphic Design · +2 more',
-    prevTitle: 'Video Editor · Video Editing, Graphic Design · +2 more',
-    education: 'B.Tech, Metallurgy, at Anna Institute of Technology, Mumbai - 2021',
-    skills: 'UI/UX, Figma · Illustrator, Photoshop, Wireframing, Web development',
-    keySkills: 'English (Good) · Hindi',
+    id: 'al2', name: 'Siddharth M.', initials: 'SM', color: '#fde68a',
+    freshness: '4 Yrs', salary: '₹7L/yr', location: 'Mumbai',
+    tags: ['B2B Sales', 'Account Management', 'Negotiation'],
+    title: 'Sales Executive · Reliance SMSL Ltd · +1 more',
+    prevTitle: 'Field Executive · HDFC Life · 2 Yrs',
+    education: 'B.Com, University of Mumbai - 2019',
+    skills: 'Account Management · Negotiation · Lead Generation · CRM',
+    keySkills: 'English (Good) · Hindi · Marathi',
     isActiveLead: true,
-    matchedKeywords: ['Video Editing', 'Graphic Design', 'Figma'],
+    matchedKeywords: ['B2B Sales', 'Account Management', 'Negotiation'],
   },
   {
-    id: 'al3', name: 'Shankar Gopal', initials: 'SG', color: '#a7f3d0',
-    freshness: 'Fresher', salary: '₹15–18k/m', location: 'Near Koramangala, Bangalore',
-    tags: ['Graphic Design', 'Video Editing', 'eMarketing', 'Mumbai'],
-    title: 'Video Editing Expert · Video Editing, Graphic Design · +2 more',
-    prevTitle: 'Video Editor · Video Editing, Graphic Design · +2 more',
-    education: 'B.Tech, Metallurgy, at Anna Institute of Technology, Mumbai - 2021',
-    skills: 'UI/UX, Figma · Illustrator, Photoshop, Wireframing, Web development',
-    keySkills: 'English (Good) · Hindi',
+    id: 'al3', name: 'Priya Nair', initials: 'PN', color: '#fecdd3',
+    freshness: '5 Yrs', salary: '₹9L/yr', location: 'Pune',
+    tags: ['Field Sales', 'Team Lead', 'Channel Sales'],
+    title: 'Sales Manager · Bajaj Finserv · +1 more',
+    prevTitle: 'Field Sales Executive · ICICI Bank · 2 Yrs',
+    education: 'MBA, Sales & Marketing, Symbiosis - 2018',
+    skills: 'Channel Sales · Team Leadership · B2B Sales · Negotiation',
+    keySkills: 'English (Good) · Hindi · Marathi',
     isActiveLead: true,
-    matchedKeywords: ['Video Editing', 'Graphic Design'],
+    matchedKeywords: ['Field Sales', 'Channel Sales'],
   },
   {
-    id: 'al4', name: 'Shankar Gopal', initials: 'SG', color: '#a7f3d0',
-    freshness: 'Fresher', salary: '₹15–18k/m', location: 'Near Koramangala, Bangalore',
-    tags: ['Graphic Design', 'Video Editing', 'eMarketing', 'Mumbai'],
-    title: 'Video Editing Expert · Video Editing, Graphic Design · +2 more',
-    prevTitle: 'Video Editor · Video Editing, Graphic Design · +2 more',
-    education: 'B.Tech, Metallurgy, at Anna Institute of Technology, Mumbai - 2021',
-    skills: 'UI/UX, Figma · Illustrator, Photoshop, Wireframing, Web development',
-    keySkills: 'English (Good) · Hindi',
+    id: 'al4', name: 'Arjun Mehta', initials: 'AM', color: '#d8b4fe',
+    freshness: '3 Yrs', salary: '₹6L/yr', location: 'Delhi',
+    tags: ['Field Sales', 'Insurance Sales', 'Lead Generation'],
+    title: 'Field Executive · HDFC Life · +1 more',
+    prevTitle: 'Sales Trainee · Max Life · 1 Yr',
+    education: 'B.A., Delhi University - 2021',
+    skills: 'Field Sales · Lead Generation · Customer Service · Telecalling',
+    keySkills: 'English (Good) · Hindi · Punjabi',
     isActiveLead: true,
-    matchedKeywords: ['Graphic Design'],
+    matchedKeywords: ['Field Sales', 'Lead Generation'],
   },
 ];
 
@@ -114,15 +113,15 @@ const DB_PROFILES: Profile[] = [
     matchedKeywords: ['Database management', 'Sales'],
   },
   {
-    id: 'db2', name: 'Simran Sharma', initials: 'SS', color: '#fde68a',
+    id: 'db2', name: 'Pooja Verma', initials: 'PV', color: '#fde68a',
     freshness: '4 yr 6 m', salary: '₹7.2 Lakhs', location: 'Mumbai',
     tags: ['Business Development Executive'],
     title: 'Business Development Executive at Housing.com · 2020–2023',
-    prevTitle: 'Business Development Executive at Trudge · 2019–2020',
-    education: 'BE/B.Tech (Shri Dinkarao Desai Patel College) · 2019',
-    skills: 'Basics of Sales · FMCG/Retail Sales · After sales service · Database management',
-    keySkills: 'Team management · Sales strategy · Convincing skills',
-    matchedKeywords: ['Database management', 'Sales'],
+    prevTitle: 'Sales Executive at Trudge · 2019–2020',
+    education: 'B.Com (University of Mumbai) · 2019',
+    skills: 'Inside Sales · Lead Generation · CRM · Client Servicing',
+    keySkills: 'Relationship management · Cold calling · Negotiation',
+    matchedKeywords: ['Sales', 'Lead Generation'],
   },
   {
     id: 'db3', name: 'Sukesh Bakhna', initials: 'SB', color: '#d8b4fe',
@@ -140,10 +139,10 @@ const DB_PROFILES: Profile[] = [
     freshness: '2 yr 8 m', salary: '₹7.2 Lakhs', location: 'Mumbai',
     tags: ['Business Development Executive'],
     title: 'Business Development Executive at Housing.com · 2020–2023',
-    prevTitle: 'Business Development Executive at Trudge · 2019–2020',
-    education: 'BE/B.Tech (Shri Dinkarao Desai Patel College) · 2019',
-    skills: 'Basics of Sales · FMCG/Retail Sales · After sales service · Database management',
-    keySkills: 'Team management · Sales strategy · Convincing skills',
+    prevTitle: 'Sales Associate at Trudge · 2019–2020',
+    education: 'BBA (Symbiosis, Pune) · 2019',
+    skills: 'Inside Sales · Field Sales · Customer Service · MS Excel',
+    keySkills: 'Client servicing · Negotiation · Telecalling',
     matchedKeywords: ['Sales'],
   },
   {
@@ -162,11 +161,11 @@ const DB_PROFILES: Profile[] = [
     freshness: '3 yr 4 m', salary: '₹7.1 Lakhs', location: 'Mumbai',
     tags: ['Business Development Executive'],
     title: 'Business Development Executive at Housing.com · 2020–2023',
-    prevTitle: 'Business Development Executive at Trudge · 2019–2020',
-    education: 'BE/B.Tech (Shri Dinkarao Desai Patel College) · 2019',
-    skills: 'Basics of Sales · FMCG/Retail Sales · After sales service · Database management',
-    keySkills: 'Team management · Sales strategy · Convincing skills',
-    matchedKeywords: ['Sales', 'Database management'],
+    prevTitle: 'Field Sales Executive at Trudge · 2019–2020',
+    education: 'B.A., Economics (St. Xavier\'s, Mumbai) · 2019',
+    skills: 'Field Sales · B2B Sales · Lead Generation · Account Management',
+    keySkills: 'Relationship management · Sales strategy · Convincing skills',
+    matchedKeywords: ['Sales', 'Field Sales'],
   },
   {
     id: 'db7', name: 'Nilam Sengupta', initials: 'NS', color: '#bfdbfe',
@@ -221,7 +220,6 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
   const [activePeriod, setActivePeriod] = useState('7d');
   const [perPage, setPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
-  const { unlock: globalUnlock } = useCredits();
 
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [highlightActive, setHighlightActive] = useState<string | null>(null);
@@ -253,7 +251,6 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
     setViewing(prev => new Set(prev).add(id));
     if (!isFree) {
       setRemaining(r => r - 1);
-      globalUnlock(id);
       onUnlock?.(id);
     } else {
       onFreeUnlock?.(id);
@@ -306,7 +303,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
             <select
               value={activePeriod}
               onChange={e => setActivePeriod(e.target.value)}
-              className="appearance-none pl-2.5 pr-6 py-1.5 rounded-lg border border-[#dfe1e6] bg-white text-xs font-medium text-gray-700 hover:border-[#b3bac5] transition-colors cursor-pointer focus:outline-none focus:border-[#1f8268]"
+              className="appearance-none pl-2.5 pr-6 py-1.5 rounded-lg border border-[#dfe1e6] bg-white text-xs font-medium text-gray-700 hover:border-[#b3bac5] transition-colors cursor-pointer focus:outline-none focus:border-[#1f8268] focus-visible:ring-2 focus-visible:ring-[#186b55]"
             >
               <option value="7d">Last 7 days</option>
               <option value="14d">Last 14 days</option>
@@ -336,7 +333,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
             <select
               value={perPage}
               onChange={e => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
-              className="appearance-none pl-2 pr-5 py-1 rounded-lg border border-[#dfe1e6] bg-white text-xs font-medium text-gray-700 hover:border-gray-400 transition-colors cursor-pointer focus:outline-none focus:border-[#1f8268]"
+              className="appearance-none pl-2 pr-5 py-1 rounded-lg border border-[#dfe1e6] bg-white text-xs font-medium text-gray-700 hover:border-gray-400 transition-colors cursor-pointer focus:outline-none focus:border-[#1f8268] focus-visible:ring-2 focus-visible:ring-[#186b55]"
             >
               {[10, 20, 30, 50].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
@@ -350,6 +347,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
         {/* Pagination */}
         <div className="flex items-center gap-1">
           <button
+            aria-label="Previous page"
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
             className="w-6 h-6 flex items-center justify-center rounded-lg border border-[#dfe1e6] text-[#5e6c84] hover:border-[#b3bac5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
@@ -362,6 +360,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
             Page <span className="font-semibold text-gray-800">{currentPage}</span> of {Math.ceil(dbTotal / perPage)}
           </span>
           <button
+            aria-label="Next page"
             onClick={() => setCurrentPage(p => Math.min(Math.ceil(dbTotal / perPage), p + 1))}
             disabled={currentPage === Math.ceil(dbTotal / perPage)}
             className="w-6 h-6 flex items-center justify-center rounded-lg border border-[#dfe1e6] text-[#5e6c84] hover:border-[#b3bac5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
@@ -408,6 +407,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
 
           {/* Deselect all */}
           <button
+            aria-label="Deselect all"
             onClick={() => setSelectedIds(new Set())}
             className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
           >
@@ -466,7 +466,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
               </svg>
             </div>
             <div>
-              <p className="text-sm font-semibold text-[#1f8268]">Live leads will appear here</p>
+              <p className="text-sm font-semibold text-[#1f8268]">Live Leads will appear here</p>
               <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
                 We're watching {dbTotal} matching candidates in the database and will notify you as soon as any become active on the app.
               </p>
@@ -550,9 +550,13 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
         <div className="flex items-start gap-3 px-4 pt-4 pb-3">
           {/* Checkbox */}
           <div className="flex-shrink-0 mt-1">
-            <div
+            <button
+              type="button"
+              role="checkbox"
+              aria-checked={isSelected}
+              aria-label={`Select ${profile.name}`}
               onClick={onToggleSelect}
-              className={`w-4 h-4 rounded border-2 cursor-pointer flex items-center justify-center transition-colors ${
+              className={`w-4 h-4 rounded border-2 cursor-pointer flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#186b55] focus-visible:ring-offset-1 ${
                 isSelected ? 'bg-[#1f8268] border-[#1f8268]' : 'border-[#dfe1e6] hover:border-[#b3bac5]'
               }`}
             >
@@ -561,7 +565,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               )}
-            </div>
+            </button>
           </div>
 
           {/* Avatar */}
@@ -659,7 +663,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.13 12 19.79 19.79 0 0 1 1.08 3.18 2 2 0 0 1 3.05 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6z"/>
                 </svg>
-                View Phone Number
+                View number
               </button>
               <p className="text-[11px] text-[#5e6c84] flex items-center gap-1">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2">
@@ -673,7 +677,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
             <button
               data-ftue="first-unlock-btn"
               onClick={onUnlock}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1F8268] hover:bg-[#186b55] text-white text-sm font-semibold rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1f8268] hover:bg-[#186b55] text-white text-sm font-semibold rounded-xl transition-colors"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>
@@ -684,12 +688,12 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
             /* ── State 1: Locked, has credits ── */
             <button
               onClick={onUnlock}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1F8268] hover:bg-[#186b55] text-white text-sm font-semibold rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1f8268] hover:bg-[#186b55] text-white text-sm font-semibold rounded-xl transition-colors"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.13 12 19.79 19.79 0 0 1 1.08 3.18 2 2 0 0 1 3.05 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6z"/>
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>
               </svg>
-              View Phone Number
+              Unlock · 1 credit
             </button>
           ) : (
             /* ── State 1: Locked, no credits ── */
@@ -697,7 +701,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
-              Buy DB credits to unlock
+              Buy credits to unlock
             </button>
           )}
         </div>
@@ -708,7 +712,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            33 unlocks
+            Contacted by 33 recruiters
           </span>
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-1 text-[11px] text-[#42526e]">
@@ -722,7 +726,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
               </svg>
-              Active on 15 Oct'21
+              Active this week
             </span>
           </div>
         </div>
@@ -800,7 +804,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
       )}
 
       {/* Detail rows */}
-      <div className="px-4 pb-3 space-y-1.5">
+      <div className="px-4 pb-3 flex flex-col gap-3">
         <IconDetailRow icon="briefcase" label="Pref. Title">
           <span className="text-[#42526e]">{profile.title}</span>
         </IconDetailRow>
@@ -833,7 +837,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.13 12 19.79 19.79 0 0 1 1.08 3.18 2 2 0 0 1 3.05 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6z"/>
               </svg>
-              View Phone Number
+              View number
             </button>
             <p className="text-[11px] text-[#5e6c84] flex items-center gap-1">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2">
@@ -843,18 +847,18 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
             </p>
           </>
         ) : hasCredits && remaining > 0 ? (
-          <button onClick={onUnlock} className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1F8268] hover:bg-[#186b55] text-white text-sm font-semibold rounded-xl transition-colors">
+          <button onClick={onUnlock} className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1f8268] hover:bg-[#186b55] text-white text-sm font-semibold rounded-xl transition-colors">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.13 12 19.79 19.79 0 0 1 1.08 3.18 2 2 0 0 1 3.05 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6z"/>
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>
             </svg>
-            View Phone Number
+            Unlock · 1 credit
           </button>
         ) : (
           <button className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            Buy DB credits to unlock
+            Buy credits to unlock
           </button>
         )}
       </div>
@@ -865,7 +869,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
-          33 unlocks
+          Contacted by 33 recruiters
         </span>
         <div className="flex items-center gap-2">
           <span className="flex items-center gap-1 text-[11px] text-[#42526e]">
@@ -879,7 +883,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
             </svg>
-            Active on 15 Oct'21
+            Active recently
           </span>
         </div>
       </div>
@@ -904,6 +908,7 @@ function PhoneViewingCTA({ phone }: { phone: string }) {
         <div className="inline-flex items-center rounded-xl overflow-hidden border border-[#dfe1e6] bg-[#f4f5f7]">
           {/* Left: copy zone */}
           <button
+            aria-label={copied ? 'Phone number copied' : 'Copy phone number'}
             onClick={handleCopy}
             className="flex items-center gap-2 px-3 py-2.5 hover:bg-[#eaf8f4] transition-colors"
           >
@@ -924,6 +929,7 @@ function PhoneViewingCTA({ phone }: { phone: string }) {
           <div className="w-px h-8 bg-[#dfe1e6] flex-shrink-0" />
           {/* Right: QR zone */}
           <button
+            aria-label="Show QR code to scan and call"
             onClick={() => setQrOpen(true)}
             className="flex items-center justify-center px-3 py-2.5 hover:bg-[#eaf8f4] transition-colors"
             title="Show QR code to scan & call"
@@ -966,6 +972,7 @@ function PhoneViewingCTA({ phone }: { phone: string }) {
             <div className="flex items-center justify-between w-full">
               <span className="text-sm font-bold text-[#172b4d]">Scan to call</span>
               <button
+                aria-label="Close"
                 onClick={() => setQrOpen(false)}
                 className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
               >

@@ -65,7 +65,7 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4 }: FiltersPanelP
               {Array.from(chips).map(chip => (
                 <span key={chip} className="flex items-center gap-1 bg-[#ebf3fe] border border-[#004ba9] text-[#004ba9] text-[11px] font-semibold px-2.5 py-1 rounded-full">
                   {chip}
-                  <button onClick={() => removeChip(chip)} className="ml-0.5 hover:opacity-70">
+                  <button aria-label={`Remove ${chip} filter`} onClick={() => removeChip(chip)} className="ml-0.5 hover:opacity-70">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
@@ -94,12 +94,12 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4 }: FiltersPanelP
                 <CheckRow label="Already invited by WhatsApp" checked={hideWhatsApp} onChange={setHideWhatsApp} />
                 <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                   <span className="text-[11px] text-[#5e6c84]">by</span>
-                  <select className="text-[11px] border border-[#dfe1e6] rounded-lg px-2 py-1 text-[#172b4d] bg-white focus:outline-none focus:border-[#1f8268]">
+                  <select className="text-[11px] border border-[#dfe1e6] rounded-lg px-2 py-1 text-[#172b4d] bg-white focus:outline-none focus:border-[#1f8268] focus-visible:ring-2 focus-visible:ring-[#186b55]">
                     <option>me</option>
                     <option>anyone</option>
                   </select>
                   <span className="text-[11px] text-[#5e6c84]">in the last</span>
-                  <select className="text-[11px] border border-[#dfe1e6] rounded-lg px-2 py-1 text-[#172b4d] bg-white focus:outline-none focus:border-[#1f8268]">
+                  <select className="text-[11px] border border-[#dfe1e6] rounded-lg px-2 py-1 text-[#172b4d] bg-white focus:outline-none focus:border-[#1f8268] focus-visible:ring-2 focus-visible:ring-[#186b55]">
                     <option>7 days</option>
                     <option>14 days</option>
                     <option>30 days</option>

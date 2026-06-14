@@ -1,6 +1,7 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { JobTabContext } from '../context/JobTabContext';
+import { useCredits } from '../context/CreditsContext';
 import { SCENARIOS } from '../types';
 import type { UserScenario, ScenarioProps } from '../types';
 import { FiltersPanel } from '../components/FiltersPanel';
@@ -90,6 +91,10 @@ export function JobDetail() {
   const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set());
   const [creditsRemaining, setCreditsRemaining] = useState(scenario.dbCredits);
 
+  // Top-bar credit balance is the single source of truth — initialise it from the scenario
+  const { setCredits, pulse } = useCredits();
+  useEffect(() => { setCredits(scenario.dbCredits); }, [scenario.dbCredits, setCredits]);
+
   const jobAge = (params.get('age') ?? 'active') as 'fresh' | 'active' | 'aging';
   const totalLeads = scenario.jobLeads;
   const dbTotal = scenario.dbTotal;
@@ -104,6 +109,8 @@ export function JobDetail() {
     if (unlockedIds.has(id)) return;
     setUnlockedIds(prev => new Set(prev).add(id));
     setCreditsRemaining(r => Math.max(r - 1, 0));
+    setCredits(c => Math.max(c - 1, 0));
+    pulse();
   }
 
   function handleFreeUnlock(id: string) {
@@ -142,6 +149,7 @@ export function JobDetail() {
         {/* Row 1: job info */}
         <div className="flex items-center gap-0 px-4 h-12">
           <button
+            aria-label="Back to jobs"
             onClick={() => navigate('/')}
             className="w-8 h-8 flex items-center justify-center text-gray-500 mr-2 hover:bg-gray-100 rounded"
           >
@@ -158,7 +166,7 @@ export function JobDetail() {
           <button className="text-xs text-emerald-600 font-medium">Edit</button>
           <div className="flex-1" />
 
-          <button className="w-8 h-8 flex items-center justify-center text-gray-400">
+          <button aria-label="More options" className="w-8 h-8 flex items-center justify-center text-gray-400">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
             </svg>
@@ -193,13 +201,15 @@ export function JobDetail() {
           {
             selector: '[data-ftue="first-lead-unlock-btn"]',
             title: 'Unlock to reach out directly',
-            body: 'Tap unlock to see their phone number and contact them before someone else does. First one is free.',
+            body: scenario.dbCredits > 0
+              ? 'Tap unlock to see their phone number and reach out — each contact uses 1 credit.'
+              : 'Tap unlock to see their phone number and reach out. Your first unlock is free.',
             cta: 'Got it',
           },
           {
             selector: '[data-ftue="database-tab"]',
-            title: `${dbTotal}+ more in the database`,
-            body: 'Browse all matching candidates and unlock anyone that looks like a fit.',
+            title: `All ${dbTotal} matching candidates`,
+            body: 'Browse every candidate who fits this job and unlock anyone that looks like a match.',
             cta: 'Got it!',
           },
         ];
@@ -378,7 +388,7 @@ function NoLeadsCard({ dbTotal, jobAge, onGoToDatabase }: { dbTotal: number; job
 function JobPostedCard({ totalLeads, dbTotal, jobAge }: { totalLeads: number; dbTotal: number; jobAge: JobAge }) {
   let title: string;
   let body: ReactNode;
-  let iconColor = '#1F8268';
+  let iconColor = '#1f8268';
   let iconBg = 'bg-emerald-100';
 
   if (dbTotal === 0) {
@@ -387,7 +397,7 @@ function JobPostedCard({ totalLeads, dbTotal, jobAge }: { totalLeads: number; db
   } else if (totalLeads > 0) {
     title = 'Your job has been successfully posted!';
     body = <>No applicants yet — but{' '}
-      <span className="text-emerald-600 font-medium">{totalLeads} live leads</span>
+      <span className="text-emerald-600 font-medium">{totalLeads} Live Leads</span>
       {' '}from the apna database are already matching your requirements.</>;
   } else if (jobAge === 'aging') {
     title = 'Your job is in its final week.';
@@ -398,7 +408,7 @@ function JobPostedCard({ totalLeads, dbTotal, jobAge }: { totalLeads: number; db
   } else {
     // fresh or active, leads=0, db>0 — positive, no alarm
     title = 'Your job has been successfully posted!';
-    body = `${dbTotal} candidates in the database match your requirements. We'll surface live leads as candidates become active.`;
+    body = `${dbTotal} candidates in the database match your requirements. We'll surface Live Leads as candidates become active.`;
   }
 
   return (
