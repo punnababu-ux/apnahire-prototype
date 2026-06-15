@@ -546,7 +546,14 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
           <div className="px-4 py-3">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
-                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${liveCount > 0 ? 'bg-[#1f8268]' : 'bg-gray-300'}`} />
+                {liveCount > 0 ? (
+                  <span className="relative flex h-2 w-2 flex-shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#1f8268]" />
+                  </span>
+                ) : (
+                  <span className="w-2 h-2 rounded-full flex-shrink-0 bg-gray-300" />
+                )}
                 <span className="text-sm font-semibold text-[#172b4d]">Live Leads ({liveCount})</span>
                 {liveCount > 0 && (
                   <span className="flex items-center gap-1 text-[11px] font-bold text-white bg-[#1f8268] px-2 py-0.5 rounded-full uppercase tracking-wide">

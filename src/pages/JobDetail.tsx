@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { JobTabContext } from '../context/JobTabContext';
 import { useCredits } from '../context/CreditsContext';
@@ -99,7 +99,7 @@ export function JobDetail() {
     skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false,
   });
 
-  function enterDbSearch() { setDbPinned(false); }   // any filter interaction unpins
+  function enterDbSearch() { setDbPinned(false); }
   function toggleDbPin() { setDbPinned(p => !p); }
   function resetDbFilters() {
     setDbPinned(true);
@@ -107,14 +107,27 @@ export function JobDetail() {
     setFilterResetKey(k => k + 1);
   }
 
-  // Top-bar credit balance is the single source of truth — initialise it from the scenario
   const { setCredits, pulse } = useCredits();
   useEffect(() => { setCredits(scenario.dbCredits); }, [scenario.dbCredits, setCredits]);
 
   const jobAge = (params.get('age') ?? 'active') as 'fresh' | 'active' | 'aging';
   const totalLeads = scenario.jobLeads;
   const dbTotal = scenario.dbTotal;
-  const showFtue = ftueVersion !== 'off' && (scenario.userType === 'new' || scenario.dbExperience === 'never' || scenario.dbExperience === 'used_before') && !ftueCompleted && totalLeads > 0;
+
+  // Celebration phase — only runs once on mount when jobAge === 'fresh'
+  const [celebPhase, setCelebPhase] = useState<'celebrate' | 'settling' | 'done'>(jobAge === 'fresh' ? 'celebrate' : 'done');
+  const celebTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  useEffect(() => {
+    if (jobAge !== 'fresh') return;
+    const t1 = setTimeout(() => setCelebPhase('settling'), 1800);
+    const t2 = setTimeout(() => setCelebPhase('done'),     2400);
+    celebTimers.current = [t1, t2];
+    return () => celebTimers.current.forEach(clearTimeout);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // FTUE delayed until celebration settles (Option A)
+  const showFtue = ftueVersion !== 'off' && (scenario.userType === 'new' || scenario.dbExperience === 'never' || scenario.dbExperience === 'used_before') && !ftueCompleted && totalLeads > 0 && celebPhase === 'done';
 
   // Maps CANDIDATES ids to ACTIVE_LEADS ids in DatabaseTab
   const CANDIDATE_TO_LEAD_ID: Record<string, string> = {
@@ -257,14 +270,15 @@ export function JobDetail() {
         <div className="flex-1 overflow-y-auto bg-gray-50 min-w-0">
           {tab === 'applied' && (
             <div className="flex flex-col gap-3">
-              {/* Job posted success card — only when no applicants yet */}
+              {/* Status card — morphs from celebration → compact when jobAge=fresh */}
               {scenario.applicationsCount === 0 && (
-                <JobPostedCard totalLeads={totalLeads} dbTotal={dbTotal} jobAge={jobAge} />
+                <JobStatusCard phase={celebPhase} totalLeads={totalLeads} dbTotal={dbTotal} jobAge={jobAge} />
               )}
 
               {/* Live leads widget — only when no applicants yet and leads exist */}
-              {scenario.applicationsCount === 0 && totalLeads > 0 && (
+              {scenario.applicationsCount === 0 && totalLeads > 0 && celebPhase === 'done' && (
                 <ActiveLeadsTab
+                  animateIn={jobAge === 'fresh'}
                   key={scenarioId ?? 'dynamic'}
                   totalLeads={totalLeads}
                   dbMatchCount={dbTotal}
@@ -421,42 +435,155 @@ function NoLeadsCard({ dbTotal, jobAge, onGoToDatabase }: { dbTotal: number; job
   );
 }
 
-function JobPostedCard({ totalLeads, dbTotal, jobAge }: { totalLeads: number; dbTotal: number; jobAge: JobAge }) {
-  let title: string;
-  let body: ReactNode;
-  let iconColor = '#1f8268';
-  let iconBg = 'bg-emerald-100';
+type CelebPhase = 'celebrate' | 'settling' | 'done';
 
-  if (dbTotal === 0) {
-    title = 'Your job has been successfully posted!';
-    body = "We'll notify you as soon as candidates start applying.";
-  } else if (totalLeads > 0) {
-    title = 'Your job has been successfully posted!';
-    body = <>No applicants yet — but{' '}
-      <span className="text-emerald-600 font-medium">{totalLeads} Live Leads</span>
-      {' '}from the apna database are already matching your requirements.</>;
-  } else if (jobAge === 'aging') {
+function JobStatusCard({
+  phase, totalLeads, dbTotal, jobAge,
+}: {
+  phase: CelebPhase; totalLeads: number; dbTotal: number; jobAge: JobAge;
+}) {
+  // Trigger initial fade-in without an animation class (avoids CSS animation/transition conflicts)
+  const [appeared, setAppeared] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setAppeared(true), 50); return () => clearTimeout(t); }, []);
+
+  const isDone = phase === 'done';
+
+  let title: string;
+  let iconStroke = '#1f8268';
+  let iconBg = '#d1fae5';
+  if (jobAge === 'aging') {
     title = 'Your job is in its final week.';
-    body = <>{dbTotal} candidates in the database match your role.{' '}
-      <span className="font-medium text-amber-700">Reach out to them now — your job expires soon.</span></>;
-    iconColor = '#b45309';
-    iconBg = 'bg-amber-100';
+    iconStroke = '#b45309';
+    iconBg = '#fef3c7';
   } else {
-    // fresh or active, leads=0, db>0 — positive, no alarm
-    title = 'Your job has been successfully posted!';
-    body = `${dbTotal} candidates in the database match your requirements. We'll surface Live Leads as candidates become active.`;
+    title = 'Your job is live!';
   }
 
+  const isCelebrating = phase === 'celebrate';
+  // During settling we move toward compact positions but keep celebration text until done
+  const compact = !isCelebrating;
+
+  const T = 'all 520ms cubic-bezier(0.4, 0, 0.2, 1)';
+
+  // Icon: 80px centered during celebrate → 40px top-left during compact
+  // Use fixed px for all positions — no % in top/left — so the transition is a true diagonal
+  // Celebration: card is 220px tall, icon is 80px → center Y = (220/2) - 40 = 70px
+  // Celebration: icon centered horizontally via calc(50% - 40px) — card width is static so % is stable
+  const iconSize  = compact ? 40             : 80;
+  const iconTop   = compact ? 16             : 70;
+  const iconLeft  = compact ? 20             : 'calc(50% - 40px)';
+  const iconXform = 'none';   // no transform needed — position is fully encoded in top/left
+
+  const textTop   = compact ? 18  : 170;
+  const textLeft  = compact ? 76  : 20;
+  const textRight = compact ? 20  : 20;
+  const titleSize = compact ? 14  : 18;    // px
+
   return (
-    <div className="bg-white rounded-xl border border-[#dfe1e6] px-5 py-4 flex items-start gap-4">
-      <div className={`w-10 h-10 rounded-full ${iconBg} flex items-center justify-center flex-shrink-0 mt-0.5`}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
+    <div
+      className="relative bg-white rounded-xl border border-[#dfe1e6] overflow-hidden"
+      style={{
+        minHeight: isCelebrating ? 260 : 0,
+        transition: 'min-height 520ms cubic-bezier(0.4, 0, 0.2, 1)',
+        // Spacer: compact layer height (py-4 = 16px×2 + ~40px icon = 72px)
+      }}
+    >
+      {/* Invisible in-flow spacer keeps compact height when min-height collapses */}
+      <div style={{ height: 72 }} />
+
+      {/* ── Icon — single element, morphs size + position ── */}
+      <div
+        style={{
+          position: 'absolute',
+          width:  iconSize,
+          height: iconSize,
+          top:    iconTop,
+          left:   iconLeft,
+          transform: iconXform,
+          borderRadius: '50%',
+          backgroundColor: iconBg,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          transition: T,
+        }}
+      >
+        <svg
+          width="100%" height="100%"
+          viewBox="0 0 48 48" fill="none"
+        >
+          <circle cx="24" cy="24" r="22" stroke={isCelebrating ? '#e7f9f9' : 'transparent'} strokeWidth="3" style={{ transition: T }} />
+          <circle
+            cx="24" cy="24" r="22"
+            stroke={iconStroke} strokeWidth="3" strokeLinecap="round"
+            strokeDasharray="151" className="anim-circle"
+            style={{ transformOrigin: 'center', transform: 'rotate(-90deg)', transition: T }}
+          />
+          <polyline
+            points="13,25 21,33 35,15"
+            stroke={iconStroke} strokeWidth="3.5"
+            strokeLinecap="round" strokeLinejoin="round"
+            strokeDasharray="36" className="anim-check"
+          />
         </svg>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-900">{title}</p>
-        <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{body}</p>
+
+      {/* ── Text block — single element, morphs position + size ── */}
+      <div
+        style={{
+          position: 'absolute',
+          top:    textTop,
+          left:   textLeft,
+          right:  textRight,
+          textAlign: compact ? 'left' : 'center',
+          transition: T,
+          pointerEvents: isDone ? 'auto' : 'none',
+        }}
+      >
+        <p
+          style={{
+            fontSize: titleSize,
+            fontWeight: 600,
+            color: '#111827',
+            lineHeight: 1.4,
+            margin: 0,
+            textAlign: compact ? 'left' : 'center',
+            whiteSpace: compact ? 'normal' : 'nowrap',
+            opacity: isDone ? 1 : (appeared ? 1 : 0),
+            transform: appeared && isCelebrating ? 'translateY(0)' : isCelebrating ? 'translateY(8px)' : 'none',
+            transition: isCelebrating
+              ? 'opacity 0.4s ease 0.8s, transform 0.4s ease 0.8s, font-size 520ms cubic-bezier(0.4,0,0.2,1)'
+              : T,
+          }}
+        >
+          {isDone ? title : 'Your job is live!'}
+        </p>
+        <p
+          style={{
+            fontSize: 12,
+            color: compact ? '#6b7280' : '#9ca3af',
+            marginTop: compact ? 2 : 6,
+            lineHeight: 1.5,
+            textAlign: compact ? 'left' : 'center',
+            opacity: isDone ? 1 : (appeared ? 1 : 0),
+            transform: isDone ? 'none' : (appeared ? 'translateY(0)' : 'translateY(8px)'),
+            transition: 'opacity 0.4s ease 1.0s, transform 0.4s ease 1.0s',
+          }}
+        >
+          {jobAge === 'aging'
+            ? <>{dbTotal} candidates in the database match your role.{' '}<span className="font-medium text-amber-700">Reach out to them now — your job expires soon.</span></>
+            : <>
+                Finding matching candidates right now
+                {!isDone && <span>…</span>}
+                {isDone && totalLeads > 0 && (
+                  <span className="anim-fade-in">
+                    {' '}— meanwhile <span className="text-emerald-600 font-medium">{totalLeads} Live Leads</span> from the apna database are already matching your requirements.
+                  </span>
+                )}
+              </>
+          }
+        </p>
       </div>
     </div>
   );

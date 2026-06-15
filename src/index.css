@@ -18,3 +18,36 @@ body {
   width: 100%;
   min-height: 100vh;
 }
+
+/* Job posted — celebration animation */
+@keyframes check-draw {
+  from { stroke-dashoffset: 36; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes circle-draw {
+  from { stroke-dashoffset: 151; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes card-enter {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes lead-cascade {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.anim-circle   { animation: circle-draw 0.6s cubic-bezier(0.65,0,0.35,1) 0.1s both; }
+.anim-check    { animation: check-draw  0.45s cubic-bezier(0.65,0,0.35,1) 0.55s both; }
+.anim-title    { animation: fade-up 0.4s ease 0.85s both; }
+.anim-subtitle { animation: fade-up 0.4s ease 1.05s both; }
+.anim-card-in  { animation: card-enter 0.4s ease both; }
+.anim-lead-0   { animation: lead-cascade 0.35s ease 0.05s both; }
+.anim-lead-1   { animation: lead-cascade 0.35s ease 0.13s both; }
+.anim-lead-2   { animation: lead-cascade 0.35s ease 0.21s both; }
+.anim-lead-3   { animation: lead-cascade 0.35s ease 0.29s both; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.anim-fade-in  { animation: fade-in 500ms ease 100ms both; }

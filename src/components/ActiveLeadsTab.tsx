@@ -11,6 +11,7 @@ interface ActiveLeadsTabProps {
   lockedCount?: number;
   onCreditSpend?: (remaining: number) => void;
   showBuyCredits?: boolean;
+  animateIn?: boolean;
   onExploreAll?: () => void;
   onGoToDatabase?: () => void;
   onUnlockAndView?: (candidateId: string) => void;
@@ -67,11 +68,13 @@ export function ActiveLeadsTab({
   unlockedIds,
   creditsRemaining,
   onUnlock,
+  animateIn = false,
 }: ActiveLeadsTabProps) {
   // Fall back to local state when not controlled by parent
   const [localUnlocked, setLocalUnlocked] = useState<Set<string>>(new Set());
   const [localRemaining, setLocalRemaining] = useState(credits);
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
+  const [showBuyModal, setShowBuyModal] = useState(false);
 
   const unlocked = unlockedIds ?? localUnlocked;
   const remaining = creditsRemaining ?? localRemaining;
@@ -91,7 +94,13 @@ export function ActiveLeadsTab({
     <div data-ftue="live-leads-section" className="bg-white rounded-xl border border-[#dfe1e6] overflow-hidden">
       {/* Header */}
       <div className="px-5 pt-5 pb-4">
-        <p className="text-base font-semibold text-gray-900 mb-1">
+        <p className="flex items-center gap-2 text-base font-semibold text-gray-900 mb-1">
+          {!headerTitle && (
+            <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+            </span>
+          )}
           {headerTitle ?? `${totalLeads} Live Leads from apna database`}
         </p>
         <p className="text-sm text-gray-500">
@@ -146,7 +155,7 @@ export function ActiveLeadsTab({
           return (
             <div
               key={c.id}
-              className={`rounded-xl overflow-hidden hover:shadow-sm transition-all flex flex-col ${
+              className={`rounded-xl overflow-hidden hover:shadow-sm transition-all flex flex-col ${animateIn ? `anim-lead-${idx}` : ''} ${
                 isPreview
                   ? 'border-2 border-[#1f8268] cursor-pointer'
                   : 'border border-[#dfe1e6] hover:border-[#1f8268]'
@@ -209,7 +218,7 @@ export function ActiveLeadsTab({
                     Unlock · 1 credit
                   </button>
                 ) : (
-                  <button className="mt-2 w-full py-2 text-xs font-semibold border border-[#dfe1e6] text-[#5e6c84] rounded-xl hover:bg-gray-50 transition-colors">
+                  <button onClick={e => { e.stopPropagation(); setShowBuyModal(true); }} className="mt-2 w-full py-2 text-xs font-semibold border border-[#dfe1e6] text-[#5e6c84] rounded-xl hover:bg-gray-50 transition-colors">
                     Buy credits to unlock
                   </button>
                 )}
@@ -251,15 +260,30 @@ export function ActiveLeadsTab({
             </div>
           </div>
         ) : (dbMatchCount ?? 0) > 0 ? (
-          <div className="border border-[#dfe1e6] rounded-xl overflow-hidden hover:shadow-sm transition-all cursor-pointer flex flex-col" onClick={onGoToDatabase}>
+          <div className={`border border-[#dfe1e6] rounded-xl overflow-hidden hover:shadow-sm transition-all cursor-pointer flex flex-col ${animateIn ? 'anim-lead-3' : ''}`} onClick={onGoToDatabase}>
             {/* Same teal banner as candidate cards */}
             <div className="relative h-14 bg-[#eaf8f4] flex-shrink-0">
-              <div
-                className="absolute bottom-0 left-4 translate-y-1/2 w-12 h-12 rounded-full border-2 border-white flex items-center justify-center shadow-sm bg-[#d1f5ec]"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.657 4.03 3 9 3s9-1.343 9-3V5"/><path d="M3 12c0 1.657 4.03 3 9 3s9-1.343 9-3"/>
-                </svg>
+              {/* Overlapping avatar stack */}
+              <div className="absolute bottom-0 left-4 translate-y-1/2 flex items-center">
+                {[
+                  { bg: '#b2dfdb', initials: 'RK' },
+                  { bg: '#c8e6c9', initials: 'AS' },
+                  { bg: '#bbdefb', initials: 'PM' },
+                ].map((av, i) => (
+                  <div
+                    key={i}
+                    style={{ backgroundColor: av.bg, marginLeft: i === 0 ? 0 : -10, zIndex: i }}
+                    className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center shadow-sm flex-shrink-0"
+                  >
+                    <span className="text-[10px] font-bold text-[#1f8268]">{av.initials}</span>
+                  </div>
+                ))}
+                <div
+                  style={{ marginLeft: -10, zIndex: 3 }}
+                  className="w-9 h-9 rounded-full border-2 border-white bg-[#1f8268] flex items-center justify-center shadow-sm flex-shrink-0"
+                >
+                  <span className="text-[9px] font-bold text-white leading-none">{(dbMatchCount ?? 300) >= 100 ? (dbMatchCount ?? 300) + '+' : dbMatchCount}</span>
+                </div>
               </div>
             </div>
             {/* Same content layout as candidate cards */}
@@ -323,12 +347,53 @@ export function ActiveLeadsTab({
                 <span className="font-semibold text-[#172b4d]">buy credits to unlock & contact</span>
               </p>
             </div>
-            <button className="flex-shrink-0 px-3 py-1.5 bg-[#1f8268] hover:bg-[#186b55] text-white text-xs font-semibold rounded-xl transition-colors">
+            <button onClick={() => setShowBuyModal(true)} className="flex-shrink-0 px-3 py-1.5 bg-[#1f8268] hover:bg-[#186b55] text-white text-xs font-semibold rounded-xl transition-colors">
               Buy credits
             </button>
           </div>
         )}
       </div>
+
+      {/* Insufficient Credits modal */}
+      {showBuyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowBuyModal(false)}>
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 flex flex-col items-center text-center" onClick={e => e.stopPropagation()}>
+            {/* Close */}
+            <button onClick={() => setShowBuyModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+
+            {/* Wallet illustration */}
+            <div className="mb-6 relative">
+              <svg width="120" height="100" viewBox="0 0 120 100" fill="none">
+                {/* Wallet body */}
+                <rect x="10" y="38" width="80" height="52" rx="8" fill="#b8d4f0"/>
+                <rect x="10" y="38" width="80" height="14" rx="4" fill="#6fa8d6"/>
+                {/* Coins */}
+                <circle cx="42" cy="28" r="14" fill="#f5c842" stroke="#d4a017" strokeWidth="2"/>
+                <circle cx="68" cy="20" r="14" fill="#f5c842" stroke="#d4a017" strokeWidth="2"/>
+                <circle cx="55" cy="34" r="14" fill="#f5c842" stroke="#d4a017" strokeWidth="2"/>
+                {/* Red X badge */}
+                <circle cx="88" cy="24" r="14" fill="#e03131"/>
+                <path d="M83 19l10 10M93 19l-10 10" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
+            </div>
+
+            <h2 className="text-xl font-bold text-[#172b4d] mb-2">Insufficient Credits</h2>
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+              You don't have credits to unlock the candidates profiles.<br />Buy more credits now.
+            </p>
+
+            <button
+              onClick={() => setShowBuyModal(false)}
+              className="w-full py-3.5 bg-[#1f8268] hover:bg-[#186b55] text-white font-semibold rounded-xl transition-colors text-sm"
+            >
+              Buy credits
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
