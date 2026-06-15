@@ -35,6 +35,45 @@ interface Profile {
   keySkills: string;
   isActiveLead?: boolean;
   matchedKeywords?: string[];
+  // Used by the filter pipeline (skill chips = OR match on filterTags; period = recency)
+  filterTags: string[];
+  lastActiveDays: number;
+}
+
+// Skill facets shown as chips in the sidebar — OR-combined across both feeds.
+export const DB_SKILL_FILTERS = ['Field Sales', 'B2B Sales', 'Business Development', 'Lead Generation'];
+
+// "Active in" dropdown value → max age in days
+const PERIOD_DAYS: Record<string, number> = { '7d': 7, '14d': 14, '30d': 30, '3m': 90, '6m': 180 };
+
+export interface DbFilterValues {
+  skills: string[];
+  hideUnlocked: boolean;
+  hideExcel: boolean;
+  hideWhatsApp: boolean;
+}
+
+function freshnessLabel(days: number): string {
+  if (days <= 7) return 'Active this week';
+  if (days <= 31) return 'Active this month';
+  return 'Active recently';
+}
+
+// Deterministically weave Live Leads in between DB profiles (for the unpinned list).
+// No randomness — stable across re-renders. Starts with a DB profile so leads land
+// "in between" rather than clustered at the top.
+function interleaveLeads(leads: Profile[], dbs: Profile[]): { profile: Profile; live: boolean }[] {
+  if (leads.length === 0) return dbs.map(p => ({ profile: p, live: false }));
+  if (dbs.length === 0) return leads.map(p => ({ profile: p, live: true }));
+  const out: { profile: Profile; live: boolean }[] = [];
+  const step = Math.max(1, Math.round(dbs.length / leads.length));
+  let li = 0;
+  for (let i = 0; i < dbs.length; i++) {
+    out.push({ profile: dbs[i], live: false });
+    if ((i + 1) % step === 0 && li < leads.length) out.push({ profile: leads[li++], live: true });
+  }
+  while (li < leads.length) out.push({ profile: leads[li++], live: true });
+  return out;
 }
 
 const ACTIVE_LEADS: Profile[] = [
@@ -49,6 +88,7 @@ const ACTIVE_LEADS: Profile[] = [
     keySkills: 'English (Good) · Hindi · Marathi',
     isActiveLead: true,
     matchedKeywords: ['Field Sales', 'Business Development', 'B2B Sales'],
+    filterTags: ['Field Sales', 'Business Development', 'B2B Sales'], lastActiveDays: 1,
   },
   {
     id: 'al1', name: 'Rohan Roy', initials: 'RR', color: '#bfdbfe',
@@ -61,6 +101,7 @@ const ACTIVE_LEADS: Profile[] = [
     keySkills: 'English (Good) · Hindi',
     isActiveLead: true,
     matchedKeywords: ['Field Sales', 'B2B Sales', 'Telecalling'],
+    filterTags: ['Field Sales', 'B2B Sales'], lastActiveDays: 2,
   },
   {
     id: 'al2', name: 'Siddharth M.', initials: 'SM', color: '#fde68a',
@@ -73,6 +114,7 @@ const ACTIVE_LEADS: Profile[] = [
     keySkills: 'English (Good) · Hindi · Marathi',
     isActiveLead: true,
     matchedKeywords: ['B2B Sales', 'Account Management', 'Negotiation'],
+    filterTags: ['B2B Sales', 'Business Development'], lastActiveDays: 3,
   },
   {
     id: 'al3', name: 'Priya Nair', initials: 'PN', color: '#fecdd3',
@@ -85,6 +127,7 @@ const ACTIVE_LEADS: Profile[] = [
     keySkills: 'English (Good) · Hindi · Marathi',
     isActiveLead: true,
     matchedKeywords: ['Field Sales', 'Channel Sales'],
+    filterTags: ['Field Sales'], lastActiveDays: 5,
   },
   {
     id: 'al4', name: 'Arjun Mehta', initials: 'AM', color: '#d8b4fe',
@@ -97,12 +140,14 @@ const ACTIVE_LEADS: Profile[] = [
     keySkills: 'English (Good) · Hindi · Punjabi',
     isActiveLead: true,
     matchedKeywords: ['Field Sales', 'Lead Generation'],
+    filterTags: ['Field Sales', 'Lead Generation'], lastActiveDays: 6,
   },
 ];
 
 const DB_PROFILES: Profile[] = [
   {
     id: 'db1', name: 'Manish Lomesh Gutte', initials: 'MG', color: '#bfdbfe',
+    filterTags: ['Business Development'], lastActiveDays: 4,
     freshness: '4 yr 9 m', salary: '₹8.1 Lakhs', location: 'Mumbai',
     tags: ['Business Development Executive'],
     title: 'Business Development Executive at Verizon (US), Littlenet · 2021–2023',
@@ -114,6 +159,7 @@ const DB_PROFILES: Profile[] = [
   },
   {
     id: 'db2', name: 'Pooja Verma', initials: 'PV', color: '#fde68a',
+    filterTags: ['Business Development', 'Lead Generation'], lastActiveDays: 6,
     freshness: '4 yr 6 m', salary: '₹7.2 Lakhs', location: 'Mumbai',
     tags: ['Business Development Executive'],
     title: 'Business Development Executive at Housing.com · 2020–2023',
@@ -125,6 +171,7 @@ const DB_PROFILES: Profile[] = [
   },
   {
     id: 'db3', name: 'Sukesh Bakhna', initials: 'SB', color: '#d8b4fe',
+    filterTags: ['Business Development'], lastActiveDays: 3,
     freshness: '4 yr 9 m', salary: '₹5.2 Lakhs', location: 'Mumbai',
     tags: ['Business Development Executive'],
     title: 'Business Development Executive at Verizon (US), Littlenet · 2021–2023',
@@ -136,6 +183,7 @@ const DB_PROFILES: Profile[] = [
   },
   {
     id: 'db4', name: 'Shreya Gupta', initials: 'SG', color: '#99f6e4',
+    filterTags: ['Field Sales', 'Business Development'], lastActiveDays: 7,
     freshness: '2 yr 8 m', salary: '₹7.2 Lakhs', location: 'Mumbai',
     tags: ['Business Development Executive'],
     title: 'Business Development Executive at Housing.com · 2020–2023',
@@ -147,6 +195,7 @@ const DB_PROFILES: Profile[] = [
   },
   {
     id: 'db5', name: 'Hitesh Kumar', initials: 'HK', color: '#fecdd3',
+    filterTags: ['Business Development'], lastActiveDays: 20,
     freshness: '4 yr 5 m', salary: '₹6.1 Lakhs', location: 'Mumbai',
     tags: ['Business Development Executive'],
     title: 'Business Development Executive at Verizon (US), Littlenet · 2021–2023',
@@ -158,6 +207,7 @@ const DB_PROFILES: Profile[] = [
   },
   {
     id: 'db6', name: 'Aasha Rastogi', initials: 'AR', color: '#a7f3d0',
+    filterTags: ['Field Sales', 'B2B Sales', 'Lead Generation'], lastActiveDays: 5,
     freshness: '3 yr 4 m', salary: '₹7.1 Lakhs', location: 'Mumbai',
     tags: ['Business Development Executive'],
     title: 'Business Development Executive at Housing.com · 2020–2023',
@@ -169,6 +219,7 @@ const DB_PROFILES: Profile[] = [
   },
   {
     id: 'db7', name: 'Nilam Sengupta', initials: 'NS', color: '#bfdbfe',
+    filterTags: ['Business Development'], lastActiveDays: 45,
     freshness: '4 yr 5 m', salary: '₹7.2 Lakhs', location: 'Mumbai',
     tags: ['Business Development Executive'],
     title: 'Business Development Executive at Verizon (US), Littlenet · 2021–2023',
@@ -194,9 +245,18 @@ interface DatabaseTabProps {
   onUnlock?: (id: string) => void;
   onFreeUnlock?: (id: string) => void;
   ftueVersion?: 'v1' | 'v2' | 'off';
+  // Pinning wiring: Live Leads are pinned to the top by default; applying any filter
+  // unpins them (they weave into the results list). The header toggle re-pins.
+  pinned?: boolean;
+  onTogglePin?: () => void;
+  onEnterSearch?: () => void;
+  onResetFilters?: () => void;
+  dbFilters?: DbFilterValues;
 }
 
-export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highlightLeadId, onHighlightClear, unlockedIds, creditsRemaining, onUnlock, onFreeUnlock, ftueVersion }: DatabaseTabProps) {
+const DEFAULT_DB_FILTERS: DbFilterValues = { skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false };
+
+export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highlightLeadId, onHighlightClear, unlockedIds, creditsRemaining, onUnlock, onFreeUnlock, ftueVersion, pinned = true, onTogglePin, onEnterSearch, onResetFilters, dbFilters = DEFAULT_DB_FILTERS }: DatabaseTabProps) {
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
   const [viewing, setViewing] = useState<Set<string>>(new Set());
   const [remaining, setRemaining] = useState(credits);
@@ -271,6 +331,67 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
       : { ...ACTIVE_LEADS[i % ACTIVE_LEADS.length], id: `${ACTIVE_LEADS[i % ACTIVE_LEADS.length].id}_${i}` }
   );
 
+  // ── Filter pipeline: applies to BOTH Live Leads and DB profiles ──
+  // Skill chips are OR-combined (candidate matches any selected skill); period is
+  // recency; "hide already unlocked" drops unlocked rows. All AND-combined.
+  const periodMax = PERIOD_DAYS[activePeriod] ?? 9999;
+  function passesFilter(p: Profile): boolean {
+    const skillOk = dbFilters.skills.length === 0
+      ? false // no skills selected → nothing matches
+      : p.filterTags.some(t => dbFilters.skills.includes(t));
+    const recencyOk = p.lastActiveDays <= periodMax;
+    const hideOk = !(dbFilters.hideUnlocked && unlocked.has(p.id));
+    return skillOk && recencyOk && hideOk;
+  }
+
+  const visibleLeads = shownLeads.filter(passesFilter);
+  const visibleDb = DB_PROFILES.filter(passesFilter);
+  const liveCount = visibleLeads.length;
+
+  // In the unpinned list we weave the unique leads (no cloned duplicates) among DB rows.
+  // Cap to the job's lead count so a 3-lead job doesn't surface all 5 sample leads.
+  const uniqueLeads = ACTIVE_LEADS.slice(0, Math.min(totalLeads, ACTIVE_LEADS.length)).filter(passesFilter);
+
+  function renderLeadRow(profile: Profile, inline: boolean) {
+    return (
+      <ProfileRow
+        key={profile.id}
+        profile={profile}
+        isSelected={selectedIds.has(profile.id)}
+        isUnlocked={unlocked.has(profile.id)}
+        isViewing={viewing.has(profile.id)}
+        hasCredits={hasCredits}
+        remaining={remaining}
+        onToggleSelect={() => toggleSelect(profile.id)}
+        onUnlock={() => handleUnlock(profile.id, profile.id === 'al0')}
+        isActiveLead
+        inline={inline}
+        isPreview={profile.id === 'al0'}
+        isHighlighted={highlightActive === profile.id}
+        cardRef={el => { cardRefs.current[profile.id] = el; }}
+        ftueVersion={ftueVersion}
+      />
+    );
+  }
+
+  function renderDbRow(profile: Profile) {
+    return (
+      <ProfileRow
+        key={profile.id}
+        profile={profile}
+        isSelected={selectedIds.has(profile.id)}
+        isUnlocked={unlocked.has(profile.id)}
+        isViewing={viewing.has(profile.id)}
+        hasCredits={hasCredits}
+        remaining={remaining}
+        onToggleSelect={() => toggleSelect(profile.id)}
+        onUnlock={() => handleUnlock(profile.id)}
+        isActiveLead={false}
+        ftueVersion={ftueVersion}
+      />
+    );
+  }
+
   if (dbTotal === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-6 text-center max-w-md mx-auto">
@@ -302,7 +423,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
           <div className="relative">
             <select
               value={activePeriod}
-              onChange={e => setActivePeriod(e.target.value)}
+              onChange={e => { setActivePeriod(e.target.value); onEnterSearch?.(); }}
               className="appearance-none pl-2.5 pr-6 py-1.5 rounded-lg border border-[#dfe1e6] bg-white text-xs font-medium text-gray-700 hover:border-[#b3bac5] transition-colors cursor-pointer focus:outline-none focus:border-[#1f8268] focus-visible:ring-2 focus-visible:ring-[#186b55]"
             >
               <option value="7d">Last 7 days</option>
@@ -418,92 +539,135 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
         </div>
       )}
 
-      {/* ── Live Leads section ── */}
-      <div className="border border-[#b6ecec] rounded-xl bg-[#eaf8f4]/30 mb-3 overflow-hidden">
-        {/* Container header */}
-        <div className="px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${totalLeads > 0 ? 'bg-[#1f8268]' : 'bg-gray-300'}`} />
-            <span className="text-sm font-semibold text-[#172b4d]">Live Leads ({totalLeads})</span>
-            {totalLeads > 0 && <span className="text-xs font-medium text-[#005c62] bg-[#e7f9f9] px-2 py-0.5 rounded-full">New</span>}
+      {/* ── Live Leads region: pinned card (default) OR slim unpinned banner ── */}
+      {pinned ? (
+        <div className="border border-[#b6ecec] rounded-xl bg-[#e7f9f9] mb-3 overflow-hidden">
+          {/* Container header — title left, pin toggle far right */}
+          <div className="px-4 py-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${liveCount > 0 ? 'bg-[#1f8268]' : 'bg-gray-300'}`} />
+                <span className="text-sm font-semibold text-[#172b4d]">Live Leads ({liveCount})</span>
+                {liveCount > 0 && (
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-white bg-[#1f8268] px-2 py-0.5 rounded-full uppercase tracking-wide">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                    New
+                  </span>
+                )}
+              </div>
+              {totalLeads > 0 && <PinToggle pinned onToggle={onTogglePin} />}
+            </div>
+            <p className="text-xs text-gray-400 mt-0.5 ml-4">
+              {totalLeads > 0
+                ? 'Relevant candidates actively looking for jobs, recently applied to similar roles'
+                : 'Candidates from the database who are currently active on the app will appear here'}
+            </p>
           </div>
-          <p className="text-xs text-gray-400 mt-0.5 ml-4">
-            {totalLeads > 0
-              ? 'Relevant candidates actively looking for jobs, recently applied to similar roles'
-              : 'Candidates from the database who are currently active on the app will appear here'}
-          </p>
+
+          {totalLeads > 0 ? (
+            visibleLeads.length > 0 ? (
+              /* Cards inside the green container */
+              <div className="p-3 flex flex-col gap-2">
+                {visibleLeads.map(profile => renderLeadRow(profile, false))}
+              </div>
+            ) : (
+              /* Filtered out — no Live Leads match */
+              <p className="px-4 pb-4 text-xs text-[#5e6c84]">No Live Leads match these filters.</p>
+            )
+          ) : (
+            /* Pending state — no active leads yet */
+            <div className="px-4 pb-4 flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-white border border-[#b6ecec] flex items-center justify-center flex-shrink-0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#1f8268]">Live Leads will appear here</p>
+                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                  We're watching {dbTotal} matching candidates in the database and will notify you as soon as any become active on the app.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
+      ) : (
+        /* Unpinned — slim banner; Live Leads now flow into the results list below */
+        <div className="flex items-center justify-between gap-3 mb-3 px-4 py-2.5 rounded-xl border border-[#b6ecec] bg-[#e7f9f9]">
+          <span className="flex items-center gap-2 text-xs text-[#172b4d] min-w-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+            <span className="font-semibold">Live Leads ({liveCount})</span>
+            <span className="text-gray-500 truncate hidden sm:inline">· unpinned — flagged in your results below</span>
+          </span>
+          <PinToggle pinned={false} onToggle={onTogglePin} />
+        </div>
+      )}
 
-        {totalLeads > 0 ? (
-          /* Cards inside the green container */
-          <div className="p-3 flex flex-col gap-2">
-            {shownLeads.map(profile => (
-              <ProfileRow
-                key={profile.id}
-                profile={profile}
-                isSelected={selectedIds.has(profile.id)}
-                isUnlocked={unlocked.has(profile.id)}
-                isViewing={viewing.has(profile.id)}
-                hasCredits={hasCredits}
-                remaining={remaining}
-                onToggleSelect={() => toggleSelect(profile.id)}
-                onUnlock={() => handleUnlock(profile.id, profile.id === 'al0')}
-                isActiveLead
-                isPreview={profile.id === 'al0'}
-                isHighlighted={highlightActive === profile.id}
-                cardRef={el => { cardRefs.current[profile.id] = el; }}
-                ftueVersion={ftueVersion}
-              />
-            ))}
-          </div>
-        ) : (
-          /* Pending state — no active leads yet */
-          <div className="px-4 pb-4 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-white border border-[#b6ecec] flex items-center justify-center flex-shrink-0">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-              </svg>
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[#1f8268]">Live Leads will appear here</p>
-              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                We're watching {dbTotal} matching candidates in the database and will notify you as soon as any become active on the app.
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ── DB Profiles section header ── */}
+      {/* ── Results list ──
+            • Pinned: Live Leads live in the card above; here we show just the DB profiles.
+            • Unpinned: Live Leads are woven in between the DB profiles, keeping their
+              matching bar + "Active this week" highlight so they still stand out. ── */}
       <div className="mb-2" />
+      {(() => {
+        const rows = pinned
+          ? visibleDb.map(p => ({ profile: p, live: false }))
+          : interleaveLeads(uniqueLeads, visibleDb);
 
-      {DB_PROFILES.map(profile => (
-        <ProfileRow
-          key={profile.id}
-          profile={profile}
-          isSelected={selectedIds.has(profile.id)}
-          isUnlocked={unlocked.has(profile.id)}
-          isViewing={viewing.has(profile.id)}
-          hasCredits={hasCredits}
-          remaining={remaining}
-          onToggleSelect={() => toggleSelect(profile.id)}
-          onUnlock={() => handleUnlock(profile.id)}
-          isActiveLead={false}
-          ftueVersion={ftueVersion}
-        />
-      ))}
+        if (rows.length === 0) {
+          return (
+            <div className="flex flex-col items-center justify-center py-14 px-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#adb5bd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-[#172b4d] mb-1">No candidates match these filters</p>
+              <p className="text-xs text-gray-500 mb-4 max-w-xs">Try widening the active period or selecting more skills.</p>
+              <button onClick={onResetFilters} className="px-4 py-2 border border-[#1f8268] text-[#1f8268] text-xs font-semibold rounded-lg hover:bg-[#eaf8f4] transition-colors">
+                Clear filters
+              </button>
+            </div>
+          );
+        }
 
-      <div className="text-center py-6">
-        <button
-          onClick={() => setAllLoaded(true)}
-          disabled={allLoaded}
-          className="px-5 py-2.5 bg-white border border-[#dfe1e6] rounded-xl text-xs font-semibold text-[#42526e] hover:border-[#b3bac5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {allLoaded ? 'All profiles loaded' : 'Load more profiles'}
-        </button>
-      </div>
+        return rows.map(({ profile, live }) => live ? renderLeadRow(profile, true) : renderDbRow(profile));
+      })()}
+
+      {visibleDb.length > 0 && (
+        <div className="text-center py-6">
+          <button
+            onClick={() => setAllLoaded(true)}
+            disabled={allLoaded}
+            className="px-5 py-2.5 bg-white border border-[#dfe1e6] rounded-xl text-xs font-semibold text-[#42526e] hover:border-[#b3bac5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {allLoaded ? 'All profiles loaded' : 'Load more profiles'}
+          </button>
+        </div>
+      )}
     </div>
+  );
+}
+
+function PinToggle({ pinned, onToggle }: { pinned: boolean; onToggle?: () => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={pinned}
+      aria-label={pinned ? 'Unpin Live Leads from top' : 'Pin Live Leads to top'}
+      onClick={onToggle}
+      className={`flex items-center gap-1.5 flex-shrink-0 ${pinned ? 'text-[#1f8268]' : 'text-[#5e6c84]'}`}
+    >
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 17v5"/>
+        <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>
+      </svg>
+      <span className="text-[11px] font-semibold">{pinned ? 'Pinned to top' : 'Pin to top'}</span>
+      <span className={`relative w-7 h-4 rounded-full transition-colors ${pinned ? 'bg-[#1f8268]' : 'bg-[#c1c7d0]'}`}>
+        <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${pinned ? 'left-[14px]' : 'left-0.5'}`} />
+      </span>
+    </button>
   );
 }
 
@@ -517,6 +681,7 @@ interface ProfileRowProps {
   onToggleSelect: () => void;
   onUnlock: () => void;
   isActiveLead: boolean;
+  inline?: boolean;
   isPreview?: boolean;
   isHighlighted?: boolean;
   cardRef?: (el: HTMLDivElement | null) => void;
@@ -527,12 +692,14 @@ function HighlightedText({ text }: { text: string; keywords?: string[] }) {
   return <span className="text-gray-700">{text}</span>;
 }
 
-function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, remaining, onToggleSelect, onUnlock, isActiveLead, isPreview, isHighlighted, cardRef }: ProfileRowProps) {
+function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, remaining, onToggleSelect, onUnlock, isActiveLead, inline, isPreview, isHighlighted, cardRef }: ProfileRowProps) {
   if (isActiveLead) {
     return (
       <div
         ref={cardRef}
         className={`relative rounded-xl border bg-white overflow-hidden hover:shadow-sm transition-all duration-700 ${
+          inline ? 'mb-2' : ''
+        } ${
           isHighlighted ? 'border-[#1f8268] ring-2 ring-[#1f8268]/30' : 'border-gray-200'
         }`}
       >
@@ -726,7 +893,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
               </svg>
-              Active this week
+              {freshnessLabel(profile.lastActiveDays)}
             </span>
           </div>
         </div>
@@ -883,7 +1050,7 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
             </svg>
-            Active recently
+            {freshnessLabel(profile.lastActiveDays)}
           </span>
         </div>
       </div>

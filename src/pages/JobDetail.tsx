@@ -9,7 +9,7 @@ import { FtueModal } from '../components/FtueModal';
 import { CoachMarks } from '../components/ftue/CoachMarks';
 import type { CoachStep } from '../components/ftue/CoachMarks';
 import { ActiveLeadsTab } from '../components/ActiveLeadsTab';
-import { DatabaseTab } from '../components/DatabaseTab';
+import { DatabaseTab, DB_SKILL_FILTERS, type DbFilterValues } from '../components/DatabaseTab';
 import { NewNoCredits } from '../scenarios/NewNoCredits';
 import { NewHasCredits } from '../scenarios/NewHasCredits';
 import { OldNoCreditsUsedDb } from '../scenarios/OldNoCreditsUsedDb';
@@ -91,6 +91,22 @@ export function JobDetail() {
   const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set());
   const [creditsRemaining, setCreditsRemaining] = useState(scenario.dbCredits);
 
+  // Database-tab Live Leads pinning. Pinned by default; applying any filter unpins
+  // them (they weave into the results list). The header toggle re-pins.
+  const [dbPinned, setDbPinned] = useState(true);
+  const [filterResetKey, setFilterResetKey] = useState(0);
+  const [dbFilterValues, setDbFilterValues] = useState<DbFilterValues>({
+    skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false,
+  });
+
+  function enterDbSearch() { setDbPinned(false); }   // any filter interaction unpins
+  function toggleDbPin() { setDbPinned(p => !p); }
+  function resetDbFilters() {
+    setDbPinned(true);
+    setDbFilterValues({ skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false });
+    setFilterResetKey(k => k + 1);
+  }
+
   // Top-bar credit balance is the single source of truth — initialise it from the scenario
   const { setCredits, pulse } = useCredits();
   useEffect(() => { setCredits(scenario.dbCredits); }, [scenario.dbCredits, setCredits]);
@@ -123,6 +139,9 @@ export function JobDetail() {
     handleFreeUnlock(candidateId);
     const leadId = CANDIDATE_TO_LEAD_ID[candidateId];
     if (leadId) {
+      // Force the pinned Live Leads box back so the highlighted card is guaranteed
+      // to be rendered (and scroll-able) on arrival, even if filters were active.
+      resetDbFilters();
       setHighlightLeadId(leadId);
       switchToDatabase();
     }
@@ -146,45 +165,57 @@ export function JobDetail() {
 
       {/* Job header — sticky, full width, sits below the topbar */}
       <div className="sticky top-[62px] z-20 bg-white border-b border-gray-200">
-        {/* Row 1: job info */}
-        <div className="flex items-center gap-0 px-4 h-12">
+        {/* Header: title row + underline tabs */}
+        <div className="px-5 pt-3 pb-0">
+        <div className="relative w-full max-w-[1100px] mx-auto">
           <button
             aria-label="Back to jobs"
             onClick={() => navigate('/')}
-            className="w-8 h-8 flex items-center justify-center text-gray-500 mr-2 hover:bg-gray-100 rounded"
+            className="absolute -left-8 top-0.5 w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 12H5M12 5l-7 7 7 7"/>
             </svg>
           </button>
 
-          <span className="text-sm font-semibold text-gray-900">Field Sales Executive</span>
-          <span className="ml-2 px-2 py-0.5 bg-[#e7f9f9] text-[#1f8268] rounded-full text-[11px] font-semibold">Active</span>
-          <div className="w-px h-4 bg-gray-300 mx-3" />
-          <span className="text-xs text-gray-500">Saket, Delhi-NCR</span>
-          <div className="w-px h-4 bg-gray-300 mx-3" />
-          <button className="text-xs text-emerald-600 font-medium">Edit</button>
-          <div className="flex-1" />
+          <div className="min-w-0">
+            {/* Title row */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-base font-semibold text-gray-900">Field Sales Executive</span>
+                <span className="px-2 py-0.5 bg-[#e7f9f9] text-[#1f8268] rounded-full text-[11px] font-semibold">Active</span>
+              </div>
+              <div className="flex items-center">
+                <button aria-label="Edit job" className="w-8 h-8 flex items-center justify-center text-gray-400 hover:bg-gray-100 rounded">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button aria-label="More options" className="w-8 h-8 flex items-center justify-center text-gray-400 hover:bg-gray-100 rounded">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
 
-          <button aria-label="More options" className="w-8 h-8 flex items-center justify-center text-gray-400">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
-            </svg>
-          </button>
-        </div>
+            {/* Location */}
+            <span className="text-xs text-gray-400 mt-0.5 block">Saket, Delhi-NCR</span>
 
-        {/* Row 2: segmented switch centered */}
-        <div className="flex items-center justify-center border-t border-gray-100 py-2">
-          <div className="flex items-center gap-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-full p-[3px]">
-            <TabBtn active={tab === 'applied'} onClick={() => setTab('applied')}>
-              Applied to job ({scenario.applicationsCount})
-            </TabBtn>
-            <span data-ftue="database-tab">
-              <TabBtn active={tab === 'database'} onClick={switchToDatabase} highlight={dbTotal > 0} disabled={dbTotal === 0}>
-                Database ({dbTotal})
-              </TabBtn>
-            </span>
+            {/* Underline tabs */}
+            <div className="flex items-center gap-2 mt-5">
+              <UnderlineTab active={tab === 'applied'} onClick={() => setTab('applied')}>
+                Applied to job ({scenario.applicationsCount})
+              </UnderlineTab>
+              <span data-ftue="database-tab">
+                <UnderlineTab active={tab === 'database'} onClick={switchToDatabase} highlight={dbTotal > 0} disabled={dbTotal === 0}>
+                  Database ({dbTotal})
+                </UnderlineTab>
+              </span>
+            </div>
           </div>
+        </div>
         </div>
 
       </div>
@@ -219,9 +250,9 @@ export function JobDetail() {
       {/* Content */}
       <JobTabContext.Provider value={{ goToDatabase: () => setTab('database') }}>
       <div className="flex-1 overflow-hidden bg-gray-50 flex justify-center" style={{ padding: '12px 20px 23px' }}>
-        <div className="flex w-full max-w-[1400px] gap-3 min-h-0">
+        <div className="flex w-full max-w-[1100px] gap-3 min-h-0">
         {tab === 'applied' && scenario.applicationsCount > 0 && <FiltersPanel mode="applied" />}
-        {tab === 'database' && dbTotal > 0 && <FiltersPanel mode="database" totalLeads={dbTotal} />}
+        {tab === 'database' && dbTotal > 0 && <FiltersPanel mode="database" totalLeads={dbTotal} onInteract={enterDbSearch} onFiltersChange={setDbFilterValues} resetSignal={filterResetKey} />}
 
         <div className="flex-1 overflow-y-auto bg-gray-50 min-w-0">
           {tab === 'applied' && (
@@ -287,6 +318,11 @@ export function JobDetail() {
               onUnlock={handleUnlock}
               onFreeUnlock={handleFreeUnlock}
               ftueVersion={ftueVersion}
+              pinned={dbPinned}
+              onTogglePin={toggleDbPin}
+              onEnterSearch={enterDbSearch}
+              onResetFilters={resetDbFilters}
+              dbFilters={dbFilterValues}
             />
           )}
         </div>
@@ -426,7 +462,7 @@ function JobPostedCard({ totalLeads, dbTotal, jobAge }: { totalLeads: number; db
   );
 }
 
-function TabBtn({
+function UnderlineTab({
   children, active, onClick, highlight, disabled,
 }: {
   children: React.ReactNode; active: boolean; onClick: () => void; highlight?: boolean; disabled?: boolean;
@@ -434,18 +470,21 @@ function TabBtn({
   return (
     <button
       onClick={disabled ? undefined : onClick}
-      className={`flex items-center gap-1.5 px-6 py-2 rounded-full text-sm transition-all whitespace-nowrap ${
-        disabled
-          ? 'text-[#c1c7d0] font-normal cursor-not-allowed'
-          : active
-          ? 'bg-[#172b4d] text-white font-semibold'
-          : 'text-[#8c8594] font-normal hover:text-gray-600'
-      }`}
+      className="flex flex-col items-center gap-3 pb-0"
     >
-      {highlight && !active && !disabled && (
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-      )}
-      {children}
+      <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all whitespace-nowrap ${
+        disabled
+          ? 'text-[#c1c7d0] bg-transparent cursor-not-allowed'
+          : active
+          ? 'text-white font-semibold bg-[#172b4d]'
+          : 'text-[#5e6c84] bg-[#f4f5f7] hover:bg-[#ebecf0] hover:text-gray-800'
+      }`}>
+        {highlight && !active && !disabled && (
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+        )}
+        {children}
+      </span>
+      <span className={`h-0.5 w-full rounded-full transition-all ${active && !disabled ? 'bg-[#172b4d]' : 'bg-transparent'}`} />
     </button>
   );
 }

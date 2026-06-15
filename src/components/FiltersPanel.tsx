@@ -1,13 +1,22 @@
 import { useState, useEffect } from 'react';
+import { DB_SKILL_FILTERS, type DbFilterValues } from './DatabaseTab';
 
 interface FiltersPanelProps {
   mode?: 'applied' | 'database';
   totalLeads?: number;
+  // Fired whenever the user touches any filter control (database mode) — lets the
+  // parent collapse the pinned Live Leads box into the inline search view.
+  onInteract?: () => void;
+  // Fired with the current filter values so the parent can filter both feeds.
+  onFiltersChange?: (v: DbFilterValues) => void;
+  // Bumping this number resets the panel back to its default filters (e.g. after the
+  // parent's "Show Live Leads" / clear-filters affordance).
+  resetSignal?: number;
 }
 
-const DB_FILTER_CHIPS = ['Last 7 days', 'Shortlisted', 'Review pending', 'resume'];
+const DB_FILTER_CHIPS = DB_SKILL_FILTERS;
 
-export function FiltersPanel({ mode = 'applied', totalLeads = 4 }: FiltersPanelProps) {
+export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onFiltersChange, resetSignal }: FiltersPanelProps) {
   const [showCandidates, setShowCandidates] = useState(true);
   const [chips, setChips] = useState<Set<string>>(new Set(DB_FILTER_CHIPS));
   const [hideUnlocked, setHideUnlocked] = useState(false);
@@ -22,12 +31,25 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4 }: FiltersPanelP
     return () => clearInterval(timer);
   }, []);
 
+  // Parent asked us to restore defaults (clear filters / re-pin Live Leads)
+  useEffect(() => {
+    if (resetSignal === undefined) return;
+    setChips(new Set(DB_FILTER_CHIPS));
+    setHideUnlocked(false);
+    setHideExcel(false);
+    setHideWhatsApp(false);
+    onFiltersChange?.({ skills: [...DB_FILTER_CHIPS], hideUnlocked: false, hideExcel: false, hideWhatsApp: false });
+  }, [resetSignal]);
+
   const hh = String(Math.floor(secondsLeft / 3600)).padStart(2, '0');
   const mm = String(Math.floor((secondsLeft % 3600) / 60)).padStart(2, '0');
   const ss = String(secondsLeft % 60).padStart(2, '0');
 
   function removeChip(chip: string) {
-    setChips(prev => { const n = new Set(prev); n.delete(chip); return n; });
+    const next = new Set(chips); next.delete(chip);
+    setChips(next);
+    onInteract?.();
+    onFiltersChange?.({ skills: Array.from(next), hideUnlocked, hideExcel, hideWhatsApp });
   }
 
   if (mode === 'database') {
@@ -58,7 +80,7 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4 }: FiltersPanelP
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold text-[#172b4d]">{chips.size} filter applied</span>
               {chips.size > 0 && (
-                <button onClick={() => setChips(new Set())} className="text-xs font-semibold text-[#1f8268] hover:underline">Reset</button>
+                <button onClick={() => { setChips(new Set()); onInteract?.(); onFiltersChange?.({ skills: [], hideUnlocked, hideExcel, hideWhatsApp }); }} className="text-xs font-semibold text-[#1f8268] hover:underline">Reset</button>
               )}
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -89,17 +111,17 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4 }: FiltersPanelP
             </button>
             {hideExpanded && (
               <div className="px-4 pb-3 flex flex-col gap-2">
-                <CheckRow label="Already unlocked" checked={hideUnlocked} onChange={setHideUnlocked} />
-                <CheckRow label="Already downloaded in excel" checked={hideExcel} onChange={setHideExcel} />
-                <CheckRow label="Already invited by WhatsApp" checked={hideWhatsApp} onChange={setHideWhatsApp} />
+                <CheckRow label="Already unlocked" checked={hideUnlocked} onChange={v => { setHideUnlocked(v); onInteract?.(); onFiltersChange?.({ skills: Array.from(chips), hideUnlocked: v, hideExcel, hideWhatsApp }); }} />
+                <CheckRow label="Already downloaded in excel" checked={hideExcel} onChange={v => { setHideExcel(v); onInteract?.(); onFiltersChange?.({ skills: Array.from(chips), hideUnlocked, hideExcel: v, hideWhatsApp }); }} />
+                <CheckRow label="Already invited by WhatsApp" checked={hideWhatsApp} onChange={v => { setHideWhatsApp(v); onInteract?.(); onFiltersChange?.({ skills: Array.from(chips), hideUnlocked, hideExcel, hideWhatsApp: v }); }} />
                 <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                   <span className="text-[11px] text-[#5e6c84]">by</span>
-                  <select className="text-[11px] border border-[#dfe1e6] rounded-lg px-2 py-1 text-[#172b4d] bg-white focus:outline-none focus:border-[#1f8268] focus-visible:ring-2 focus-visible:ring-[#186b55]">
+                  <select onChange={() => onInteract?.()} className="text-[11px] border border-[#dfe1e6] rounded-lg px-2 py-1 text-[#172b4d] bg-white focus:outline-none focus:border-[#1f8268] focus-visible:ring-2 focus-visible:ring-[#186b55]">
                     <option>me</option>
                     <option>anyone</option>
                   </select>
                   <span className="text-[11px] text-[#5e6c84]">in the last</span>
-                  <select className="text-[11px] border border-[#dfe1e6] rounded-lg px-2 py-1 text-[#172b4d] bg-white focus:outline-none focus:border-[#1f8268] focus-visible:ring-2 focus-visible:ring-[#186b55]">
+                  <select onChange={() => onInteract?.()} className="text-[11px] border border-[#dfe1e6] rounded-lg px-2 py-1 text-[#172b4d] bg-white focus:outline-none focus:border-[#1f8268] focus-visible:ring-2 focus-visible:ring-[#186b55]">
                     <option>7 days</option>
                     <option>14 days</option>
                     <option>30 days</option>
