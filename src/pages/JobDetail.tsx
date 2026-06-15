@@ -238,7 +238,7 @@ export function JobDetail() {
         const coachSteps: CoachStep[] = [
           {
             selector: '[data-ftue="live-leads-section"]',
-            title: 'Meet your Live Leads',
+            title: 'Meet your Active Candidates',
             body: `These ${totalLeads} candidates aren't a static list — they're actively looking for work right now and match your job.`,
             cta: 'Got it',
           },
@@ -578,7 +578,7 @@ function JobStatusCard({
                 {!isDone && <span>…</span>}
                 {isDone && totalLeads > 0 && (
                   <span className="anim-fade-in">
-                    {' '}— meanwhile <span className="text-emerald-600 font-medium">{totalLeads} Live Leads</span> from the apna database are already matching your requirements.
+                    {' '}— meanwhile <span className="text-emerald-600 font-medium">{totalLeads} Active Candidates</span> from the apna database are already matching your requirements.
                   </span>
                 )}
               </>

@@ -9,7 +9,7 @@ const STEPS = [
   {
     accent: '#1a56db',
     accentLight: '#dbeafe',
-    title: 'Introducing Live Leads from apna database',
+    title: 'Introducing Active Candidates from apna database',
     body: "Find candidates from apna's database who are actively looking and match your job requirements.",
     preview: 'intro',
     cta: 'Next',
@@ -18,7 +18,7 @@ const STEPS = [
     accent: '#0d9488',
     accentLight: '#ccfbf1',
     title: 'Candidates more likely to respond',
-    body: 'Live Leads have recently applied to similar jobs and match your key requirements.',
+    body: 'Active Candidates have recently applied to similar jobs and match your key requirements.',
     preview: 'respond',
     cta: 'Next',
   },
@@ -28,7 +28,7 @@ const STEPS = [
     title: 'Unlock with database credits',
     body: '',
     preview: 'unlock',
-    cta: 'See all Live Leads',
+    cta: 'See all Active Candidates',
   },
 ];
 
@@ -37,7 +37,7 @@ export function FtueModal({ onComplete, hasCredits }: FtueModalProps) {
   const current = STEPS[step];
   const body = step === 2
     ? (hasCredits
-        ? 'Use your database credits to view phone numbers and contact Live Leads directly.'
+        ? 'Use your database credits to view phone numbers and contact Active Candidates directly.'
         : 'Get database credits to unlock phone numbers and reach these candidates before others do.')
     : current.body;
 
@@ -109,7 +109,7 @@ export function FtueModal({ onComplete, hasCredits }: FtueModalProps) {
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors"
               style={{ background: current.accent }}
             >
-              {step === STEPS.length - 1 ? (hasCredits ? 'See all Live Leads' : 'View Live Leads') : 'Next'}
+              {step === STEPS.length - 1 ? (hasCredits ? 'See all Active Candidates' : 'View Active Candidates') : 'Next'}
             </button>
           </div>
         </div>
@@ -161,7 +161,7 @@ function PreviewCard({ step, accentLight, accent }: { step: string; accentLight:
       <div className="flex flex-col items-center gap-2 scale-100">
         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 rounded-full">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span className="text-[9px] font-semibold text-white">9 Live Leads from apna database</span>
+          <span className="text-[9px] font-semibold text-white">9 Active Candidates from apna database</span>
         </div>
         <div className="flex gap-2">
           {MINI_CANDIDATES.map(c => (

@@ -50,7 +50,7 @@ const HOW_IT_WORKS = [
       </svg>
     ),
     title: 'Reach out before someone else does',
-    body: 'Live Leads get hired fast. Contact them directly via call or WhatsApp.',
+    body: 'Active Candidates get hired fast. Contact them directly via call or WhatsApp.',
   },
 ];
 
@@ -102,7 +102,7 @@ export function ActiveLeadsTab({
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
             </span>
           )}
-          {headerTitle ?? `${totalLeads} Live Leads from apna database`}
+          {headerTitle ?? `${totalLeads} Active Candidates from apna database`}
         </p>
         <p className="text-sm text-gray-500">
           {headerSubtitle ?? 'Candidates actively looking for jobs, recently applied to similar roles, and matching your requirements.'}
@@ -120,7 +120,7 @@ export function ActiveLeadsTab({
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
-              <span className="text-xs font-semibold text-[#172b4d]">How Live Leads and credits work</span>
+              <span className="text-xs font-semibold text-[#172b4d]">How Active Candidates and credits work</span>
             </div>
             <svg
               width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2"
@@ -253,7 +253,7 @@ export function ActiveLeadsTab({
                   ? 'bg-[#1f8268] hover:bg-[#186b55] text-white'
                   : 'border border-[#1f8268] text-[#1f8268] hover:bg-[#eaf8f4]'
               }`}>
-                See all Live Leads
+                See all Active Candidates
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="5 12 12 12 19 12"/><polyline points="13 6 19 12 13 18"/>
                 </svg>
@@ -328,7 +328,7 @@ export function ActiveLeadsTab({
               <p className="text-xs text-[#42526e]">
                 <span className="font-semibold text-[#172b4d]">All credits used.</span>
                 {' '}
-                <span className="text-[#1f8268] font-semibold">{totalLeads} Live Leads still waiting</span>
+                <span className="text-[#1f8268] font-semibold">{totalLeads} Active Candidates still waiting</span>
                 {' — top up to keep contacting.'}
               </p>
             </div>

@@ -16,7 +16,7 @@ export function NewHasCredits({ totalLeads, dbCredits, applicantCount, dbTotal, 
           dbMatchCount={dbTotal}
           hasCredits={true}
           credits={dbCredits}
-          headerTitle={`Only ${applicantCount} applicant${applicantCount === 1 ? '' : 's'} so far — but ${totalLeads} Live Leads are ready`}
+          headerTitle={`Only ${applicantCount} applicant${applicantCount === 1 ? '' : 's'} so far — but ${totalLeads} Active Candidates are ready`}
           headerSubtitle={`These candidates are actively looking and match your job. You have ${dbCredits} credits — unlock their profiles now.`}
           onExploreAll={() => jobTab?.goToDatabase()}
           onGoToDatabase={() => jobTab?.goToDatabase()}
