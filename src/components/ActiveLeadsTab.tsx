@@ -185,6 +185,10 @@ export function ActiveLeadsTab({
                 <p className="text-[10px] text-gray-400 mt-1.5 truncate">
                   {c.experience} • {c.salary} • {c.location}
                 </p>
+                <p className="flex items-center gap-1 mt-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                  <span className="text-[10px] text-emerald-600 font-medium">Active {c.lastActive}</span>
+                </p>
 
                 {/* Blurred contact hint — preview card only */}
                 {isPreview && (

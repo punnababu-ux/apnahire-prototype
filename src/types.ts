@@ -129,13 +129,14 @@ export interface Candidate {
   location: string;
   initials: string;
   avatarColor: string;
+  lastActive: string;
 }
 
 export const CANDIDATES: Candidate[] = [
-  { id: '1', name: 'Simran Sharma', role: 'Business Development Executive at Reliance', experience: '4 Yrs', salary: '7 Lakh', location: 'Mumbai', initials: 'SS', avatarColor: '#a7f3d0' },
-  { id: '2', name: 'Rohan Roy', role: 'Development Executive at Game-berry', experience: '4 Yrs', salary: '7 Lakh', location: 'Mumbai', initials: 'RR', avatarColor: '#bfdbfe' },
-  { id: '3', name: 'Siddharth M.', role: 'Product Executive at Reliance SMSL Ltd', experience: '4 Yrs', salary: '7 Lakh', location: 'Mumbai', initials: 'SM', avatarColor: '#fde68a' },
-  { id: '4', name: 'Priya Nair', role: 'Sales Manager at Bajaj Finserv', experience: '5 Yrs', salary: '9 Lakh', location: 'Pune', initials: 'PN', avatarColor: '#fecdd3' },
-  { id: '5', name: 'Arjun Mehta', role: 'Field Executive at HDFC Life', experience: '3 Yrs', salary: '6 Lakh', location: 'Delhi', initials: 'AM', avatarColor: '#d8b4fe' },
-  { id: '6', name: 'Neha Kapoor', role: 'Area Sales Executive at Max Life', experience: '6 Yrs', salary: '10 Lakh', location: 'Gurugram', initials: 'NK', avatarColor: '#99f6e4' },
+  { id: '1', name: 'Simran Sharma', role: 'Business Development Executive at Reliance', experience: '4 Yrs', salary: '7 Lakh', location: 'Mumbai', initials: 'SS', avatarColor: '#a7f3d0', lastActive: '2h ago' },
+  { id: '2', name: 'Rohan Roy', role: 'Development Executive at Game-berry', experience: '4 Yrs', salary: '7 Lakh', location: 'Mumbai', initials: 'RR', avatarColor: '#bfdbfe', lastActive: '5h ago' },
+  { id: '3', name: 'Siddharth M.', role: 'Product Executive at Reliance SMSL Ltd', experience: '4 Yrs', salary: '7 Lakh', location: 'Mumbai', initials: 'SM', avatarColor: '#fde68a', lastActive: 'Today' },
+  { id: '4', name: 'Priya Nair', role: 'Sales Manager at Bajaj Finserv', experience: '5 Yrs', salary: '9 Lakh', location: 'Pune', initials: 'PN', avatarColor: '#fecdd3', lastActive: '1h ago' },
+  { id: '5', name: 'Arjun Mehta', role: 'Field Executive at HDFC Life', experience: '3 Yrs', salary: '6 Lakh', location: 'Delhi', initials: 'AM', avatarColor: '#d8b4fe', lastActive: '3h ago' },
+  { id: '6', name: 'Neha Kapoor', role: 'Area Sales Executive at Max Life', experience: '6 Yrs', salary: '10 Lakh', location: 'Gurugram', initials: 'NK', avatarColor: '#99f6e4', lastActive: 'Today' },
 ];
