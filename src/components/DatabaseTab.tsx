@@ -577,7 +577,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
             <div className="p-3 flex flex-col gap-2">
               {Array.from({ length: Math.min(totalLeads, 3) }).map((_, i) => (
                 <div key={i} className="rounded-xl border border-[#dfe1e6] bg-white overflow-hidden animate-pulse">
-                  <div className="h-14 bg-[#d1fae5]" />
+                  <div className="h-14 bg-gray-100" />
                   <div className="px-4 pt-4 pb-4 flex flex-col gap-2">
                     <div className="h-3 w-2/3 bg-gray-200 rounded" />
                     <div className="h-2.5 w-1/2 bg-gray-100 rounded" />
