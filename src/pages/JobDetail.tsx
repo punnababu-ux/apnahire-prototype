@@ -254,16 +254,14 @@ export function JobDetail() {
           },
           {
             selector: '[data-ftue="first-lead-unlock-btn"]',
-            title: 'Unlock to reach out directly',
-            body: scenario.dbCredits > 0
-              ? 'Tap unlock to see their phone number and reach out — each contact uses 1 credit.'
-              : 'Tap unlock to see their phone number and reach out. Your first unlock is free.',
+            title: 'View profile, then unlock',
+            body: 'Tap "View Profile" to see the full profile in the database. From there, unlock with 1 credit to get their phone number and contact them directly.',
             cta: 'Got it',
           },
           {
             selector: '[data-ftue="database-tab"]',
             title: `All ${dbTotal} matching candidates`,
-            body: 'Browse every candidate who fits this job and unlock anyone that looks like a match.',
+            body: 'Browse every candidate who fits this job. Hot Leads are pinned at the top — they\'re the most likely to respond.',
             cta: 'Got it!',
           },
         ];

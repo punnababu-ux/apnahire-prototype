@@ -25,7 +25,7 @@ const STEPS = [
   {
     accent: '#d97706',
     accentLight: '#fef3c7',
-    title: 'Unlock with database credits',
+    title: 'View profile, then unlock',
     body: '',
     preview: 'unlock',
     cta: 'See all Hot Leads',
@@ -37,8 +37,8 @@ export function FtueModal({ onComplete, hasCredits }: FtueModalProps) {
   const current = STEPS[step];
   const body = step === 2
     ? (hasCredits
-        ? 'Use your database credits to view phone numbers and contact Hot Leads directly.'
-        : 'Get database credits to unlock phone numbers and reach these candidates before others do.')
+        ? 'Browse Hot Lead profiles in your database. When you find the right fit, unlock with 1 credit to get their phone number and contact them directly.'
+        : 'Get database credits to view and unlock Hot Lead profiles — contact the best matches before someone else does.')
     : current.body;
 
   function handleNext() {
