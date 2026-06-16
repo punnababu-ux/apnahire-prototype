@@ -168,6 +168,12 @@ export function JobDetail() {
     setTab('database');
   }
 
+  function handleGoToDatabase() {
+    switchToDatabase();
+    setPendingHighlightId('__browse__');
+    setTimeout(() => setPendingHighlightId(null), 700);
+  }
+
   function handleFtueComplete() {
     setFtueCompleted(true);
     setFtueOpen(false);
@@ -292,8 +298,8 @@ export function JobDetail() {
                   unlockedCount={unlockedIds.size}
                   lockedCount={Math.max(totalLeads - unlockedIds.size, 0)}
                   showBuyCredits={scenario.dbCredits === 0}
-                  onExploreAll={() => dbTotal > 0 && switchToDatabase()}
-                  onGoToDatabase={() => dbTotal > 0 && switchToDatabase()}
+                  onExploreAll={() => dbTotal > 0 && handleGoToDatabase()}
+                  onGoToDatabase={() => dbTotal > 0 && handleGoToDatabase()}
                   onUnlockAndView={handleUnlockAndView}
                   unlockedIds={unlockedIds}
                   creditsRemaining={creditsRemaining}
