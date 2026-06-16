@@ -760,19 +760,6 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
             <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden rounded-xl">
               <div className="card-shimmer-sweep absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/55 to-transparent" />
             </div>
-            {/* Unlock toast — floats above the card center */}
-            <div className="absolute inset-x-0 top-3 flex justify-center pointer-events-none z-30">
-              <div className="unlock-toast flex items-center gap-2 px-4 py-2 bg-[#1f8268] text-white text-xs font-semibold rounded-full shadow-lg">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2"/>
-                  <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
-                </svg>
-                Profile unlocked
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              </div>
-            </div>
           </>
         )}
         {/* Header */}
