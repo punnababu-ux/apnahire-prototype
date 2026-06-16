@@ -239,6 +239,7 @@ interface DatabaseTabProps {
   totalLeads: number;
   dbTotal: number;
   highlightLeadId?: string | null;
+  pendingHighlightId?: string | null;
   onHighlightClear?: () => void;
   // Shared unlock state from parent
   unlockedIds?: Set<string>;
@@ -257,7 +258,7 @@ interface DatabaseTabProps {
 
 const DEFAULT_DB_FILTERS: DbFilterValues = { skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false };
 
-export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highlightLeadId, onHighlightClear, unlockedIds, creditsRemaining, onUnlock, onFreeUnlock, ftueVersion, pinned = true, onTogglePin, onEnterSearch, onResetFilters, dbFilters = DEFAULT_DB_FILTERS }: DatabaseTabProps) {
+export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highlightLeadId, pendingHighlightId, onHighlightClear, unlockedIds, creditsRemaining, onUnlock, onFreeUnlock, ftueVersion, pinned = true, onTogglePin, onEnterSearch, onResetFilters, dbFilters = DEFAULT_DB_FILTERS }: DatabaseTabProps) {
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
   const [viewing, setViewing] = useState<Set<string>>(new Set());
   const [remaining, setRemaining] = useState(credits);
@@ -288,19 +289,16 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
 
   useEffect(() => {
     if (!highlightLeadId) return;
-    // Pre-unlock and show phone for the highlighted lead
     setUnlocked(prev => new Set(prev).add(highlightLeadId));
     setViewing(prev => new Set(prev).add(highlightLeadId));
     setHighlightActive(highlightLeadId);
-    // Scroll into view
     const el = cardRefs.current[highlightLeadId];
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // Fade out highlight after 2.5s
-    const t = setTimeout(() => {
+    const tHighlight = setTimeout(() => {
       setHighlightActive(null);
       onHighlightClear?.();
     }, 2500);
-    return () => clearTimeout(t);
+    return () => clearTimeout(tHighlight);
   }, [highlightLeadId]);
 
   function handleUnlock(id: string, isFree = false) {
@@ -574,7 +572,22 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
             </p>
           </div>
 
-          {totalLeads > 0 ? (
+          {pendingHighlightId ? (
+            /* Skeleton — shown while the unlock transition plays */
+            <div className="p-3 flex flex-col gap-2">
+              {Array.from({ length: Math.min(totalLeads, 3) }).map((_, i) => (
+                <div key={i} className="rounded-xl border border-[#dfe1e6] bg-white overflow-hidden animate-pulse">
+                  <div className="h-14 bg-[#d1fae5]" />
+                  <div className="px-4 pt-4 pb-4 flex flex-col gap-2">
+                    <div className="h-3 w-2/3 bg-gray-200 rounded" />
+                    <div className="h-2.5 w-1/2 bg-gray-100 rounded" />
+                    <div className="h-2 w-1/3 bg-gray-100 rounded" />
+                    <div className="mt-3 h-8 w-full bg-gray-100 rounded-xl" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : totalLeads > 0 ? (
             visibleLeads.length > 0 ? (
               /* Cards inside the green container */
               <div className="p-3 flex flex-col gap-2">
@@ -720,9 +733,21 @@ function ProfileRow({ profile, isSelected, isUnlocked, isViewing, hasCredits, re
         {isHighlighted && (
           <>
             <div className="card-highlight-pulse absolute inset-0 bg-[#1f8268] pointer-events-none z-10 rounded-xl" />
-            {/* Container is static + overflow-hidden; only the strip animates */}
             <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden rounded-xl">
               <div className="card-shimmer-sweep absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/55 to-transparent" />
+            </div>
+            {/* Unlock toast — floats above the card center */}
+            <div className="absolute inset-x-0 top-3 flex justify-center pointer-events-none z-30">
+              <div className="unlock-toast flex items-center gap-2 px-4 py-2 bg-[#1f8268] text-white text-xs font-semibold rounded-full shadow-lg">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+                </svg>
+                Profile unlocked
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
             </div>
           </>
         )}

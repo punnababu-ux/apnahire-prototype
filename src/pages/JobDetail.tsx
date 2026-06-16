@@ -86,6 +86,7 @@ export function JobDetail() {
   const [ftueCompleted, setFtueCompleted] = useState(false);
   const [ftueOpen, setFtueOpen] = useState(true);
   const [highlightLeadId, setHighlightLeadId] = useState<string | null>(null);
+  const [pendingHighlightId, setPendingHighlightId] = useState<string | null>(null);
 
   // Shared unlock state — persists across tab switches
   const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set());
@@ -148,15 +149,19 @@ export function JobDetail() {
   }
 
   function handleUnlockAndView(candidateId: string) {
-    // Register the free unlock so the card shows "Unlocked" when the user returns
     handleFreeUnlock(candidateId);
     const leadId = CANDIDATE_TO_LEAD_ID[candidateId];
     if (leadId) {
-      // Force the pinned Live Leads box back so the highlighted card is guaranteed
-      // to be rendered (and scroll-able) on arrival, even if filters were active.
       resetDbFilters();
-      setHighlightLeadId(leadId);
+      // 1. Switch tab immediately so the user sees the destination
       switchToDatabase();
+      // 2. Show skeleton in DatabaseTab for 700ms
+      setPendingHighlightId(leadId);
+      setTimeout(() => {
+        // 3. Resolve: trigger real highlight + unlock toast
+        setPendingHighlightId(null);
+        setHighlightLeadId(leadId);
+      }, 700);
     }
   }
 
@@ -326,6 +331,7 @@ export function JobDetail() {
               totalLeads={totalLeads}
               dbTotal={dbTotal}
               highlightLeadId={highlightLeadId}
+              pendingHighlightId={pendingHighlightId}
               onHighlightClear={() => setHighlightLeadId(null)}
               unlockedIds={unlockedIds}
               creditsRemaining={creditsRemaining}
