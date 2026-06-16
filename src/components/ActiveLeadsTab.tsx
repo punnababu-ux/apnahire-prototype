@@ -285,7 +285,7 @@ export function ActiveLeadsTab({
                 <span className="text-[#1f8268] font-semibold">{totalLeads} candidates shortlisted for you</span>
                 {' · '}
                 <span className="font-semibold text-[#172b4d]">{remaining} credits available</span>
-                {' — click any to unlock & contact'}
+                {' — view a profile to unlock & contact'}
               </p>
             </div>
           </div>
