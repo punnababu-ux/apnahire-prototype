@@ -149,7 +149,6 @@ export function JobDetail() {
   }
 
   function handleUnlockAndView(candidateId: string) {
-    handleFreeUnlock(candidateId);
     const leadId = CANDIDATE_TO_LEAD_ID[candidateId];
     if (leadId) {
       resetDbFilters();

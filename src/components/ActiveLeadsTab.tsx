@@ -60,36 +60,18 @@ export function ActiveLeadsTab({
   hasCredits,
   credits,
   hasUsedDb = false,
-  onCreditSpend,
   onExploreAll,
   onGoToDatabase,
   onUnlockAndView,
   headerTitle,
   headerSubtitle,
-  unlockedIds,
   creditsRemaining,
-  onUnlock,
   animateIn = false,
 }: ActiveLeadsTabProps) {
-  // Fall back to local state when not controlled by parent
-  const [localUnlocked, setLocalUnlocked] = useState<Set<string>>(new Set());
-  const [localRemaining, setLocalRemaining] = useState(credits);
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
   const [showBuyModal, setShowBuyModal] = useState(false);
 
-  const unlocked = unlockedIds ?? localUnlocked;
-  const remaining = creditsRemaining ?? localRemaining;
-
-  function handleUnlock(id: string) {
-    if (remaining <= 0 || unlocked.has(id)) return;
-    if (onUnlock) {
-      onUnlock(id);
-    } else {
-      setLocalUnlocked(prev => new Set(prev).add(id));
-      setLocalRemaining(r => r - 1);
-    }
-    onCreditSpend?.(remaining - 1);
-  }
+  const remaining = creditsRemaining ?? credits;
 
   return (
     <div data-ftue="live-leads-section" className="bg-white rounded-xl border border-[#dfe1e6] overflow-hidden">
@@ -150,7 +132,6 @@ export function ActiveLeadsTab({
       {/* Candidate cards */}
       <div className="grid grid-cols-4 gap-3 px-5 pb-4">
         {CANDIDATES.slice(0, 3).map((c, idx) => {
-          const isUnlocked = unlocked.has(c.id);
           const isPreview = !hasCredits && idx === 0;
 
           return (
@@ -202,31 +183,16 @@ export function ActiveLeadsTab({
 
                 <div className="flex-1" />
 
-                {isUnlocked ? (
-                  <button className="mt-2 w-full py-2 text-xs font-semibold bg-[#1f8268] text-white rounded-xl">
-                    View number
-                  </button>
-                ) : isPreview ? (
-                  <button
-                    data-ftue="first-lead-unlock-btn"
-                    onClick={e => { e.stopPropagation(); onUnlockAndView?.(c.id); }}
-                    className="mt-2 w-full py-2 text-xs font-semibold bg-[#1f8268] hover:bg-[#186b55] text-white rounded-xl transition-colors"
-                  >
-                    Unlock for free · Preview
-                  </button>
-                ) : remaining > 0 ? (
-                  <button
-                    {...(idx === 0 ? { 'data-ftue': 'first-lead-unlock-btn' } : {})}
-                    onClick={e => { e.stopPropagation(); handleUnlock(c.id); onUnlockAndView?.(c.id); }}
-                    className="mt-2 w-full py-2 text-xs font-semibold border border-[#1f8268] text-[#1f8268] rounded-xl hover:bg-[#eaf8f4] transition-colors"
-                  >
-                    Unlock · 1 credit
-                  </button>
-                ) : (
-                  <button onClick={e => { e.stopPropagation(); setShowBuyModal(true); }} className="mt-2 w-full py-2 text-xs font-semibold border border-[#dfe1e6] text-[#5e6c84] rounded-xl hover:bg-gray-50 transition-colors">
-                    Buy credits to unlock
-                  </button>
-                )}
+                <button
+                  data-ftue="first-lead-unlock-btn"
+                  onClick={e => { e.stopPropagation(); onUnlockAndView?.(c.id); }}
+                  className="mt-2 w-full py-2 text-xs font-semibold border border-[#1f8268] text-[#1f8268] rounded-xl hover:bg-[#eaf8f4] transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  View Profile
+                </button>
               </div>
             </div>
           );

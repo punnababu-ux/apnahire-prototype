@@ -289,8 +289,6 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
 
   useEffect(() => {
     if (!highlightLeadId) return;
-    setUnlocked(prev => new Set(prev).add(highlightLeadId));
-    setViewing(prev => new Set(prev).add(highlightLeadId));
     setHighlightActive(highlightLeadId);
     const el = cardRefs.current[highlightLeadId];
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
