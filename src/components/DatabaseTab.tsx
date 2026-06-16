@@ -540,8 +540,49 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
         </div>
       )}
 
+      {/* ── Full-tab skeleton while unlock transition plays ── */}
+      {pendingHighlightId ? (
+        <div className="animate-pulse flex flex-col gap-3">
+          {/* Active Candidates section skeleton */}
+          <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+            <div className="px-4 py-3 flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-gray-200" />
+              <div className="h-3.5 w-40 bg-gray-200 rounded" />
+            </div>
+            <div className="p-3 flex flex-col gap-2">
+              {Array.from({ length: Math.min(totalLeads, 3) }).map((_, i) => (
+                <div key={i} className="rounded-xl border border-gray-100 bg-gray-50 overflow-hidden">
+                  <div className="h-14 bg-gray-100" />
+                  <div className="px-4 pt-4 pb-4 flex flex-col gap-2">
+                    <div className="h-3 w-2/3 bg-gray-200 rounded" />
+                    <div className="h-2.5 w-1/2 bg-gray-100 rounded" />
+                    <div className="h-2 w-1/3 bg-gray-100 rounded" />
+                    <div className="mt-3 h-8 w-full bg-gray-100 rounded-xl" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* DB profile rows skeleton */}
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-gray-100 bg-white overflow-hidden">
+              <div className="flex items-start gap-3 px-4 pt-4 pb-4">
+                <div className="w-4 h-4 mt-1 rounded bg-gray-100 flex-shrink-0" />
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0" />
+                <div className="flex-1 flex flex-col gap-2 pt-1">
+                  <div className="h-3 w-1/3 bg-gray-200 rounded" />
+                  <div className="h-2.5 w-1/2 bg-gray-100 rounded" />
+                  <div className="h-2 w-1/4 bg-gray-100 rounded" />
+                </div>
+                <div className="h-8 w-24 bg-gray-100 rounded-xl flex-shrink-0" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
       {/* ── Live Leads region: pinned card (default) OR slim unpinned banner ── */}
-      {pinned ? (
+      {pinned && !pendingHighlightId ? (
         <div className="border border-[#b6ecec] rounded-xl bg-[#e7f9f9] mb-3 overflow-hidden">
           {/* Container header — title left, pin toggle far right */}
           <div className="px-4 py-3">
@@ -572,22 +613,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
             </p>
           </div>
 
-          {pendingHighlightId ? (
-            /* Skeleton — shown while the unlock transition plays */
-            <div className="p-3 flex flex-col gap-2">
-              {Array.from({ length: Math.min(totalLeads, 3) }).map((_, i) => (
-                <div key={i} className="rounded-xl border border-[#dfe1e6] bg-white overflow-hidden animate-pulse">
-                  <div className="h-14 bg-gray-100" />
-                  <div className="px-4 pt-4 pb-4 flex flex-col gap-2">
-                    <div className="h-3 w-2/3 bg-gray-200 rounded" />
-                    <div className="h-2.5 w-1/2 bg-gray-100 rounded" />
-                    <div className="h-2 w-1/3 bg-gray-100 rounded" />
-                    <div className="mt-3 h-8 w-full bg-gray-100 rounded-xl" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : totalLeads > 0 ? (
+          {totalLeads > 0 ? (
             visibleLeads.length > 0 ? (
               /* Cards inside the green container */
               <div className="p-3 flex flex-col gap-2">
@@ -615,7 +641,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
             </div>
           )}
         </div>
-      ) : (
+      ) : !pendingHighlightId ? (
         /* Unpinned — slim banner; Live Leads now flow into the results list below */
         <div className="flex items-center justify-between gap-3 mb-3 px-4 py-2.5 rounded-xl border border-[#b6ecec] bg-[#e7f9f9]">
           <span className="flex items-center gap-2 text-xs text-[#172b4d] min-w-0">
@@ -625,14 +651,14 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
           </span>
           <PinToggle pinned={false} onToggle={onTogglePin} />
         </div>
-      )}
+      ) : null}
 
       {/* ── Results list ──
             • Pinned: Live Leads live in the card above; here we show just the DB profiles.
             • Unpinned: Live Leads are woven in between the DB profiles, keeping their
               matching bar + "Active this week" highlight so they still stand out. ── */}
       <div className="mb-2" />
-      {(() => {
+      {!pendingHighlightId && (() => {
         const rows = pinned
           ? visibleDb.map(p => ({ profile: p, live: false }))
           : interleaveLeads(uniqueLeads, visibleDb);
@@ -657,7 +683,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
         return rows.map(({ profile, live }) => live ? renderLeadRow(profile, true) : renderDbRow(profile));
       })()}
 
-      {visibleDb.length > 0 && (
+      {!pendingHighlightId && visibleDb.length > 0 && (
         <div className="text-center py-6">
           <button
             onClick={() => setAllLoaded(true)}
