@@ -248,7 +248,7 @@ export function JobDetail() {
         const coachSteps: CoachStep[] = [
           {
             selector: '[data-ftue="live-leads-section"]',
-            title: 'Meet your Active Candidates',
+            title: 'Meet your Hot Leads',
             body: `These ${totalLeads} candidates aren't a static list — they're actively looking for work right now and match your job.`,
             cta: 'Got it',
           },
@@ -271,7 +271,7 @@ export function JobDetail() {
       })()}
 
       {/* Content */}
-      <JobTabContext.Provider value={{ goToDatabase: () => setTab('database') }}>
+      <JobTabContext.Provider value={{ goToDatabase: handleGoToDatabase }}>
       <div className="flex-1 overflow-hidden bg-gray-50 flex justify-center" style={{ padding: '12px 20px 23px' }}>
         <div className="flex w-full max-w-[1100px] gap-3 min-h-0">
         {tab === 'applied' && scenario.applicationsCount > 0 && <FiltersPanel mode="applied" />}
@@ -589,7 +589,7 @@ function JobStatusCard({
                 {!isDone && <span>…</span>}
                 {isDone && totalLeads > 0 && (
                   <span className="anim-fade-in">
-                    {' '}— meanwhile <span className="text-emerald-600 font-medium">{totalLeads} Active Candidates</span> from the apna database are already matching your requirements.
+                    {' '}— meanwhile <span className="text-emerald-600 font-medium">{totalLeads} Hot Leads</span> from the apna database are already matching your requirements.
                   </span>
                 )}
               </>

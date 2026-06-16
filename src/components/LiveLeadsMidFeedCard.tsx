@@ -32,7 +32,7 @@ export function LiveLeadsMidFeedCard({ totalLeads, hasCredits, onExplore }: Live
       {/* Text + avatars */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-bold text-[#172b4d]">{totalLeads} Active Candidates matching this job</span>
+          <span className="text-sm font-bold text-[#172b4d]">{totalLeads} Hot Leads matching this job</span>
           <div className="flex -space-x-1.5">
             {PREVIEW_AVATARS.map(a => (
               <div
@@ -62,7 +62,7 @@ export function LiveLeadsMidFeedCard({ totalLeads, hasCredits, onExplore }: Live
             : 'border border-[#1f8268] text-[#1f8268] hover:bg-[#eaf8f4]'
         }`}
       >
-        {hasCredits ? 'Browse & unlock' : 'Explore Active Candidates'}
+        {hasCredits ? 'Browse & unlock' : 'Explore Hot Leads'}
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <polyline points="5 12 12 12 19 12"/><polyline points="13 6 19 12 13 18"/>
         </svg>

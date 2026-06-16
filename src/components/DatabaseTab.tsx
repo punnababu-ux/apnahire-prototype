@@ -541,7 +541,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
       {/* ── Full-tab skeleton while unlock transition plays ── */}
       {pendingHighlightId ? (
         <div className="animate-pulse flex flex-col gap-3">
-          {/* Active Candidates section skeleton */}
+          {/* Hot Leads section skeleton */}
           <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
             <div className="px-4 py-3 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-gray-200" />
@@ -594,7 +594,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
                 ) : (
                   <span className="w-2 h-2 rounded-full flex-shrink-0 bg-gray-300" />
                 )}
-                <span className="text-sm font-semibold text-[#172b4d]">Active Candidates ({liveCount})</span>
+                <span className="text-sm font-semibold text-[#172b4d]">Hot Leads ({liveCount})</span>
                 {liveCount > 0 && (
                   <span className="flex items-center gap-1 text-[11px] font-bold text-white bg-[#1f8268] px-2 py-0.5 rounded-full uppercase tracking-wide">
                     <span className="w-1.5 h-1.5 rounded-full bg-white" />
@@ -619,7 +619,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
               </div>
             ) : (
               /* Filtered out — no Live Leads match */
-              <p className="px-4 pb-4 text-xs text-[#5e6c84]">No Active Candidates match these filters.</p>
+              <p className="px-4 pb-4 text-xs text-[#5e6c84]">No Hot Leads match these filters.</p>
             )
           ) : (
             /* Pending state — no active leads yet */
@@ -631,7 +631,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#1f8268]">Active Candidates will appear here</p>
+                <p className="text-sm font-semibold text-[#1f8268]">Hot Leads will appear here</p>
                 <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
                   We're watching {dbTotal} matching candidates in the database and will notify you as soon as any become active on the app.
                 </p>
@@ -644,7 +644,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
         <div className="flex items-center justify-between gap-3 mb-3 px-4 py-2.5 rounded-xl border border-[#b6ecec] bg-[#e7f9f9]">
           <span className="flex items-center gap-2 text-xs text-[#172b4d] min-w-0">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-            <span className="font-semibold">Active Candidates ({liveCount})</span>
+            <span className="font-semibold">Hot Leads ({liveCount})</span>
             <span className="text-gray-500 truncate hidden sm:inline">· unpinned — flagged in your results below</span>
           </span>
           <PinToggle pinned={false} onToggle={onTogglePin} />

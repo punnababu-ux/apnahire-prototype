@@ -142,7 +142,7 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onF
           {/* Title */}
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-base font-semibold text-[#172b4d]">Active Candidates</span>
+              <span className="text-base font-semibold text-[#172b4d]">Hot Leads</span>
               {totalLeads > 0 && <span className="text-[11px] font-semibold text-[#005c62] bg-[#e7f9f9] px-2 py-0.5 rounded-full">New</span>}
             </div>
             <p className="text-[11px] text-[#172b4d] leading-snug">
