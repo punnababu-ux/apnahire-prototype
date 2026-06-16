@@ -282,7 +282,7 @@ export function ActiveLeadsTab({
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
               </svg>
               <p className="text-xs text-[#42526e]">
-                <span className="text-[#1f8268] font-semibold">{totalLeads} candidates shortlisted for you</span>
+                <span className="text-[#1f8268] font-semibold">{totalLeads} Hot Leads matched for you</span>
                 {' · '}
                 <span className="font-semibold text-[#172b4d]">{remaining} credits available</span>
                 {' — view a profile to unlock & contact'}
@@ -313,9 +313,9 @@ export function ActiveLeadsTab({
                 <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
               <p className="text-xs text-[#42526e]">
-                <span className="text-[#1f8268] font-semibold">{totalLeads} candidates shortlisted for you</span>
+                <span className="text-[#1f8268] font-semibold">{totalLeads} Hot Leads matched for you</span>
                 {' · '}
-                <span className="font-semibold text-[#172b4d]">buy credits to unlock & contact</span>
+                <span className="font-semibold text-[#172b4d]">buy credits to view & contact</span>
               </p>
             </div>
             <button onClick={() => setShowBuyModal(true)} className="flex-shrink-0 px-3 py-1.5 bg-[#1f8268] hover:bg-[#186b55] text-white text-xs font-semibold rounded-xl transition-colors">
