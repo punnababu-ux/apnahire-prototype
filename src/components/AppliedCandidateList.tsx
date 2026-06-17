@@ -18,12 +18,13 @@ interface Props {
   applicantCount: number;
   totalLeads?: number;
   dbCredits?: number;
+  dbTotal?: number;
   hasUsedDb?: boolean;
   nudgeVariant?: NudgeVariant;
   leadsAtEnd?: boolean;
 }
 
-export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits = 0, nudgeVariant, leadsAtEnd }: Props) {
+export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits = 0, dbTotal = 0, nudgeVariant, leadsAtEnd }: Props) {
   const [statuses, setStatuses] = useState<Record<string, ApplicantStatus>>({ '1': 'shortlisted' });
   const [showBuyModal, setShowBuyModal] = useState(false);
 
@@ -33,6 +34,10 @@ export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits
   // ('first_try' / 'engage') surface intent via ActiveLeadsTab, so no banner here.
   const isRepurchase = nudgeVariant === 'repurchase';
   const showCreditNudge = totalLeads > 0 && applicantCount > 0 && (isRepurchase || nudgeVariant === 'educate_buy');
+
+  // No active leads, but the DB has matches → manage expectations on the default tab
+  // (the DB tab's pending state would otherwise be the only place this is acknowledged).
+  const showNoLeadsNote = totalLeads === 0 && applicantCount > 0 && dbTotal > 0;
 
   const shownApplicants = APPLICANTS.slice(0, Math.min(applicantCount, APPLICANTS.length));
   const highMatches = shownApplicants.filter(a => a.tier === 'high');
@@ -99,6 +104,19 @@ export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits
           >
             {isRepurchase ? 'Top up credits' : 'Buy credits'}
           </button>
+        </div>
+      )}
+
+      {/* No active Hot Leads yet — manage expectations (DB has matches, none active) */}
+      {showNoLeadsNote && (
+        <div className="mb-3 flex items-start gap-2.5 px-4 py-3 rounded-xl border border-[#dfe1e6] bg-white">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <p className="text-xs text-[#42526e]">
+            <span className="font-semibold text-[#172b4d]">No Hot Leads are active right now.</span> We're watching{' '}
+            <span className="font-semibold text-[#172b4d]">{dbTotal.toLocaleString()} matching candidates</span> in the database and will alert you the moment one becomes active.
+          </p>
         </div>
       )}
 

@@ -33,6 +33,7 @@ export function OldHasCreditsUsedLeads({ totalLeads, dbCredits, applicantCount, 
         applicantCount={applicantCount}
         totalLeads={totalLeads}
         dbCredits={dbCredits}
+        dbTotal={dbTotal}
         hasUsedDb={true}
         nudgeVariant="engage"
         leadsAtEnd={totalLeads > 0 && applicantCount >= 5}

@@ -34,6 +34,7 @@ export function OldHasCreditsNeverDb({ totalLeads, dbCredits, applicantCount, db
         applicantCount={applicantCount}
         totalLeads={totalLeads}
         dbCredits={dbCredits}
+        dbTotal={dbTotal}
         hasUsedDb={false}
         nudgeVariant="first_try"
         leadsAtEnd={totalLeads > 0 && applicantCount >= 5}

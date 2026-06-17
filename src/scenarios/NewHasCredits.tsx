@@ -32,6 +32,7 @@ export function NewHasCredits({ totalLeads, dbCredits, applicantCount, dbTotal, 
         applicantCount={applicantCount}
         totalLeads={totalLeads}
         dbCredits={dbCredits}
+        dbTotal={dbTotal}
         hasUsedDb={false}
         nudgeVariant="first_try"
         leadsAtEnd={totalLeads > 0 && applicantCount >= 5}

@@ -4,7 +4,7 @@ import { AppliedCandidateList } from '../components/AppliedCandidateList';
 // Spec: New · No Credits. Credits=0 ⇒ never lead with an unactionable widget when organic
 // exists. 0 applicants is handled by JobDetail's shared ActiveLeadsTab (component returns
 // null). For any 1+ applicants, Hot Leads is a single ingress at the END of the feed.
-export function NewNoCredits({ totalLeads, dbCredits, applicantCount }: ScenarioProps) {
+export function NewNoCredits({ totalLeads, dbCredits, applicantCount, dbTotal }: ScenarioProps) {
   if (applicantCount === 0) return null;
 
   return (
@@ -13,6 +13,7 @@ export function NewNoCredits({ totalLeads, dbCredits, applicantCount }: Scenario
         applicantCount={applicantCount}
         totalLeads={totalLeads}
         dbCredits={dbCredits}
+        dbTotal={dbTotal}
         hasUsedDb={false}
         nudgeVariant="educate_buy"
         leadsAtEnd={totalLeads > 0}

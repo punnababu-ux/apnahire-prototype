@@ -93,7 +93,7 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
   } else if (c.leads === 'zero' && c.age === 'aging') {
     goal = 'Create urgency. DB matches exist but no active leads — push to broaden requirements before expiry.';
   } else if (c.leads === 'zero') {
-    goal = 'Manage expectations. DB exists but no active leads yet — encourage broadening and checking back.';
+    goal = 'Manage expectations. Matches exist but none are active right now — reassure the recruiter and alert them when Hot Leads become active.';
   } else if (c.credits === 'none') {
     // No credits → never-tried recruiters get a first-purchase intro nudge; recruiters
     // who used Hot Leads before get a repurchase/top-up nudge that reinforces past value.
