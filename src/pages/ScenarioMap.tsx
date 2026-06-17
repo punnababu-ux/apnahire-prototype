@@ -247,7 +247,38 @@ const RULE_ROWS = [
   { cond: '1–4 applicants · no credits', rule: 'Ingress at end — can\'t action, drive repurchase' },
   { cond: '5+ applicants', rule: 'Ingress at end (organic leads, don\'t interrupt)' },
   { cond: 'CTA (every Hot Lead)', rule: 'Always "View Profile" → opens the profile in the DB tab. Never an unlock/buy button in the Applied tab.' },
-  { cond: 'Unlock (no credits)', rule: 'Profile still opens via "View Profile". The unlock attempt in the DB tab triggers the "not enough credits" popup → Buy credits.' },
+  { cond: 'Unlock (no credits)', rule: 'Profile still opens via "View Profile". The unlock attempt triggers the "not enough credits" popup → Buy credits.' },
+];
+
+// Hot Leads location — configurable via Archetypes "Hot Leads location" toggle.
+// The placement rule above is IDENTICAL in both modes; only the destination + where
+// leads physically live differ.
+const LOCATION_MODES = [
+  {
+    tag: 'Default',
+    tagColor: 'text-gray-300 border-gray-600 bg-gray-700/40',
+    name: 'Part of Database',
+    trigger: 'leadsLocation = "database" (or unset)',
+    points: [
+      'Hot Leads are pinned inside the Database tab (teal container at the top).',
+      'Applied-tab CTAs ("View Profile", "Explore Hot Leads") → Database tab.',
+      'Database filter rail shows the Hot Leads summary card; green "active" dot sits on the Database tab.',
+      'The component matrix below describes this mode.',
+    ],
+  },
+  {
+    tag: 'Own tab',
+    tagColor: 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10',
+    name: 'Dedicated Hot Leads tab',
+    trigger: 'leadsLocation = "individual"  ·  Archetypes → Hot Leads location → Own tab',
+    points: [
+      'A "Hot Leads (N)" tab sits between Applied and Database (always shown in this mode).',
+      'Leads render in the teal container, unfiltered, with a slim "Explore Database →" index at the end. Left rail = Hot Leads summary card.',
+      'Applied-tab CTAs → the Hot Leads tab (skeleton → highlight there), not the Database.',
+      'Database tab is cleaned of Hot Leads (no pinned section, no summary card) and its filters open expanded; the green "active" dot moves to the Hot Leads tab.',
+      'FTUE (coach marks + modal) reference the Hot Leads tab instead of the database.',
+    ],
+  },
 ];
 
 export function ScenarioMap() {
@@ -268,7 +299,9 @@ export function ScenarioMap() {
           <h1 className="text-3xl font-bold text-white mb-2">Scenario Map</h1>
           <p className="text-gray-400 text-sm leading-relaxed max-w-2xl">
             Design spec — exactly one Hot Leads placement per cell, across every component, applicant
-            volume, and lead volume. The code is aligned to this spec (verified).
+            volume, and lead volume. Hot Leads can live <span className="text-gray-300">inside the Database tab</span> or
+            in <span className="text-gray-300">their own tab</span> (see below); the placement rule is the same either way.
+            The code is aligned to this spec (verified).
           </p>
         </div>
 
@@ -284,6 +317,39 @@ export function ScenarioMap() {
                 <span className="text-sm text-gray-400">{r.rule}</span>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Hot Leads location */}
+        <div className="mb-8 bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-800">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Hot Leads location — configurable</p>
+          </div>
+          <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-800">
+            {LOCATION_MODES.map(m => (
+              <div key={m.name} className="px-6 py-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${m.tagColor}`}>{m.tag}</span>
+                  <span className="text-sm font-semibold text-white">{m.name}</span>
+                </div>
+                <p className="text-[11px] text-gray-500 font-mono mb-3">{m.trigger}</p>
+                <ul className="flex flex-col gap-1.5">
+                  {m.points.map((p, i) => (
+                    <li key={i} className="text-[12px] text-gray-400 leading-relaxed flex gap-2">
+                      <span className="text-gray-600 flex-shrink-0">·</span>
+                      <span>{p}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div className="px-6 py-3 border-t border-gray-800 bg-gray-900/50">
+            <p className="text-[12px] text-gray-400 leading-relaxed">
+              <span className="font-semibold text-gray-300">Placement is identical in both modes</span> — only the destination
+              and where leads live differ. The matrix below applies to both; in Own-tab mode, read "Database tab" as "Hot Leads tab"
+              for the lead destination.
+            </p>
           </div>
         </div>
 
