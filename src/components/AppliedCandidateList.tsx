@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LiveLeadsMidFeedCard } from './LiveLeadsMidFeedCard';
 import { InsufficientCreditsModal } from './InsufficientCreditsModal';
+import { useJobTab } from '../context/JobTabContext';
 
 type NudgeVariant = 'educate_buy' | 'repurchase' | 'first_try' | 'engage';
 type ApplicantStatus = 'none' | 'shortlisted' | 'rejected';
@@ -27,17 +28,19 @@ interface Props {
 export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits = 0, dbTotal = 0, nudgeVariant, leadsAtEnd }: Props) {
   const [statuses, setStatuses] = useState<Record<string, ApplicantStatus>>({ '1': 'shortlisted' });
   const [showBuyModal, setShowBuyModal] = useState(false);
+  const isAging = useJobTab()?.jobAge === 'aging';
 
-  // Credit nudge for the no-credits feed (no ActiveLeadsTab renders here). nudgeVariant
-  // sets the framing: 'repurchase' reinforces past value + drives top-up; 'educate_buy'
-  // introduces Hot Leads + drives the first purchase. The has-credits variants
-  // ('first_try' / 'engage') surface intent via ActiveLeadsTab, so no banner here.
+  // Context banner above the feed — at most one applies (the conditions are mutually
+  // exclusive). All are aging-aware so the "expires soon" urgency reaches the default tab,
+  // not only the 0-applicant cards.
+  //  • No DB matches at all  → broaden requirements.
+  //  • DB has matches, none active  → manage expectations (watching / will alert).
+  //  • Active leads + no credits  → credit nudge (repurchase reinforces past value;
+  //    educate_buy introduces Hot Leads). has-credits variants use ActiveLeadsTab instead.
   const isRepurchase = nudgeVariant === 'repurchase';
+  const showNoDbNote   = dbTotal === 0 && applicantCount > 0;
+  const showNoLeadsNote = dbTotal > 0 && totalLeads === 0 && applicantCount > 0;
   const showCreditNudge = totalLeads > 0 && applicantCount > 0 && (isRepurchase || nudgeVariant === 'educate_buy');
-
-  // No active leads, but the DB has matches → manage expectations on the default tab
-  // (the DB tab's pending state would otherwise be the only place this is acknowledged).
-  const showNoLeadsNote = totalLeads === 0 && applicantCount > 0 && dbTotal > 0;
 
   const shownApplicants = APPLICANTS.slice(0, Math.min(applicantCount, APPLICANTS.length));
   const highMatches = shownApplicants.filter(a => a.tier === 'high');
@@ -83,9 +86,43 @@ export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits
         </div>
       </div>
 
+      {/* No DB matches at all — guide the recruiter to broaden requirements (aging-aware) */}
+      {showNoDbNote && (
+        <div className={`mb-3 flex items-start gap-2.5 px-4 py-3 rounded-xl border ${isAging ? 'border-amber-200 bg-amber-50' : 'border-[#dfe1e6] bg-white'}`}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={isAging ? '#b45309' : '#5e6c84'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <p className={`text-xs ${isAging ? 'text-amber-900' : 'text-[#42526e]'}`}>
+            {isAging ? (
+              <><span className="font-semibold">Your job expires soon and no database candidates match yet.</span> Broadening your job title, location, or skills is your best chance to find candidates before it closes.</>
+            ) : (
+              <><span className="font-semibold text-[#172b4d]">No database candidates match this job yet.</span> Broadening your job title, location, or skills can surface more.</>
+            )}
+          </p>
+        </div>
+      )}
+
+      {/* No active Hot Leads yet — manage expectations (DB has matches, none active; aging-aware) */}
+      {showNoLeadsNote && (
+        <div className={`mb-3 flex items-start gap-2.5 px-4 py-3 rounded-xl border ${isAging ? 'border-amber-200 bg-amber-50' : 'border-[#dfe1e6] bg-white'}`}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={isAging ? '#b45309' : '#5e6c84'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
+            {isAging
+              ? <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>
+              : <><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>}
+          </svg>
+          <p className={`text-xs ${isAging ? 'text-amber-900' : 'text-[#42526e]'}`}>
+            {isAging ? (
+              <><span className="font-semibold">Your job expires soon and no Hot Leads are active yet.</span> We're watching <span className="font-semibold">{dbTotal.toLocaleString()} matching candidates</span> — we'll alert you the moment one becomes active so you can reach out fast.</>
+            ) : (
+              <><span className="font-semibold text-[#172b4d]">No Hot Leads are active right now.</span> We're watching <span className="font-semibold text-[#172b4d]">{dbTotal.toLocaleString()} matching candidates</span> in the database and will alert you the moment one becomes active.</>
+            )}
+          </p>
+        </div>
+      )}
+
       {/* Credit nudge — reinforces past value (repurchase) or introduces Hot Leads (first buy) */}
       {showCreditNudge && (
-        <div className="mb-3 flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-[#b6ecec] bg-[#eaf8f4]">
+        <div data-ftue="leads-nudge" className="mb-3 flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-[#b6ecec] bg-[#eaf8f4]">
           <div className="flex items-center gap-2.5 min-w-0">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" className="flex-shrink-0">
               <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -104,19 +141,6 @@ export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits
           >
             {isRepurchase ? 'Top up credits' : 'Buy credits'}
           </button>
-        </div>
-      )}
-
-      {/* No active Hot Leads yet — manage expectations (DB has matches, none active) */}
-      {showNoLeadsNote && (
-        <div className="mb-3 flex items-start gap-2.5 px-4 py-3 rounded-xl border border-[#dfe1e6] bg-white">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-          <p className="text-xs text-[#42526e]">
-            <span className="font-semibold text-[#172b4d]">No Hot Leads are active right now.</span> We're watching{' '}
-            <span className="font-semibold text-[#172b4d]">{dbTotal.toLocaleString()} matching candidates</span> in the database and will alert you the moment one becomes active.
-          </p>
         </div>
       )}
 

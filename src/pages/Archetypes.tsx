@@ -73,7 +73,7 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
                 :                    'A healthy pool of matching candidates in the database.';
   const leadPart = c.db === 'none'    ? ''
                  : c.leads === 'zero' ? 'None are currently active/looking.'
-                 : c.leads === 'low'  ? 'Only a few are currently live (1–5).'
+                 : c.leads === 'low'  ? 'Only a few are currently active (1–5).'
                  :                     'A good pool are actively looking (6+).';
   const creditPart = c.credits === 'none'
     ? (c.exp === 'never' ? 'Has never tried DB and has no credits.' : 'Credits depleted after past DB use.')
@@ -89,9 +89,9 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
   } else if (c.db === 'none') {
     goal = 'Inform honestly. Guide the recruiter to broaden their job requirements.';
   } else if (c.age === 'fresh') {
-    goal = 'Set expectations. Reassure the recruiter that leads are coming — no alarm needed yet.';
+    goal = 'Set expectations — applications are just starting. Surface any Hot Leads already active and reassure the recruiter that more are coming.';
   } else if (c.leads === 'zero' && c.age === 'aging') {
-    goal = 'Create urgency. DB matches exist but no active leads — push to broaden requirements before expiry.';
+    goal = 'Create urgency — the job is expiring and no Hot Leads are active yet. Flag the deadline and alert the recruiter the moment a match becomes active.';
   } else if (c.leads === 'zero') {
     goal = 'Manage expectations. Matches exist but none are active right now — reassure the recruiter and alert them when Hot Leads become active.';
   } else if (c.credits === 'none') {

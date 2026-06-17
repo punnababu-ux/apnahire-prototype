@@ -1,4 +1,6 @@
 import { createContext, useContext } from 'react';
 
-export const JobTabContext = createContext<{ goToDatabase: () => void } | null>(null);
+export type JobAge = 'fresh' | 'active' | 'aging';
+
+export const JobTabContext = createContext<{ goToDatabase: () => void; jobAge?: JobAge } | null>(null);
 export function useJobTab() { return useContext(JobTabContext); }

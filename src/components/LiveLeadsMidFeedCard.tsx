@@ -21,7 +21,7 @@ export function LiveLeadsMidFeedCard({ totalLeads, hasCredits, onExplore }: Live
   }
 
   return (
-    <div className="mb-3 rounded-xl border border-[#b6ecec] bg-[#eaf8f4]/40 px-4 py-3.5 flex items-center gap-4">
+    <div data-ftue="leads-ingress" className="mb-3 rounded-xl border border-[#b6ecec] bg-[#eaf8f4]/40 px-4 py-3.5 flex items-center gap-4">
       {/* Icon */}
       <div className="w-9 h-9 rounded-full bg-[#1f8268] flex items-center justify-center flex-shrink-0">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

@@ -276,40 +276,61 @@ export function JobDetail() {
 
       {/* FTUE v2 — coach marks */}
       {ftueVersion === 'v2' && showFtue && ftueOpen && (() => {
-        const coachSteps: CoachStep[] = [
-          {
-            selector: '[data-ftue="live-leads-section"]',
-            title: 'Meet your Hot Leads',
-            body: `These ${totalLeads} candidates aren't a static list — they're actively looking for work right now and match your job.`,
-            cta: 'Got it',
-          },
-          {
-            selector: '[data-ftue="first-lead-unlock-btn"]',
-            title: 'View profile, then unlock',
-            body: leadsIndividual
-              ? 'Tap "View Profile" to open the full profile in the Hot Leads tab. From there, unlock with 1 credit to get their phone number and contact them directly.'
-              : 'Tap "View Profile" to see the full profile in the database. From there, unlock with 1 credit to get their phone number and contact them directly.',
-            cta: 'Got it',
-          },
-          leadsIndividual
-            ? {
-                selector: '[data-ftue="leads-tab"]',
-                title: 'Your Hot Leads, in one tab',
-                body: `All ${totalLeads} active Hot Leads live in this tab — no filters, just the freshest matches. Explore the full database any time from the Database tab.`,
-                cta: 'Got it!',
-              }
-            : {
-                selector: '[data-ftue="database-tab"]',
-                title: `All ${dbTotal} matching candidates`,
-                body: 'Browse every candidate who fits this job. Hot Leads are pinned at the top — they\'re the most likely to respond.',
-                cta: 'Got it!',
+        // The Applied-tab Hot Leads surface differs by scenario: the full ActiveLeadsTab
+        // widget renders for 0 applicants or (few applicants + credits); otherwise leads
+        // appear as the end-of-feed ingress (and a credit nudge for no-credits). Anchor
+        // the tour to whatever is actually on screen so steps never silently skip.
+        const leadsWidgetOnApplied = totalLeads > 0 &&
+          (scenario.applicationsCount === 0 || (scenario.dbCredits > 0 && scenario.applicationsCount < 5));
+
+        const tabStep: CoachStep = leadsIndividual
+          ? {
+              selector: '[data-ftue="leads-tab"]',
+              title: 'Your Hot Leads, in one tab',
+              body: `All ${totalLeads} active Hot Leads live in this tab — no filters, just the freshest matches. Explore the full database any time from the Database tab.`,
+              cta: 'Got it!',
+            }
+          : {
+              selector: '[data-ftue="database-tab"]',
+              title: `All ${dbTotal} matching candidates`,
+              body: 'Browse every candidate who fits this job. Hot Leads are pinned at the top — they\'re the most likely to respond.',
+              cta: 'Got it!',
+            };
+
+        const coachSteps: CoachStep[] = leadsWidgetOnApplied
+          ? [
+              {
+                selector: '[data-ftue="live-leads-section"]',
+                title: 'Meet your Hot Leads',
+                body: `These ${totalLeads} candidates aren't a static list — they're actively looking for work right now and match your job.`,
+                cta: 'Got it',
               },
-        ];
+              {
+                selector: '[data-ftue="first-lead-unlock-btn"]',
+                title: 'View profile, then unlock',
+                body: leadsIndividual
+                  ? 'Tap "View Profile" to open the full profile in the Hot Leads tab. From there, unlock with 1 credit to get their phone number and contact them directly.'
+                  : 'Tap "View Profile" to see the full profile in the database. From there, unlock with 1 credit to get their phone number and contact them directly.',
+                cta: 'Got it',
+              },
+              tabStep,
+            ]
+          : [
+              {
+                // Leads live as the end-of-feed ingress (and a top credit nudge for
+                // no-credits). Prefer the nudge (top, no scroll) when present, else the ingress.
+                selector: '[data-ftue="leads-nudge"], [data-ftue="leads-ingress"]',
+                title: 'Meet your Hot Leads',
+                body: `${totalLeads} candidates from apna's database are actively looking right now and match your job — open them to view full profiles and contact details.`,
+                cta: 'Got it',
+              },
+              tabStep,
+            ];
         return <CoachMarks steps={coachSteps} onComplete={handleFtueComplete} />;
       })()}
 
       {/* Content */}
-      <JobTabContext.Provider value={{ goToDatabase: handleExploreLeads }}>
+      <JobTabContext.Provider value={{ goToDatabase: handleExploreLeads, jobAge }}>
       <div className="flex-1 overflow-hidden bg-gray-50 flex justify-center" style={{ padding: '12px 20px 23px' }}>
         <div className="flex w-full max-w-[1100px] gap-3 min-h-0">
         {tab === 'applied' && scenario.applicationsCount > 0 && <FiltersPanel mode="applied" />}
