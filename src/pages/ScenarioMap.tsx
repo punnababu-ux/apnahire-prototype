@@ -16,25 +16,19 @@ interface ComponentEntry {
   apps: AppsCase[];
 }
 
-// ─── DB tab — single unlock flow. The CTA is ALWAYS "View Profile" (Applied tab) → ──
-// it opens the profile in the DB tab. Unlocking the phone there spends 1 credit; with
-// no credits the "not enough credits" popup appears with a Buy credits CTA. The profile
-// is never "locked" from view — only the unlock action branches on credits.
+// Short, scannable cell labels (the badge carries the main signal; these add one line).
 const DB = {
-  // Same string whether or not the recruiter has credits — credits only change what
-  // happens AFTER they attempt the unlock, not whether the profile opens.
-  leads: 'Hot Leads pinned at top. "View Profile" opens the profile here → unlocking reveals the phone (1 credit) · no credits → "not enough credits" popup → Buy credits.',
-  noLeads: 'No Hot Leads pinned. DB profiles open via "View Profile" → same unlock-or-buy-credits-popup flow.',
-  empty: 'No Hot Leads pinned · DB empty when size = none.',
+  leads: 'Pinned · unlock here',
+  noLeads: 'DB profiles only',
+  empty: 'Empty',
 };
 
-// Treatment-note builders (placement × credit treatment overlay)
-const LEAD_SHARED_CREDIT = 'Hot Leads lead — JobDetail shared ActiveLeadsTab (default header). Cards "View Profile". Footer: "{N} credits available — view a profile to unlock & contact".';
-const LEAD_SHARED_NOCREDIT = 'Hot Leads lead — JobDetail shared ActiveLeadsTab (default header). First card = free preview (blurred phone) + "How it works". Footer: buy / top-up CTA.';
-const LEAD_TOP_CREDIT = 'Hot Leads lead — ActiveLeadsTab at top (custom header), single. Organic is thin, DB is the bigger opportunity. Cards "View Profile".';
-const END_CREDIT = 'Organic leads — AppliedCandidateList · LiveLeadsMidFeedCard ingress at end. Substantial organic — don\'t interrupt.';
-const END_NOCREDIT = 'Organic leads — AppliedCandidateList · LiveLeadsMidFeedCard ingress at end. Can\'t action without credits — repurchase nudge.';
-const NONE = 'No Hot Leads card (jobLeads = 0).';
+const LEAD_SHARED_CREDIT = 'Full widget at top';
+const LEAD_SHARED_NOCREDIT = 'Full widget · 1st card free';
+const LEAD_TOP_CREDIT = 'Widget at top';
+const END_CREDIT = 'Ingress at end';
+const END_NOCREDIT = 'Ingress at end · repurchase';
+const NONE = '';
 
 // ─── data (INTENDED DESIGN — one Hot Leads placement per cell) ──────────────────
 const COMPONENTS: ComponentEntry[] = [
@@ -49,14 +43,14 @@ const COMPONENTS: ComponentEntry[] = [
       {
         label: 'No applicants',
         outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_SHARED_NOCREDIT + ' Footer: "buy credits to view & contact".', db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: 'JobStatusCard + NoLeadsCard.', db: DB.empty } },
+          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_SHARED_NOCREDIT, db: DB.leads } },
+          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: '', db: DB.empty } },
         ],
       },
       {
         label: 'Any applicants (1+)',
         outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'end',  appliedNote: END_NOCREDIT + ' Ingress CTA: "Explore Hot Leads".', db: DB.leads } },
+          { leads: 'Leads > 0', outcome: { applied: 'end',  appliedNote: END_NOCREDIT, db: DB.leads } },
           { leads: 'No leads',  outcome: { applied: 'none', appliedNote: NONE, db: DB.noLeads } },
         ],
       },
@@ -74,7 +68,7 @@ const COMPONENTS: ComponentEntry[] = [
         label: 'No applicants',
         outcomes: [
           { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_SHARED_CREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: 'JobStatusCard + NoLeadsCard.', db: DB.noLeads } },
+          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: '', db: DB.noLeads } },
         ],
       },
       {
@@ -87,7 +81,7 @@ const COMPONENTS: ComponentEntry[] = [
       {
         label: 'Many applicants (5+)',
         outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'end',  appliedNote: END_CREDIT + ' ActiveLeadsTab suppressed (applicantCount ≥ 5).', db: DB.leads } },
+          { leads: 'Leads > 0', outcome: { applied: 'end',  appliedNote: END_CREDIT, db: DB.leads } },
           { leads: 'No leads',  outcome: { applied: 'none', appliedNote: NONE, db: DB.noLeads } },
         ],
       },
@@ -104,8 +98,8 @@ const COMPONENTS: ComponentEntry[] = [
       {
         label: 'No applicants',
         outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_SHARED_NOCREDIT + ' Footer: "top up" if previously used DB, else "buy credits".', db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: 'JobStatusCard + NoLeadsCard.', db: DB.empty } },
+          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_SHARED_NOCREDIT, db: DB.leads } },
+          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: '', db: DB.empty } },
         ],
       },
       {
@@ -129,13 +123,13 @@ const COMPONENTS: ComponentEntry[] = [
         label: 'No applicants',
         outcomes: [
           { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_SHARED_CREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: 'JobStatusCard + NoLeadsCard.', db: DB.noLeads } },
+          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: '', db: DB.noLeads } },
         ],
       },
       {
         label: 'Few applicants (1–4)',
         outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_TOP_CREDIT + ' First DB interaction — make unlocking effortless.', db: DB.leads } },
+          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_TOP_CREDIT, db: DB.leads } },
           { leads: 'No leads',  outcome: { applied: 'none', appliedNote: NONE, db: DB.noLeads } },
         ],
       },
@@ -160,7 +154,7 @@ const COMPONENTS: ComponentEntry[] = [
         label: 'No applicants',
         outcomes: [
           { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_SHARED_CREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: 'JobStatusCard + NoLeadsCard.', db: DB.noLeads } },
+          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: '', db: DB.noLeads } },
         ],
       },
       {
@@ -191,20 +185,20 @@ const COMPONENTS: ComponentEntry[] = [
         label: 'No applicants',
         outcomes: [
           { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_SHARED_CREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: 'JobStatusCard + NoLeadsCard.', db: DB.noLeads } },
+          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: '', db: DB.noLeads } },
         ],
       },
       {
         label: 'Few applicants (1–4)',
         outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_TOP_CREDIT + ' No hand-holding copy — they know the flow.', db: DB.leads } },
+          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_TOP_CREDIT, db: DB.leads } },
           { leads: 'No leads',  outcome: { applied: 'none', appliedNote: NONE, db: DB.noLeads } },
         ],
       },
       {
         label: 'Many applicants (5+)',
         outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'end',  appliedNote: END_CREDIT + ' They self-serve from the DB tab.', db: DB.leads } },
+          { leads: 'Leads > 0', outcome: { applied: 'end',  appliedNote: END_CREDIT, db: DB.leads } },
           { leads: 'No leads',  outcome: { applied: 'none', appliedNote: NONE, db: DB.noLeads } },
         ],
       },
@@ -221,8 +215,8 @@ const COMPONENTS: ComponentEntry[] = [
       {
         label: 'With applicants (fixed scenario = 8 apps, i.e. 5+)',
         outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'end',  appliedNote: 'Custom card view (High + Medium Matches) · LiveLeadsMidFeedCard at end. Does NOT use AppliedCandidateList. Efficiency mode.', db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: 'Custom card view only.', db: DB.noLeads } },
+          { leads: 'Leads > 0', outcome: { applied: 'end',  appliedNote: 'Custom card view · ingress at end', db: DB.leads } },
+          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: '', db: DB.noLeads } },
         ],
       },
     ],
@@ -242,12 +236,12 @@ const TREATMENT_LABELS: Record<HotLeadsTreatment, string> = {
 };
 
 const RULE_ROWS = [
-  { cond: '0 applicants', rule: 'Hot Leads lead (shared ActiveLeadsTab — the only signal)' },
-  { cond: '1–4 applicants · has credits', rule: 'Hot Leads lead (ActiveLeadsTab at top, single)' },
-  { cond: '1–4 applicants · no credits', rule: 'Ingress at end — can\'t action, drive repurchase' },
-  { cond: '5+ applicants', rule: 'Ingress at end (organic leads, don\'t interrupt)' },
-  { cond: 'CTA (every Hot Lead)', rule: 'Always "View Profile" → opens the profile in the DB tab. Never an unlock/buy button in the Applied tab.' },
-  { cond: 'Unlock (no credits)', rule: 'Profile still opens via "View Profile". The unlock attempt triggers the "not enough credits" popup → Buy credits.' },
+  { cond: '0 applicants', rule: 'Hot Leads lead' },
+  { cond: '1–4 · has credits', rule: 'Hot Leads lead (widget at top)' },
+  { cond: '1–4 · no credits', rule: 'Ingress at end' },
+  { cond: '5+ applicants', rule: 'Ingress at end' },
+  { cond: 'CTA', rule: 'Always "View Profile" — never unlock/buy in the Applied tab' },
+  { cond: 'No credits', rule: 'Unlock → "not enough credits" popup → Buy credits' },
 ];
 
 // Hot Leads location — configurable via Archetypes "Hot Leads location" toggle.
@@ -258,25 +252,21 @@ const LOCATION_MODES = [
     tag: 'Default',
     tagColor: 'text-gray-300 border-gray-600 bg-gray-700/40',
     name: 'Part of Database',
-    trigger: 'leadsLocation = "database" (or unset)',
+    trigger: 'default',
     points: [
-      'Hot Leads are pinned inside the Database tab (teal container at the top).',
-      'Applied-tab CTAs ("View Profile", "Explore Hot Leads") → Database tab.',
-      'Database filter rail shows the Hot Leads summary card; green "active" dot sits on the Database tab.',
-      'The component matrix below describes this mode.',
+      'Hot Leads pinned inside the Database tab.',
+      'Applied CTAs & green dot → Database tab.',
     ],
   },
   {
     tag: 'Own tab',
     tagColor: 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10',
     name: 'Dedicated Hot Leads tab',
-    trigger: 'leadsLocation = "individual"  ·  Archetypes → Hot Leads location → Own tab',
+    trigger: 'Archetypes → Hot Leads location → Own tab',
     points: [
-      'A "Hot Leads (N)" tab sits between Applied and Database (always shown in this mode).',
-      'Leads render in the teal container, unfiltered, with a slim "Explore Database →" index at the end. Left rail = Hot Leads summary card.',
-      'Applied-tab CTAs → the Hot Leads tab (skeleton → highlight there), not the Database.',
-      'Database tab is cleaned of Hot Leads (no pinned section, no summary card) and its filters open expanded; the green "active" dot moves to the Hot Leads tab.',
-      'FTUE (coach marks + modal) reference the Hot Leads tab instead of the database.',
+      'Own "Hot Leads" tab between Applied & Database.',
+      'Leads in the teal container + "Explore Database" link.',
+      'Removed from the Database tab; Applied CTAs, green dot & FTUE point here.',
     ],
   },
 ];
@@ -298,10 +288,7 @@ export function ScenarioMap() {
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Scenario Map</h1>
           <p className="text-gray-400 text-sm leading-relaxed max-w-2xl">
-            Design spec — exactly one Hot Leads placement per cell, across every component, applicant
-            volume, and lead volume. Hot Leads can live <span className="text-gray-300">inside the Database tab</span> or
-            in <span className="text-gray-300">their own tab</span> (see below); the placement rule is the same either way.
-            The code is aligned to this spec (verified).
+            One Hot Leads placement per scenario. Hot Leads can live in the Database tab or their own tab — same rule either way.
           </p>
         </div>
 
@@ -402,7 +389,7 @@ export function ScenarioMap() {
                             <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded border mb-1.5 ${TREATMENT_STYLES[o.outcome.applied]}`}>
                               {TREATMENT_LABELS[o.outcome.applied]}
                             </span>
-                            <p className="text-[11px] text-gray-500 leading-relaxed">{o.outcome.appliedNote}</p>
+                            {o.outcome.appliedNote && <p className="text-[11px] text-gray-500 leading-relaxed">{o.outcome.appliedNote}</p>}
                           </div>
                           <div className="px-4 py-3">
                             <p className="text-[11px] text-gray-400 leading-relaxed">{o.outcome.db}</p>
@@ -425,7 +412,7 @@ export function ScenarioMap() {
         </div>
 
         <p className="text-xs text-gray-700 text-center mt-10">
-          One Hot Leads placement per cell · CTA always "View Profile" → DB tab · unlock spends 1 credit, no credits → buy-credits popup
+          CTA is always "View Profile" → unlock happens in the DB / Hot Leads tab (buy-credits popup if no credits)
         </p>
       </div>
     </div>
