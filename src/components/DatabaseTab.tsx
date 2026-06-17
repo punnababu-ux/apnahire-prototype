@@ -254,11 +254,18 @@ interface DatabaseTabProps {
   onEnterSearch?: () => void;
   onResetFilters?: () => void;
   dbFilters?: DbFilterValues;
+  // Hot Leads location support:
+  //  - variant='leads'  → render ONLY the Hot Leads, unfiltered, as the standalone tab.
+  //  - hideLeads=true   → DB view with Hot Leads removed entirely (they live in their own tab).
+  //  - onExploreDatabase→ the slim "explore the database" index at the end of the leads tab.
+  variant?: 'database' | 'leads';
+  hideLeads?: boolean;
+  onExploreDatabase?: () => void;
 }
 
 const DEFAULT_DB_FILTERS: DbFilterValues = { skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false };
 
-export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highlightLeadId, pendingHighlightId, onHighlightClear, unlockedIds, creditsRemaining, onUnlock, onFreeUnlock, ftueVersion, pinned = true, onTogglePin, onEnterSearch, onResetFilters, dbFilters = DEFAULT_DB_FILTERS }: DatabaseTabProps) {
+export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highlightLeadId, pendingHighlightId, onHighlightClear, unlockedIds, creditsRemaining, onUnlock, onFreeUnlock, ftueVersion, pinned = true, onTogglePin, onEnterSearch, onResetFilters, dbFilters = DEFAULT_DB_FILTERS, variant = 'database', hideLeads = false, onExploreDatabase }: DatabaseTabProps) {
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
   const [viewing, setViewing] = useState<Set<string>>(new Set());
   const [remaining, setRemaining] = useState(credits);
@@ -388,6 +395,100 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
         isActiveLead={false}
         ftueVersion={ftueVersion}
       />
+    );
+  }
+
+  // ── Standalone Hot Leads tab — leads only, unfiltered ──
+  if (variant === 'leads') {
+    return (
+      <div className="flex flex-col gap-0">
+        <style>{SHIMMER_STYLE}</style>
+
+        {pendingHighlightId ? (
+          /* Skeleton bridge while a "View Profile" highlight resolves */
+          <div className="animate-pulse flex flex-col gap-3">
+            <div className="h-4 w-56 bg-gray-200 rounded mb-1" />
+            {Array.from({ length: Math.min(Math.max(totalLeads, 1), 4) }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-gray-100 bg-white overflow-hidden">
+                <div className="flex items-start gap-3 px-4 pt-4 pb-4">
+                  <div className="w-4 h-4 mt-1 rounded bg-gray-100 flex-shrink-0" />
+                  <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0" />
+                  <div className="flex-1 flex flex-col gap-2 pt-1">
+                    <div className="h-3 w-1/3 bg-gray-200 rounded" />
+                    <div className="h-2.5 w-1/2 bg-gray-100 rounded" />
+                    <div className="h-2 w-1/4 bg-gray-100 rounded" />
+                  </div>
+                  <div className="h-8 w-28 bg-gray-100 rounded-xl flex-shrink-0" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            {/* Teal container — same look as the Database tab's pinned Hot Leads card,
+                  with the descriptive header moved inside it. */}
+            <div className="border border-[#b6ecec] rounded-xl bg-[#e7f9f9] mb-3 overflow-hidden">
+              {/* Header inside the container */}
+              <div className="px-5 pt-5 pb-4">
+                <p className="flex items-center gap-2 text-base font-semibold text-[#172b4d] mb-1">
+                  {totalLeads > 0 && (
+                    <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                    </span>
+                  )}
+                  {totalLeads > 0 ? `${totalLeads} Hot Leads actively looking for this role` : 'Hot Leads'}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Candidates from the apna database who are actively looking and match your job — shown unfiltered, freshest first.
+                </p>
+              </div>
+
+              {totalLeads > 0 ? (
+                /* Lead cards inside the teal container */
+                <div className="px-3 pb-3 flex flex-col gap-2">
+                  {shownLeads.map(profile => renderLeadRow(profile, false))}
+                </div>
+              ) : (
+                /* Pending — no active leads yet */
+                <div className="px-5 pb-5 flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-full bg-white border border-[#b6ecec] flex items-center justify-center flex-shrink-0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#1f8268]">Hot Leads will appear here</p>
+                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                      We're watching {dbTotal} matching candidates in the database and will notify you as soon as any become active on the app.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Slim index → Database (explore further) */}
+            {dbTotal > 0 && (
+              <button
+                onClick={onExploreDatabase}
+                className="mt-3 w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-[#dfe1e6] bg-white hover:border-[#1f8268] hover:bg-[#f7fdfb] transition-colors text-left"
+              >
+                <span className="text-xs text-[#42526e]">
+                  Want to explore more? Browse all <span className="font-semibold text-[#172b4d]">{dbTotal.toLocaleString()} matching candidates</span> in the Database.
+                </span>
+                <span className="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-[#1f8268]">
+                  Explore Database
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="5 12 12 12 19 12"/><polyline points="13 6 19 12 13 18"/>
+                  </svg>
+                </span>
+              </button>
+            )}
+          </>
+        )}
+
+        {showBuyModal && <InsufficientCreditsModal onClose={() => setShowBuyModal(false)} />}
+      </div>
     );
   }
 
@@ -541,7 +642,8 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
       {/* ── Full-tab skeleton while unlock transition plays ── */}
       {pendingHighlightId ? (
         <div className="animate-pulse flex flex-col gap-3">
-          {/* Hot Leads section skeleton */}
+          {/* Hot Leads section skeleton — omitted when leads live in their own tab */}
+          {!hideLeads && (
           <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
             <div className="px-4 py-3 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-gray-200" />
@@ -561,6 +663,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
               ))}
             </div>
           </div>
+          )}
           {/* DB profile rows skeleton */}
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-gray-100 bg-white overflow-hidden">
@@ -579,8 +682,9 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
         </div>
       ) : null}
 
-      {/* ── Live Leads region: pinned card (default) OR slim unpinned banner ── */}
-      {pinned && !pendingHighlightId ? (
+      {/* ── Live Leads region: pinned card (default) OR slim unpinned banner.
+            Omitted entirely when Hot Leads live in their own tab (hideLeads). ── */}
+      {!hideLeads && pinned && !pendingHighlightId ? (
         <div className="border border-[#b6ecec] rounded-xl bg-[#e7f9f9] mb-3 overflow-hidden">
           {/* Container header — title left, pin toggle far right */}
           <div className="px-4 py-3">
@@ -639,7 +743,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
             </div>
           )}
         </div>
-      ) : !pendingHighlightId ? (
+      ) : !hideLeads && !pendingHighlightId ? (
         /* Unpinned — slim banner; Live Leads now flow into the results list below */
         <div className="flex items-center justify-between gap-3 mb-3 px-4 py-2.5 rounded-xl border border-[#b6ecec] bg-[#e7f9f9]">
           <span className="flex items-center gap-2 text-xs text-[#172b4d] min-w-0">
@@ -657,7 +761,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
               matching bar + "Active this week" highlight so they still stand out. ── */}
       <div className="mb-2" />
       {!pendingHighlightId && (() => {
-        const rows = pinned
+        const rows = (hideLeads || pinned)
           ? visibleDb.map(p => ({ profile: p, live: false }))
           : interleaveLeads(uniqueLeads, visibleDb);
 

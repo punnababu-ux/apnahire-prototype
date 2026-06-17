@@ -84,9 +84,6 @@ export function OldHasCreditsUsedDb({ totalLeads, applicantCount }: ScenarioProp
         </div>
       </div>
 
-      {/* Live leads mid-feed card */}
-      <LiveLeadsMidFeedCard totalLeads={totalLeads} hasCredits />
-
       {/* Medium Matches container */}
       <div className="border border-amber-200 rounded-xl bg-amber-50/40 mb-3 overflow-hidden">
         <div className="px-4 py-3">
@@ -103,6 +100,9 @@ export function OldHasCreditsUsedDb({ totalLeads, applicantCount }: ScenarioProp
           ))}
         </div>
       </div>
+
+      {/* Hot Leads ingress at end */}
+      {totalLeads > 0 && <LiveLeadsMidFeedCard totalLeads={totalLeads} hasCredits />}
     </div>
   );
 }

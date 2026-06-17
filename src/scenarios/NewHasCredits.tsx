@@ -3,6 +3,8 @@ import { useJobTab } from '../context/JobTabContext';
 import { ActiveLeadsTab } from '../components/ActiveLeadsTab';
 import { AppliedCandidateList } from '../components/AppliedCandidateList';
 
+// Spec: New · Has Credits. Placement by organic volume — 1–4 applicants ⇒ Hot Leads lead
+// (ActiveLeadsTab at top, single); 5+ applicants ⇒ single ingress at end. Never both.
 export function NewHasCredits({ totalLeads, dbCredits, applicantCount, dbTotal, unlockedIds, creditsRemaining, onUnlock, onUnlockAndView }: ScenarioProps) {
   const jobTab = useJobTab();
 
@@ -10,14 +12,14 @@ export function NewHasCredits({ totalLeads, dbCredits, applicantCount, dbTotal, 
 
   return (
     <div className="flex flex-col gap-3">
-      {totalLeads > 0 && (
+      {totalLeads > 0 && applicantCount < 5 && (
         <ActiveLeadsTab
           totalLeads={totalLeads}
           dbMatchCount={dbTotal}
           hasCredits={true}
           credits={dbCredits}
           headerTitle={`Only ${applicantCount} applicant${applicantCount === 1 ? '' : 's'} so far — but ${totalLeads} Hot Leads are ready`}
-          headerSubtitle={`These candidates are actively looking and match your job. You have ${dbCredits} credits — unlock their profiles now.`}
+          headerSubtitle={`These Hot Leads are actively looking and match your job. You have ${dbCredits} credit${dbCredits === 1 ? '' : 's'} — view a profile to unlock & contact.`}
           onExploreAll={() => jobTab?.goToDatabase()}
           onGoToDatabase={() => jobTab?.goToDatabase()}
           unlockedIds={unlockedIds}
@@ -32,7 +34,7 @@ export function NewHasCredits({ totalLeads, dbCredits, applicantCount, dbTotal, 
         dbCredits={dbCredits}
         hasUsedDb={false}
         nudgeVariant="first_try"
-        insertLeadsAfter={dbTotal > 0 ? 2 : undefined}
+        leadsAtEnd={totalLeads > 0 && applicantCount >= 5}
       />
     </div>
   );

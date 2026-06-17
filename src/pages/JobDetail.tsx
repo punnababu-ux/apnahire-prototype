@@ -10,6 +10,7 @@ import { CoachMarks } from '../components/ftue/CoachMarks';
 import type { CoachStep } from '../components/ftue/CoachMarks';
 import { ActiveLeadsTab } from '../components/ActiveLeadsTab';
 import { DatabaseTab, DB_SKILL_FILTERS, type DbFilterValues } from '../components/DatabaseTab';
+import { HotLeadsSummaryCard } from '../components/HotLeadsSummaryCard';
 import { NewNoCredits } from '../scenarios/NewNoCredits';
 import { NewHasCredits } from '../scenarios/NewHasCredits';
 import { OldNoCreditsUsedDb } from '../scenarios/OldNoCreditsUsedDb';
@@ -18,14 +19,15 @@ import { OldHasCreditsUsedDb } from '../scenarios/OldHasCreditsUsedDb';
 import { OldHasCreditsUsedLeads } from '../scenarios/OldHasCreditsUsedLeads';
 import { OldHasCreditsNewToLeads } from '../scenarios/OldHasCreditsNewToLeads';
 
-type Tab = 'applied' | 'database';
+type Tab = 'applied' | 'leads' | 'database';
 
 const APPLIED_TAB_CONTENT: Record<string, React.ComponentType<ScenarioProps>> = {
   'new-no-credits':           NewNoCredits,
   'new-has-credits':          NewHasCredits,
   'old-no-credits-used-db':   OldNoCreditsUsedDb,
-  'old-has-credits-never-db': OldHasCreditsNeverDb,
-  'old-has-credits-used-db':  OldHasCreditsUsedDb,
+  'old-has-credits-never-db':    OldHasCreditsNeverDb,
+  'old-has-credits-used-leads':  OldHasCreditsUsedLeads,
+  'old-has-credits-used-db':     OldHasCreditsUsedDb,
 };
 
 function buildDynamicScenario(params: URLSearchParams): UserScenario {
@@ -39,6 +41,7 @@ function buildDynamicScenario(params: URLSearchParams): UserScenario {
     : (exp === 'never' ? 'first_try'   : 'engage');
   const db = Number(params.get('db') ?? -1);
   const dbTotal = db >= 0 ? db : Math.max(leads * 30 + 180, 200);
+  const leadsLocation = params.get('leadsLoc') === 'individual' ? 'individual' : 'database';
   return {
     id: 'dynamic',
     label: tenure === 'new' ? 'New user' : 'Returning user',
@@ -54,6 +57,7 @@ function buildDynamicScenario(params: URLSearchParams): UserScenario {
     productObjective: '',
     goal: '',
     nudgeVariant: nudge as UserScenario['nudgeVariant'],
+    leadsLocation,
   };
 }
 
@@ -114,6 +118,9 @@ export function JobDetail() {
   const jobAge = (params.get('age') ?? 'active') as 'fresh' | 'active' | 'aging';
   const totalLeads = scenario.jobLeads;
   const dbTotal = scenario.dbTotal;
+  // Hot Leads location: 'individual' gives Hot Leads their own tab (between Applied and
+  // Database) and removes them from the Database tab. Undefined → 'database' (current).
+  const leadsIndividual = (scenario.leadsLocation ?? 'database') === 'individual';
 
   // Celebration phase — only runs once on mount when jobAge === 'fresh'
   const [celebPhase, setCelebPhase] = useState<'celebrate' | 'settling' | 'done'>(jobAge === 'fresh' ? 'celebrate' : 'done');
@@ -152,9 +159,10 @@ export function JobDetail() {
     const leadId = CANDIDATE_TO_LEAD_ID[candidateId];
     if (leadId) {
       resetDbFilters();
-      // 1. Switch tab immediately so the user sees the destination
-      switchToDatabase();
-      // 2. Show skeleton in DatabaseTab for 700ms
+      // 1. Switch tab immediately so the user sees the destination. When Hot Leads have
+      //    their own tab, "View Profile" lands there; otherwise it lands in the Database.
+      setTab(leadsIndividual ? 'leads' : 'database');
+      // 2. Show skeleton in the destination tab for 700ms
       setPendingHighlightId(leadId);
       setTimeout(() => {
         // 3. Resolve: trigger real highlight + unlock toast
@@ -168,10 +176,26 @@ export function JobDetail() {
     setTab('database');
   }
 
+  // Skeleton bridge into the Database tab (the leads-tab "Explore Database" index uses this).
   function handleGoToDatabase() {
     switchToDatabase();
     setPendingHighlightId('__browse__');
     setTimeout(() => setPendingHighlightId(null), 700);
+  }
+
+  // Skeleton bridge into the standalone Hot Leads tab.
+  function handleGoToLeads() {
+    setTab('leads');
+    setPendingHighlightId('__browse__');
+    setTimeout(() => setPendingHighlightId(null), 700);
+  }
+
+  // What the Applied-tab Hot Leads surfaces ("Explore Hot Leads", "See all Hot Leads",
+  // scenario components' jobTab.goToDatabase()) should do: go to the Leads tab when Hot
+  // Leads live there, else the Database tab. Keeps the default behavior identical.
+  function handleExploreLeads() {
+    if (leadsIndividual) handleGoToLeads();
+    else handleGoToDatabase();
   }
 
   function handleFtueComplete() {
@@ -183,7 +207,7 @@ export function JobDetail() {
     <div className="flex flex-col flex-1" style={{ margin: '-23px -32px 0' }}>
       {/* FTUE v1 — modal */}
       {ftueVersion === 'v1' && showFtue && ftueOpen && (
-        <FtueModal hasCredits={scenario.dbCredits > 0} onComplete={handleFtueComplete} />
+        <FtueModal hasCredits={scenario.dbCredits > 0} leadsIndividual={leadsIndividual} onComplete={handleFtueComplete} />
       )}
 
       {/* Job header — sticky, full width, sits below the topbar */}
@@ -231,8 +255,15 @@ export function JobDetail() {
               <UnderlineTab active={tab === 'applied'} onClick={() => setTab('applied')}>
                 Applied to job ({scenario.applicationsCount})
               </UnderlineTab>
+              {leadsIndividual && (
+                <span data-ftue="leads-tab">
+                  <UnderlineTab active={tab === 'leads'} onClick={handleGoToLeads} highlight={totalLeads > 0}>
+                    Hot Leads ({totalLeads})
+                  </UnderlineTab>
+                </span>
+              )}
               <span data-ftue="database-tab">
-                <UnderlineTab active={tab === 'database'} onClick={switchToDatabase} highlight={dbTotal > 0} disabled={dbTotal === 0}>
+                <UnderlineTab active={tab === 'database'} onClick={switchToDatabase} highlight={dbTotal > 0 && !leadsIndividual} disabled={dbTotal === 0}>
                   Database ({dbTotal})
                 </UnderlineTab>
               </span>
@@ -255,25 +286,35 @@ export function JobDetail() {
           {
             selector: '[data-ftue="first-lead-unlock-btn"]',
             title: 'View profile, then unlock',
-            body: 'Tap "View Profile" to see the full profile in the database. From there, unlock with 1 credit to get their phone number and contact them directly.',
+            body: leadsIndividual
+              ? 'Tap "View Profile" to open the full profile in the Hot Leads tab. From there, unlock with 1 credit to get their phone number and contact them directly.'
+              : 'Tap "View Profile" to see the full profile in the database. From there, unlock with 1 credit to get their phone number and contact them directly.',
             cta: 'Got it',
           },
-          {
-            selector: '[data-ftue="database-tab"]',
-            title: `All ${dbTotal} matching candidates`,
-            body: 'Browse every candidate who fits this job. Hot Leads are pinned at the top — they\'re the most likely to respond.',
-            cta: 'Got it!',
-          },
+          leadsIndividual
+            ? {
+                selector: '[data-ftue="leads-tab"]',
+                title: 'Your Hot Leads, in one tab',
+                body: `All ${totalLeads} active Hot Leads live in this tab — no filters, just the freshest matches. Explore the full database any time from the Database tab.`,
+                cta: 'Got it!',
+              }
+            : {
+                selector: '[data-ftue="database-tab"]',
+                title: `All ${dbTotal} matching candidates`,
+                body: 'Browse every candidate who fits this job. Hot Leads are pinned at the top — they\'re the most likely to respond.',
+                cta: 'Got it!',
+              },
         ];
         return <CoachMarks steps={coachSteps} onComplete={handleFtueComplete} />;
       })()}
 
       {/* Content */}
-      <JobTabContext.Provider value={{ goToDatabase: handleGoToDatabase }}>
+      <JobTabContext.Provider value={{ goToDatabase: handleExploreLeads }}>
       <div className="flex-1 overflow-hidden bg-gray-50 flex justify-center" style={{ padding: '12px 20px 23px' }}>
         <div className="flex w-full max-w-[1100px] gap-3 min-h-0">
         {tab === 'applied' && scenario.applicationsCount > 0 && <FiltersPanel mode="applied" />}
-        {tab === 'database' && dbTotal > 0 && <FiltersPanel mode="database" totalLeads={dbTotal} onInteract={enterDbSearch} onFiltersChange={setDbFilterValues} resetSignal={filterResetKey} />}
+        {tab === 'leads' && leadsIndividual && <HotLeadsSummaryCard totalLeads={totalLeads} />}
+        {tab === 'database' && dbTotal > 0 && <FiltersPanel mode="database" totalLeads={dbTotal} onInteract={enterDbSearch} onFiltersChange={setDbFilterValues} resetSignal={filterResetKey} hideLeadsCard={leadsIndividual} />}
 
         <div className="flex-1 overflow-y-auto bg-gray-50 min-w-0">
           {tab === 'applied' && (
@@ -296,8 +337,8 @@ export function JobDetail() {
                   unlockedCount={unlockedIds.size}
                   lockedCount={Math.max(totalLeads - unlockedIds.size, 0)}
                   showBuyCredits={scenario.dbCredits === 0}
-                  onExploreAll={() => dbTotal > 0 && handleGoToDatabase()}
-                  onGoToDatabase={() => dbTotal > 0 && handleGoToDatabase()}
+                  onExploreAll={() => leadsIndividual ? handleGoToLeads() : (dbTotal > 0 && handleGoToDatabase())}
+                  onGoToDatabase={() => leadsIndividual ? handleGoToLeads() : (dbTotal > 0 && handleGoToDatabase())}
                   onUnlockAndView={handleUnlockAndView}
                   unlockedIds={unlockedIds}
                   creditsRemaining={creditsRemaining}
@@ -326,6 +367,27 @@ export function JobDetail() {
             </div>
           )}
 
+          {/* Standalone Hot Leads tab — leads only, unfiltered, with an index to the DB */}
+          {tab === 'leads' && leadsIndividual && (
+            <DatabaseTab
+              key={`leads-${scenarioId ?? 'dynamic'}`}
+              variant="leads"
+              hasCredits={scenario.dbCredits > 0}
+              credits={scenario.dbCredits}
+              totalLeads={totalLeads}
+              dbTotal={dbTotal}
+              highlightLeadId={highlightLeadId}
+              pendingHighlightId={pendingHighlightId}
+              onHighlightClear={() => setHighlightLeadId(null)}
+              unlockedIds={unlockedIds}
+              creditsRemaining={creditsRemaining}
+              onUnlock={handleUnlock}
+              onFreeUnlock={handleFreeUnlock}
+              ftueVersion={ftueVersion}
+              onExploreDatabase={handleGoToDatabase}
+            />
+          )}
+
           {tab === 'database' && (
             <DatabaseTab
               key={scenarioId}
@@ -333,6 +395,7 @@ export function JobDetail() {
               credits={scenario.dbCredits}
               totalLeads={totalLeads}
               dbTotal={dbTotal}
+              hideLeads={leadsIndividual}
               highlightLeadId={highlightLeadId}
               pendingHighlightId={pendingHighlightId}
               onHighlightClear={() => setHighlightLeadId(null)}

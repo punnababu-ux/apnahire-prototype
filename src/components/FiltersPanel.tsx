@@ -12,18 +12,23 @@ interface FiltersPanelProps {
   // Bumping this number resets the panel back to its default filters (e.g. after the
   // parent's "Show Live Leads" / clear-filters affordance).
   resetSignal?: number;
+  // When Hot Leads live in their own tab, the DB filter rail must not show the Hot Leads
+  // summary card (leads are removed from the Database entirely).
+  hideLeadsCard?: boolean;
 }
 
 const DB_FILTER_CHIPS = DB_SKILL_FILTERS;
 
-export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onFiltersChange, resetSignal }: FiltersPanelProps) {
+export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onFiltersChange, resetSignal, hideLeadsCard = false }: FiltersPanelProps) {
   const [showCandidates, setShowCandidates] = useState(true);
   const [chips, setChips] = useState<Set<string>>(new Set(DB_FILTER_CHIPS));
   const [hideUnlocked, setHideUnlocked] = useState(false);
   const [hideExcel, setHideExcel] = useState(false);
   const [hideWhatsApp, setHideWhatsApp] = useState(false);
   const [hideExpanded, setHideExpanded] = useState(false);
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  // When Hot Leads live in their own tab, the Database tab's filters become the primary
+  // content, so start them expanded. Default (leads-in-DB) keeps them collapsed.
+  const [filtersExpanded, setFiltersExpanded] = useState(hideLeadsCard);
   const [secondsLeft, setSecondsLeft] = useState(22 * 3600 + 12 * 60 + 8);
 
   useEffect(() => {
@@ -137,7 +142,8 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onF
           </>}
         </div>
 
-        {/* ── Live Leads card ── */}
+        {/* ── Live Leads card — hidden when Hot Leads live in their own tab ── */}
+        {!hideLeadsCard && (
         <div className="bg-white rounded-xl border border-[#dfe1e6] p-4 flex flex-col gap-4">
           {/* Title */}
           <div>
@@ -192,6 +198,7 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onF
           </div>
 
         </div>
+        )}
       </div>
     );
   }

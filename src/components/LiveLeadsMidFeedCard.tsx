@@ -62,7 +62,7 @@ export function LiveLeadsMidFeedCard({ totalLeads, hasCredits, onExplore }: Live
             : 'border border-[#1f8268] text-[#1f8268] hover:bg-[#eaf8f4]'
         }`}
       >
-        {hasCredits ? 'Browse & unlock' : 'Explore Hot Leads'}
+        Explore Hot Leads
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <polyline points="5 12 12 12 19 12"/><polyline points="13 6 19 12 13 18"/>
         </svg>

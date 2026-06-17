@@ -19,10 +19,10 @@ interface Props {
   dbCredits?: number;
   hasUsedDb?: boolean;
   nudgeVariant?: NudgeVariant;
-  insertLeadsAfter?: number;
+  leadsAtEnd?: boolean;
 }
 
-export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits = 0, insertLeadsAfter }: Props) {
+export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits = 0, leadsAtEnd }: Props) {
   const [statuses, setStatuses] = useState<Record<string, ApplicantStatus>>({ '1': 'shortlisted' });
 
   const shownApplicants = APPLICANTS.slice(0, Math.min(applicantCount, APPLICANTS.length));
@@ -96,11 +96,6 @@ export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits
         </div>
       )}
 
-      {/* Live leads mid-feed card */}
-      {insertLeadsAfter !== undefined && totalLeads > 0 && (
-        <LiveLeadsMidFeedCard totalLeads={totalLeads} hasCredits={dbCredits > 0} />
-      )}
-
       {/* Medium matches */}
       {medMatches.length > 0 && (
         <div className="border border-amber-200 rounded-xl bg-amber-50/40 mb-3 overflow-hidden">
@@ -118,6 +113,11 @@ export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits
             ))}
           </div>
         </div>
+      )}
+
+      {/* Live leads end-of-feed card */}
+      {leadsAtEnd && totalLeads > 0 && (
+        <LiveLeadsMidFeedCard totalLeads={totalLeads} hasCredits={dbCredits > 0} />
       )}
     </div>
   );

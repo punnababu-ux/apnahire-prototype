@@ -3,6 +3,8 @@ import { useState } from 'react';
 interface FtueModalProps {
   onComplete: () => void;
   hasCredits: boolean;
+  // When Hot Leads have their own tab, the copy references that tab instead of the database.
+  leadsIndividual?: boolean;
 }
 
 const STEPS = [
@@ -32,12 +34,13 @@ const STEPS = [
   },
 ];
 
-export function FtueModal({ onComplete, hasCredits }: FtueModalProps) {
+export function FtueModal({ onComplete, hasCredits, leadsIndividual = false }: FtueModalProps) {
   const [step, setStep] = useState(0);
   const current = STEPS[step];
+  const leadsHome = leadsIndividual ? 'the Hot Leads tab' : 'your database';
   const body = step === 2
     ? (hasCredits
-        ? 'Browse Hot Lead profiles in your database. When you find the right fit, unlock with 1 credit to get their phone number and contact them directly.'
+        ? `Browse Hot Lead profiles in ${leadsHome}. When you find the right fit, unlock with 1 credit to get their phone number and contact them directly.`
         : 'Get database credits to view and unlock Hot Lead profiles — contact the best matches before someone else does.')
     : current.body;
 

@@ -87,7 +87,7 @@ export function ActiveLeadsTab({
           {headerTitle ?? `${totalLeads} Hot Leads from apna database`}
         </p>
         <p className="text-sm text-gray-500">
-          {headerSubtitle ?? 'Candidates actively looking for jobs, recently applied to similar roles, and matching your requirements.'}
+          {headerSubtitle ?? 'Hot Leads are actively looking for jobs, recently applied to similar roles, and match your requirements.'}
         </p>
       </div>
 

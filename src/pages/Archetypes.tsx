@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 type Tenure   = 'new' | 'old';
 type Credits  = 'none' | 'has';
@@ -8,6 +8,7 @@ type DbSize   = 'none' | 'low' | 'normal';
 type LeadVol  = 'zero' | 'low' | 'normal';
 type AppVol   = 'zero' | 'few' | 'many';
 type JobAge   = 'fresh' | 'active' | 'aging';
+type LeadsLoc = 'database' | 'individual';
 
 interface Config {
   tenure:  Tenure;
@@ -17,10 +18,11 @@ interface Config {
   leads:   LeadVol;
   apps:    AppVol;
   age:     JobAge;
+  leadsLoc?: LeadsLoc;
 }
 
 const DEFAULT_CONFIG: Config = {
-  tenure: 'new', credits: 'none', exp: 'never', db: 'normal', leads: 'normal', apps: 'zero', age: 'active',
+  tenure: 'new', credits: 'none', exp: 'never', db: 'normal', leads: 'normal', apps: 'zero', age: 'active', leadsLoc: 'database',
 };
 
 const PRESETS: Array<{ label: string; color: string; config: Config }> = [
@@ -53,12 +55,13 @@ const PRESETS: Array<{ label: string; color: string; config: Config }> = [
 
 function configMatches(a: Config, b: Config) {
   return a.tenure === b.tenure && a.credits === b.credits &&
-    a.exp === b.exp && a.db === b.db && a.leads === b.leads && a.apps === b.apps && a.age === b.age;
+    a.exp === b.exp && a.db === b.db && a.leads === b.leads && a.apps === b.apps && a.age === b.age &&
+    (a.leadsLoc ?? 'database') === (b.leadsLoc ?? 'database');
 }
 
 function computeSummary(c: Config): { situation: string; goal: string; warnings: string[] } {
   const tenure  = c.tenure === 'new' ? 'First-time recruiter.' : 'Returning recruiter.';
-  const agePart = c.age === 'fresh' && c.leads !== 'zero' ? 'Job just posted (< 1 day) — some DB candidates are already active as live leads.'
+  const agePart = c.age === 'fresh' && c.leads !== 'zero' ? 'Job just posted (< 1 day) — some DB candidates are already active as Hot Leads.'
                 : c.age === 'fresh'  ? 'Job just posted (< 1 day) — no active leads yet.'
                 : c.age === 'aging'  ? 'Job in its final week (day 8–14) — expires soon.'
                 :                     'Job has been live 1–7 days.';
@@ -75,7 +78,7 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
   const creditPart = c.credits === 'none'
     ? (c.exp === 'never' ? 'Has never tried DB and has no credits.' : 'Credits depleted after past DB use.')
     : c.exp === 'never' ? 'Has credits sitting unused — never tried DB.'
-    : c.exp === 'used_leads' ? 'Has used live leads before and has credits. Knows the feature, ready to act.'
+    : c.exp === 'used_leads' ? 'Has used Hot Leads before and has credits. Knows the feature, ready to act.'
     : 'Active DB user with credits remaining.';
 
   const situation = [tenure, agePart, appPart, dbPart, leadPart, creditPart].filter(Boolean).join(' ');
@@ -98,7 +101,7 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
   } else if (c.credits === 'has' && c.exp === 'never') {
     goal = 'Surface leads prominently. Make the first unlock feel effortless.';
   } else if (c.credits === 'has' && c.exp === 'used_leads') {
-    goal = 'Show live leads directly — no hand-holding. They know what to do.';
+    goal = 'Show Hot Leads directly — no hand-holding. They know what to do.';
   } else {
     goal = 'Surface best matches quickly. Keep hiring momentum going.';
   }
@@ -107,7 +110,7 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
   if (c.tenure === 'new' && (c.exp === 'used' || c.exp === 'used_leads'))
     warnings.push('New users cannot have used DB before — DB history reset to Never tried.');
   if (c.db === 'none' && c.leads !== 'zero')
-    warnings.push('No database means no live leads — live leads reset to Zero.');
+    warnings.push('No database means no Hot Leads — Hot Leads reset to Zero.');
   if (c.age === 'fresh' && c.apps !== 'zero')
     warnings.push('A job just posted cannot have applicants yet — applicants reset to None.');
 
@@ -125,6 +128,7 @@ function configToParams(c: Config): string {
     leads,
     apps:    c.apps === 'zero' ? '0' : c.apps === 'few' ? '3' : '8',
     age:     c.age,
+    leadsLoc: c.leadsLoc ?? 'database',
   }).toString();
 }
 
@@ -180,6 +184,13 @@ export function Archetypes() {
         <p className="text-gray-400 text-sm leading-relaxed">
           Configure the recruiter's state below and step into the live experience.
         </p>
+        <Link
+          to="/scenario-map"
+          className="inline-flex items-center gap-1.5 mt-4 text-xs font-semibold text-gray-500 hover:text-emerald-400 transition-colors"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          View scenario map
+        </Link>
       </div>
 
       {/* Presets */}
@@ -237,8 +248,8 @@ export function Archetypes() {
             <ToggleGroup
               options={[
                 { value: 'never',      label: 'Never tried DB' },
-                { value: 'used',       label: 'Used DB, new to Live Leads', disabled: config.tenure === 'new' },
-                { value: 'used_leads', label: 'Used Live Leads before',     disabled: config.tenure === 'new' },
+                { value: 'used',       label: 'Used DB, new to Hot Leads', disabled: config.tenure === 'new' },
+                { value: 'used_leads', label: 'Used Hot Leads before',     disabled: config.tenure === 'new' },
               ]}
               value={config.exp}
               onChange={v => set('exp', v as DbExp)}
@@ -271,8 +282,8 @@ export function Archetypes() {
             />
           </ConfigRow>
 
-          {/* Live leads */}
-          <ConfigRow label="Live leads" hint="Actively looking candidates from that database">
+          {/* Hot Leads */}
+          <ConfigRow label="Hot Leads" hint="Actively looking candidates from that database">
             <ToggleGroup
               options={[
                 { value: 'zero',   label: 'Zero',        disabled: false },
@@ -294,6 +305,18 @@ export function Archetypes() {
               ]}
               value={config.apps}
               onChange={v => set('apps', v as AppVol)}
+            />
+          </ConfigRow>
+
+          {/* Hot Leads location */}
+          <ConfigRow label="Hot Leads location" hint="Inside the Database tab, or their own tab between Applied & Database">
+            <ToggleGroup
+              options={[
+                { value: 'database',   label: 'Part of database' },
+                { value: 'individual', label: 'Own tab' },
+              ]}
+              value={config.leadsLoc ?? 'database'}
+              onChange={v => set('leadsLoc', v as LeadsLoc)}
             />
           </ConfigRow>
 

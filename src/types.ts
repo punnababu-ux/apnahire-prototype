@@ -1,5 +1,9 @@
 export type UserType = 'new' | 'old';
 export type DbExperience = 'never' | 'used_before' | 'used_leads';
+// Where Hot Leads live. 'database' = current behavior (pinned inside the Database tab).
+// 'individual' = Hot Leads get their own tab between Applied and Database, and are
+// removed from the Database tab. Optional; undefined is treated as 'database'.
+export type LeadsLocation = 'database' | 'individual';
 
 export interface UserScenario {
   id: string;
@@ -16,6 +20,7 @@ export interface UserScenario {
   productObjective: string;
   goal: string;
   nudgeVariant: 'buy_credits' | 'first_unlock' | 'educate_buy' | 'repurchase' | 'first_try' | 'engage';
+  leadsLocation?: LeadsLocation;
 }
 
 export const SCENARIOS: UserScenario[] = [
@@ -82,6 +87,22 @@ export const SCENARIOS: UserScenario[] = [
     productObjective: 'Drive first DB interaction',
     goal: 'Show leads and make unlocking feel effortless — one tap to try.',
     nudgeVariant: 'first_try',
+  },
+  {
+    id: 'old-has-credits-used-leads',
+    label: 'Old · Has Credits · Used Leads',
+    tag: 'Returning Pro',
+    userType: 'old',
+    dbCredits: 6,
+    dbExperience: 'used_leads',
+    jobLeads: 3,
+    dbTotal: 290,
+    applicationsCount: 12,
+    description: 'Used Hot Leads before, credits remaining, few leads live, strong organic flow.',
+    userBehavior: 'Knows the feature. Strong applicant pipeline. Wants to act fast on the few live leads.',
+    productObjective: 'Drive immediate unlock on live leads',
+    goal: 'Surface leads directly — no intro copy. They know what to do.',
+    nudgeVariant: 'engage',
   },
   {
     id: 'old-has-credits-used-db',
