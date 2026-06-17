@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { LiveLeadsMidFeedCard } from './LiveLeadsMidFeedCard';
+import { InsufficientCreditsModal } from './InsufficientCreditsModal';
 
 type NudgeVariant = 'educate_buy' | 'repurchase' | 'first_try' | 'engage';
 type ApplicantStatus = 'none' | 'shortlisted' | 'rejected';
@@ -22,8 +23,16 @@ interface Props {
   leadsAtEnd?: boolean;
 }
 
-export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits = 0, leadsAtEnd }: Props) {
+export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits = 0, nudgeVariant, leadsAtEnd }: Props) {
   const [statuses, setStatuses] = useState<Record<string, ApplicantStatus>>({ '1': 'shortlisted' });
+  const [showBuyModal, setShowBuyModal] = useState(false);
+
+  // Credit nudge for the no-credits feed (no ActiveLeadsTab renders here). nudgeVariant
+  // sets the framing: 'repurchase' reinforces past value + drives top-up; 'educate_buy'
+  // introduces Hot Leads + drives the first purchase. The has-credits variants
+  // ('first_try' / 'engage') surface intent via ActiveLeadsTab, so no banner here.
+  const isRepurchase = nudgeVariant === 'repurchase';
+  const showCreditNudge = totalLeads > 0 && applicantCount > 0 && (isRepurchase || nudgeVariant === 'educate_buy');
 
   const shownApplicants = APPLICANTS.slice(0, Math.min(applicantCount, APPLICANTS.length));
   const highMatches = shownApplicants.filter(a => a.tier === 'high');
@@ -68,6 +77,30 @@ export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits
           ))}
         </div>
       </div>
+
+      {/* Credit nudge — reinforces past value (repurchase) or introduces Hot Leads (first buy) */}
+      {showCreditNudge && (
+        <div className="mb-3 flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-[#b6ecec] bg-[#eaf8f4]">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" className="flex-shrink-0">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <p className="text-xs text-[#42526e]">
+              {isRepurchase ? (
+                <>You've unlocked Hot Leads before — <span className="font-semibold text-[#172b4d]">{totalLeads} more are waiting</span>. Top up credits to keep contacting active candidates.</>
+              ) : (
+                <><span className="font-semibold text-[#172b4d]">{totalLeads} Hot Leads</span> from apna's database are actively looking and match this job — buy credits to view &amp; contact.</>
+              )}
+            </p>
+          </div>
+          <button
+            onClick={() => setShowBuyModal(true)}
+            className="flex-shrink-0 px-3 py-1.5 bg-[#1f8268] hover:bg-[#186b55] text-white text-xs font-semibold rounded-xl transition-colors"
+          >
+            {isRepurchase ? 'Top up credits' : 'Buy credits'}
+          </button>
+        </div>
+      )}
 
       {/* High matches */}
       {highMatches.length > 0 && (
@@ -119,6 +152,8 @@ export function AppliedCandidateList({ applicantCount, totalLeads = 0, dbCredits
       {leadsAtEnd && totalLeads > 0 && (
         <LiveLeadsMidFeedCard totalLeads={totalLeads} hasCredits={dbCredits > 0} />
       )}
+
+      {showBuyModal && <InsufficientCreditsModal onClose={() => setShowBuyModal(false)} />}
     </div>
   );
 }

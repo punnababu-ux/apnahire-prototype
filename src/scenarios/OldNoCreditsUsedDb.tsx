@@ -10,7 +10,7 @@ export function OldNoCreditsUsedDb({ totalLeads, dbCredits, applicantCount, hasU
       totalLeads={totalLeads}
       dbCredits={dbCredits}
       hasUsedDb={hasUsedDb}
-      nudgeVariant="repurchase"
+      nudgeVariant={hasUsedDb ? 'repurchase' : 'educate_buy'}
       leadsAtEnd={totalLeads > 0}
     />
   );

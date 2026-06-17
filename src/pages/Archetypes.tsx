@@ -79,7 +79,7 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
     ? (c.exp === 'never' ? 'Has never tried DB and has no credits.' : 'Credits depleted after past DB use.')
     : c.exp === 'never' ? 'Has credits sitting unused — never tried DB.'
     : c.exp === 'used_leads' ? 'Has used Hot Leads before and has credits. Knows the feature, ready to act.'
-    : 'Active DB user with credits remaining.';
+    : 'Has used the database before but is new to Hot Leads — credits available.';
 
   const situation = [tenure, agePart, appPart, dbPart, leadPart, creditPart].filter(Boolean).join(' ');
 
@@ -94,16 +94,22 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
     goal = 'Create urgency. DB matches exist but no active leads — push to broaden requirements before expiry.';
   } else if (c.leads === 'zero') {
     goal = 'Manage expectations. DB exists but no active leads yet — encourage broadening and checking back.';
-  } else if (c.credits === 'none' && c.exp === 'never') {
-    goal = 'Introduce database value. Motivate the first credit purchase.';
-  } else if (c.credits === 'none' && c.exp === 'used') {
-    goal = 'Reinforce past DB value. Drive credit top-up.';
-  } else if (c.credits === 'has' && c.exp === 'never') {
-    goal = 'Surface leads prominently. Make the first unlock feel effortless.';
-  } else if (c.credits === 'has' && c.exp === 'used_leads') {
-    goal = 'Show Hot Leads directly — no hand-holding. They know what to do.';
+  } else if (c.credits === 'none') {
+    // No credits → never-tried recruiters get a first-purchase intro nudge; recruiters
+    // who used Hot Leads before get a repurchase/top-up nudge that reinforces past value.
+    // (Matches AppliedCandidateList's nudge banner, keyed on the same signal.)
+    goal = c.exp === 'never'
+      ? 'Introduce database value. Motivate the first credit purchase.'
+      : 'Reinforce past DB value. Drive credit top-up.';
+  } else if (c.exp === 'never') {
+    // Has credits, never tried DB (NewHasCredits / OldHasCreditsNeverDb) → first unlock.
+    goal = 'Drive the first Hot Leads unlock — make it feel effortless.';
+  } else if (c.exp === 'used') {
+    // Has credits, used DB but new to Hot Leads (OldHasCreditsNewToLeads).
+    goal = 'Introduce Hot Leads to a returning DB user. Make the first unlock easy.';
   } else {
-    goal = 'Surface best matches quickly. Keep hiring momentum going.';
+    // Has credits, used Hot Leads before (OldHasCreditsUsedLeads) — power user.
+    goal = 'Surface best matches fast — no hand-holding. Keep hiring momentum going.';
   }
 
   const warnings: string[] = [];
