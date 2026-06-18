@@ -20,7 +20,6 @@ interface Props {
   totalLeads?: number;
   dbCredits?: number;
   dbTotal?: number;
-  hasUsedDb?: boolean;
   nudgeVariant?: NudgeVariant;
   leadsAtEnd?: boolean;
 }

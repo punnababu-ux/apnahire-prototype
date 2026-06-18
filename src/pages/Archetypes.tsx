@@ -102,13 +102,13 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
       ? 'Introduce database value. Motivate the first credit purchase.'
       : 'Reinforce past DB value. Drive credit top-up.';
   } else if (c.exp === 'never') {
-    // Has credits, never tried DB (NewHasCredits / OldHasCreditsNeverDb) → first unlock.
+    // Has credits, never tried DB → drive the first unlock (HasCreditsApplied).
     goal = 'Drive the first Hot Leads unlock — make it feel effortless.';
   } else if (c.exp === 'used') {
-    // Has credits, used DB but new to Hot Leads (OldHasCreditsNewToLeads).
+    // Has credits, used DB but new to Hot Leads → introduce the feature (HasCreditsApplied).
     goal = 'Introduce Hot Leads to a returning DB user. Make the first unlock easy.';
   } else {
-    // Has credits, used Hot Leads before (OldHasCreditsUsedLeads) — power user.
+    // Has credits, used Hot Leads before → confident, no hand-holding (HasCreditsApplied).
     goal = 'Surface best matches fast — no hand-holding. Keep hiring momentum going.';
   }
 

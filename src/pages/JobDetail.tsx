@@ -11,22 +11,18 @@ import type { CoachStep } from '../components/ftue/CoachMarks';
 import { ActiveLeadsTab } from '../components/ActiveLeadsTab';
 import { DatabaseTab, DB_SKILL_FILTERS, type DbFilterValues } from '../components/DatabaseTab';
 import { HotLeadsSummaryCard } from '../components/HotLeadsSummaryCard';
-import { NewNoCredits } from '../scenarios/NewNoCredits';
-import { NewHasCredits } from '../scenarios/NewHasCredits';
-import { OldNoCreditsUsedDb } from '../scenarios/OldNoCreditsUsedDb';
-import { OldHasCreditsNeverDb } from '../scenarios/OldHasCreditsNeverDb';
+import { NoCreditsApplied } from '../scenarios/NoCreditsApplied';
+import { HasCreditsApplied } from '../scenarios/HasCreditsApplied';
 import { OldHasCreditsUsedDb } from '../scenarios/OldHasCreditsUsedDb';
-import { OldHasCreditsUsedLeads } from '../scenarios/OldHasCreditsUsedLeads';
-import { OldHasCreditsNewToLeads } from '../scenarios/OldHasCreditsNewToLeads';
 
 type Tab = 'applied' | 'leads' | 'database';
 
 const APPLIED_TAB_CONTENT: Record<string, React.ComponentType<ScenarioProps>> = {
-  'new-no-credits':           NewNoCredits,
-  'new-has-credits':          NewHasCredits,
-  'old-no-credits-used-db':   OldNoCreditsUsedDb,
-  'old-has-credits-never-db':    OldHasCreditsNeverDb,
-  'old-has-credits-used-leads':  OldHasCreditsUsedLeads,
+  'new-no-credits':           NoCreditsApplied,
+  'new-has-credits':          HasCreditsApplied,
+  'old-no-credits-used-db':   NoCreditsApplied,
+  'old-has-credits-never-db':    HasCreditsApplied,
+  'old-has-credits-used-leads':  HasCreditsApplied,
   'old-has-credits-used-db':     OldHasCreditsUsedDb,
 };
 
@@ -61,14 +57,12 @@ function buildDynamicScenario(params: URLSearchParams): UserScenario {
   };
 }
 
+// The rendered solution depends only on credits (does the recruiter have credits to spend?).
+// Familiarity (dbExperience) and tenure are passed through as props — they tune copy, the
+// nudge banner, and the FTUE, not which component renders. The Power-User custom view is
+// reachable only via the fixed scenario in APPLIED_TAB_CONTENT.
 function getAppliedComponent(scenario: UserScenario): React.ComponentType<ScenarioProps> {
-  if (scenario.userType === 'new' && scenario.dbCredits === 0) return NewNoCredits;
-  if (scenario.userType === 'new')                             return NewHasCredits;
-  if (scenario.dbCredits === 0)                               return OldNoCreditsUsedDb;
-  if (scenario.dbExperience === 'never')                      return OldHasCreditsNeverDb;
-  if (scenario.dbExperience === 'used_before')                return OldHasCreditsNewToLeads;
-  if (scenario.dbExperience === 'used_leads')                 return OldHasCreditsUsedLeads;
-  return OldHasCreditsUsedDb;
+  return scenario.dbCredits === 0 ? NoCreditsApplied : HasCreditsApplied;
 }
 
 export function JobDetail() {
@@ -81,7 +75,7 @@ export function JobDetail() {
     : buildDynamicScenario(params);
 
   const AppliedContent = scenarioId
-    ? (APPLIED_TAB_CONTENT[scenarioId] ?? NewNoCredits)
+    ? (APPLIED_TAB_CONTENT[scenarioId] ?? NoCreditsApplied)
     : getAppliedComponent(scenario);
 
   const ftueVersion = (params.get('ftue') ?? 'v2') as 'v1' | 'v2' | 'off';
@@ -379,6 +373,7 @@ export function JobDetail() {
                 dbCredits={scenario.dbCredits}
                 applicantCount={scenario.applicationsCount}
                 hasUsedDb={scenario.dbExperience === 'used_before' || scenario.dbExperience === 'used_leads'}
+                dbExperience={scenario.dbExperience}
                 dbTotal={dbTotal}
                 unlockedIds={unlockedIds}
                 creditsRemaining={creditsRemaining}

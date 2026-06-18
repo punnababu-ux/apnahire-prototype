@@ -11,8 +11,8 @@ interface ComponentEntry {
   name: string;
   trigger: string;
   component: string;
-  /** Forward-looking note: what code change is needed to match this spec. Omit when code already matches. */
-  align?: string;
+  /** How copy/treatment varies *within* this one component by familiarity (dbExperience). */
+  note?: string;
   apps: AppsCase[];
 }
 
@@ -30,70 +30,19 @@ const END_CREDIT = 'Ingress at end';
 const END_NOCREDIT = 'Ingress at end · repurchase';
 const NONE = '';
 
-// ─── data (INTENDED DESIGN — one Hot Leads placement per cell) ──────────────────
+// ─── data ───────────────────────────────────────────────────────────────────────
+// The rendered solution depends only on CREDITS. Familiarity (dbExperience) and tenure are
+// props that tune copy / nudge / FTUE — not which component renders. So there are just two
+// dynamic flows (+ one fixed Power-User mock).
 const COMPONENTS: ComponentEntry[] = [
   {
-    id: 'new-no-credits',
-    tag: 'Cold Start',
-    tagColor: 'text-amber-400 border-amber-500/30 bg-amber-500/10',
-    name: 'New · No Credits',
-    trigger: 'userType=new · credits=0',
-    component: 'NewNoCredits',
-    apps: [
-      {
-        label: 'No applicants',
-        outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_SHARED_NOCREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: '', db: DB.empty } },
-        ],
-      },
-      {
-        label: 'Any applicants (1+)',
-        outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'end',  appliedNote: END_NOCREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: NONE, db: DB.noLeads } },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'new-has-credits',
-    tag: 'Ready to Go',
-    tagColor: 'text-blue-400 border-blue-500/30 bg-blue-500/10',
-    name: 'New · Has Credits',
-    trigger: 'userType=new · credits>0',
-    component: 'NewHasCredits',
-    apps: [
-      {
-        label: 'No applicants',
-        outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_SHARED_CREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: '', db: DB.noLeads } },
-        ],
-      },
-      {
-        label: 'Few applicants (1–4)',
-        outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_TOP_CREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: NONE, db: DB.noLeads } },
-        ],
-      },
-      {
-        label: 'Many applicants (5+)',
-        outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'end',  appliedNote: END_CREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: NONE, db: DB.noLeads } },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'old-no-credits',
+    id: 'no-credits',
     tag: 'No Credits',
     tagColor: 'text-red-400 border-red-500/30 bg-red-500/10',
-    name: 'Returning · No Credits',
-    trigger: 'userType=old · credits=0 (any dbExperience)',
-    component: 'OldNoCreditsUsedDb',
+    name: 'No Credits — new or returning',
+    trigger: 'dbCredits = 0',
+    component: 'NoCreditsApplied',
+    note: 'Nudge banner: "repurchase / top up" if they\'ve used Hot Leads before, else "buy credits" intro. Layout is identical either way.',
     apps: [
       {
         label: 'No applicants',
@@ -112,74 +61,13 @@ const COMPONENTS: ComponentEntry[] = [
     ],
   },
   {
-    id: 'old-has-credits-never-db',
-    tag: 'Untapped Budget',
-    tagColor: 'text-violet-400 border-violet-500/30 bg-violet-500/10',
-    name: 'Returning · Has Credits · Never Used DB',
-    trigger: 'userType=old · credits>0 · dbExperience=never',
-    component: 'OldHasCreditsNeverDb',
-    apps: [
-      {
-        label: 'No applicants',
-        outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_SHARED_CREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: '', db: DB.noLeads } },
-        ],
-      },
-      {
-        label: 'Few applicants (1–4)',
-        outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_TOP_CREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: NONE, db: DB.noLeads } },
-        ],
-      },
-      {
-        label: 'Many applicants (5+)',
-        outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'end',  appliedNote: END_CREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: NONE, db: DB.noLeads } },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'old-has-credits-used-before',
-    tag: 'Knows Feature',
-    tagColor: 'text-teal-400 border-teal-500/30 bg-teal-500/10',
-    name: 'Returning · Has Credits · Used DB, New to Leads',
-    trigger: 'userType=old · credits>0 · dbExperience=used_before',
-    component: 'OldHasCreditsNewToLeads',
-    apps: [
-      {
-        label: 'No applicants',
-        outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_SHARED_CREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: '', db: DB.noLeads } },
-        ],
-      },
-      {
-        label: 'Few applicants (1–4)',
-        outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'lead', appliedNote: LEAD_TOP_CREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: NONE, db: DB.noLeads } },
-        ],
-      },
-      {
-        label: 'Many applicants (5+)',
-        outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'end',  appliedNote: END_CREDIT, db: DB.leads } },
-          { leads: 'No leads',  outcome: { applied: 'none', appliedNote: NONE, db: DB.noLeads } },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'old-has-credits-used-leads',
-    tag: 'Returning Pro',
+    id: 'has-credits',
+    tag: 'Has Credits',
     tagColor: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10',
-    name: 'Returning · Has Credits · Used Leads Before',
-    trigger: 'userType=old · credits>0 · dbExperience=used_leads',
-    component: 'OldHasCreditsUsedLeads',
+    name: 'Has Credits — new or returning',
+    trigger: 'dbCredits > 0',
+    component: 'HasCreditsApplied',
+    note: 'Header + "how it works" explainer adapt to familiarity: confident, no hand-holding for recruiters who\'ve used Hot Leads before; an encouraging intro for everyone new to Hot Leads. Placement is identical either way.',
     apps: [
       {
         label: 'No applicants',
@@ -205,17 +93,17 @@ const COMPONENTS: ComponentEntry[] = [
     ],
   },
   {
-    id: 'old-has-credits-power-user',
+    id: 'power-user',
     tag: 'Power User',
     tagColor: 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10',
-    name: 'Returning · Has Credits · Power User (fixed scenario)',
-    trigger: 'scenario=old-has-credits-used-db only (dynamic switch is exhaustive; getAppliedComponent line 68 fallback is dead code)',
+    name: 'Power User (fixed scenario)',
+    trigger: 'scenario=old-has-credits-used-db only · not in dynamic routing',
     component: 'OldHasCreditsUsedDb',
     apps: [
       {
-        label: 'With applicants (fixed scenario = 8 apps, i.e. 5+)',
+        label: 'With applicants',
         outcomes: [
-          { leads: 'Leads > 0', outcome: { applied: 'end',  appliedNote: 'Custom card view · ingress at end', db: DB.leads } },
+          { leads: 'Leads > 0', outcome: { applied: 'end',  appliedNote: 'Custom detailed applicant view · ingress at end', db: DB.leads } },
           { leads: 'No leads',  outcome: { applied: 'none', appliedNote: '', db: DB.noLeads } },
         ],
       },
@@ -288,7 +176,9 @@ export function ScenarioMap() {
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Scenario Map</h1>
           <p className="text-gray-400 text-sm leading-relaxed max-w-2xl">
-            One Hot Leads placement per scenario. Hot Leads can live in the Database tab or their own tab — same rule either way.
+            The rendered solution depends only on <span className="text-gray-300">credits</span> — so there are two dynamic flows
+            (+ one fixed Power-User mock). Familiarity and tenure only tune copy, the nudge, and the FTUE. Hot Leads can live in the
+            Database tab or their own tab — same placement either way.
           </p>
         </div>
 
@@ -364,11 +254,11 @@ export function ScenarioMap() {
                 <p className="text-[11px] text-gray-500 mt-0.5 font-mono">{comp.trigger}</p>
               </div>
 
-              {/* Alignment banner */}
-              {comp.align && (
-                <div className="px-6 py-2.5 bg-amber-500/8 border-b border-amber-500/20 flex items-start gap-2">
-                  <span className="text-amber-400 text-[11px] font-bold flex-shrink-0 mt-0.5">⟳ ALIGN CODE</span>
-                  <p className="text-amber-300/80 text-[11px] leading-relaxed">{comp.align}</p>
+              {/* Familiarity note — how copy/treatment varies within this one component */}
+              {comp.note && (
+                <div className="px-6 py-2.5 bg-gray-800/40 border-b border-gray-800 flex items-start gap-2">
+                  <span className="text-gray-400 text-[11px] font-bold flex-shrink-0 mt-0.5">BY FAMILIARITY</span>
+                  <p className="text-gray-400 text-[11px] leading-relaxed">{comp.note}</p>
                 </div>
               )}
 

@@ -133,6 +133,7 @@ export interface ScenarioProps {
   dbCredits: number;
   applicantCount: number;
   hasUsedDb: boolean;
+  dbExperience?: DbExperience;
   dbTotal: number;
   // Lifted unlock state — passed from JobDetail so it survives tab switches
   unlockedIds?: Set<string>;
