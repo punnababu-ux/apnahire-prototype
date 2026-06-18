@@ -98,13 +98,13 @@ export function ActiveLeadsTab({
 
       {/* How Hot Leads & credits work — for anyone new to Hot Leads, regardless of credits */}
       {newToHotLeads && (
-        <div className="mx-5 mb-4 rounded-xl border border-[#b6ecec] bg-[#eaf8f4]/40 overflow-hidden">
+        <div className="mx-5 mb-4 rounded-xl border border-[#dfe1e6] bg-[#f4f5f7] overflow-hidden">
           <button
             onClick={() => setHowItWorksOpen(v => !v)}
             className="w-full flex items-center justify-between px-4 py-3"
           >
             <div className="flex items-center gap-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
               <span className="text-xs font-semibold text-[#172b4d]">How Hot Leads and credits work</span>
@@ -117,7 +117,7 @@ export function ActiveLeadsTab({
             </svg>
           </button>
           {howItWorksOpen && (
-            <div className="px-4 pb-4 flex flex-col gap-4 border-t border-[#b6ecec]">
+            <div className="px-4 pb-4 flex flex-col gap-4 border-t border-[#dfe1e6]">
               {HOW_IT_WORKS.map((step, i) => (
                 <div key={i} className="flex items-start gap-3 pt-3">
                   <div className="w-7 h-7 rounded-full bg-white border border-[#b6ecec] flex items-center justify-center flex-shrink-0">
@@ -312,9 +312,9 @@ export function ActiveLeadsTab({
             </button>
           </div>
         ) : (
-          <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xl">
+          <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-[#eaf8f4] border border-[#b6ecec] rounded-xl">
             <div className="flex items-center gap-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2" className="flex-shrink-0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" className="flex-shrink-0">
                 <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
               <p className="text-xs text-[#42526e]">
