@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CANDIDATES } from '../types';
 import { InsufficientCreditsModal } from './InsufficientCreditsModal';
+import { useJobTab } from '../context/JobTabContext';
 
 interface ActiveLeadsTabProps {
   totalLeads: number;
@@ -72,6 +73,10 @@ export function ActiveLeadsTab({
   const [showBuyModal, setShowBuyModal] = useState(false);
 
   const remaining = creditsRemaining ?? credits;
+  // The "How Hot Leads and credits work" explainer is educational — show it to anyone
+  // seeing Hot Leads for the first time (regardless of credits), and hide it for
+  // recruiters who've used Hot Leads before. Defaults to shown outside a provider.
+  const newToHotLeads = useJobTab()?.newToHotLeads ?? true;
 
   return (
     <div data-ftue="live-leads-section" className="bg-white rounded-xl border border-[#dfe1e6] overflow-hidden">
@@ -91,8 +96,8 @@ export function ActiveLeadsTab({
         </p>
       </div>
 
-      {/* How DB credits work — cold start only */}
-      {!hasCredits && (
+      {/* How Hot Leads & credits work — for anyone new to Hot Leads, regardless of credits */}
+      {newToHotLeads && (
         <div className="mx-5 mb-4 rounded-xl border border-[#b6ecec] bg-[#eaf8f4]/40 overflow-hidden">
           <button
             onClick={() => setHowItWorksOpen(v => !v)}

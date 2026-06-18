@@ -330,7 +330,7 @@ export function JobDetail() {
       })()}
 
       {/* Content */}
-      <JobTabContext.Provider value={{ goToDatabase: handleExploreLeads, jobAge }}>
+      <JobTabContext.Provider value={{ goToDatabase: handleExploreLeads, jobAge, newToHotLeads: scenario.dbExperience !== 'used_leads' }}>
       <div className="flex-1 overflow-hidden bg-gray-50 flex justify-center" style={{ padding: '12px 20px 23px' }}>
         <div className="flex w-full max-w-[1100px] gap-3 min-h-0">
         {tab === 'applied' && scenario.applicationsCount > 0 && <FiltersPanel mode="applied" />}
