@@ -1,66 +1,66 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
-type Tenure   = 'new' | 'old';
+// "Recruiter experience" is a single 3-state axis (replaces the old tenure + DB-history pair).
+// It is the only thing that tunes copy/FTUE/nudges — which component renders depends only on credits.
+type Experience = 'never' | 'used_db' | 'used_leads';
 type Credits  = 'none' | 'has';
-type DbExp    = 'never' | 'used' | 'used_leads';
-type DbSize   = 'none' | 'low' | 'normal';
+type DbSize   = 'none' | 'has';
 type LeadVol  = 'zero' | 'low' | 'normal';
 type AppVol   = 'zero' | 'few' | 'many';
 type JobAge   = 'fresh' | 'active' | 'aging';
 type LeadsLoc = 'database' | 'individual';
 
 interface Config {
-  tenure:  Tenure;
-  credits: Credits;
-  exp:     DbExp;
-  db:      DbSize;
-  leads:   LeadVol;
-  apps:    AppVol;
-  age:     JobAge;
-  leadsLoc?: LeadsLoc;
+  experience: Experience;
+  credits:    Credits;
+  db:         DbSize;
+  leads:      LeadVol;
+  apps:       AppVol;
+  age:        JobAge;
+  leadsLoc?:  LeadsLoc;
 }
 
 const DEFAULT_CONFIG: Config = {
-  tenure: 'new', credits: 'none', exp: 'never', db: 'normal', leads: 'normal', apps: 'zero', age: 'active', leadsLoc: 'database',
+  experience: 'never', credits: 'none', db: 'has', leads: 'normal', apps: 'zero', age: 'active', leadsLoc: 'database',
 };
 
 const PRESETS: Array<{ label: string; color: string; config: Config }> = [
   {
     label: 'Cold Start',
     color: 'border-amber-500/40 text-amber-400 hover:border-amber-400 hover:bg-amber-500/10',
-    config: { tenure: 'new', credits: 'none', exp: 'never', db: 'normal', leads: 'normal', apps: 'zero', age: 'active' },
+    config: { experience: 'never', credits: 'none', db: 'has', leads: 'normal', apps: 'zero', age: 'active' },
   },
   {
     label: 'Ready to Go',
     color: 'border-blue-500/40 text-blue-400 hover:border-blue-400 hover:bg-blue-500/10',
-    config: { tenure: 'new', credits: 'has', exp: 'never', db: 'normal', leads: 'low', apps: 'zero', age: 'active' },
+    config: { experience: 'never', credits: 'has', db: 'has', leads: 'low', apps: 'zero', age: 'active' },
   },
   {
     label: 'No Credits',
     color: 'border-red-500/40 text-red-400 hover:border-red-400 hover:bg-red-500/10',
-    config: { tenure: 'old', credits: 'none', exp: 'used', db: 'normal', leads: 'normal', apps: 'few', age: 'active' },
+    config: { experience: 'used_db', credits: 'none', db: 'has', leads: 'normal', apps: 'few', age: 'active' },
   },
   {
     label: 'Untapped Budget',
     color: 'border-teal-500/40 text-teal-400 hover:border-teal-400 hover:bg-teal-500/10',
-    config: { tenure: 'old', credits: 'has', exp: 'never', db: 'normal', leads: 'normal', apps: 'few', age: 'active' },
+    config: { experience: 'never', credits: 'has', db: 'has', leads: 'normal', apps: 'few', age: 'active' },
   },
   {
     label: 'Power User',
     color: 'border-emerald-500/40 text-emerald-400 hover:border-emerald-400 hover:bg-emerald-500/10',
-    config: { tenure: 'old', credits: 'has', exp: 'used_leads', db: 'normal', leads: 'normal', apps: 'many', age: 'active' },
+    config: { experience: 'used_leads', credits: 'has', db: 'has', leads: 'normal', apps: 'many', age: 'active' },
   },
 ];
 
 function configMatches(a: Config, b: Config) {
-  return a.tenure === b.tenure && a.credits === b.credits &&
-    a.exp === b.exp && a.db === b.db && a.leads === b.leads && a.apps === b.apps && a.age === b.age &&
+  return a.experience === b.experience && a.credits === b.credits &&
+    a.db === b.db && a.leads === b.leads && a.apps === b.apps && a.age === b.age &&
     (a.leadsLoc ?? 'database') === (b.leadsLoc ?? 'database');
 }
 
 function computeSummary(c: Config): { situation: string; goal: string; warnings: string[] } {
-  const tenure  = c.tenure === 'new' ? 'First-time recruiter.' : 'Returning recruiter.';
+  const tenure  = c.experience === 'never' ? 'First-time recruiter.' : 'Returning recruiter.';
   const agePart = c.age === 'fresh' && c.leads !== 'zero' ? 'Job just posted (< 1 day) — some DB candidates are already active as Hot Leads.'
                 : c.age === 'fresh'  ? 'Job just posted (< 1 day) — no active leads yet.'
                 : c.age === 'aging'  ? 'Job in its final week (day 8–14) — expires soon.'
@@ -69,16 +69,15 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
                 : c.apps   === 'few'  ? 'A handful of organic applications coming in.'
                 :                       'Strong organic application flow.';
   const dbPart  = c.db === 'none'   ? 'No candidates exist in the apna database for this job.'
-                : c.db === 'low'    ? 'Very few candidates in the database match this role.'
                 :                    'A healthy pool of matching candidates in the database.';
   const leadPart = c.db === 'none'    ? ''
                  : c.leads === 'zero' ? 'None are currently active/looking.'
                  : c.leads === 'low'  ? 'Only a few are currently active (1–5).'
                  :                     'A good pool are actively looking (6+).';
   const creditPart = c.credits === 'none'
-    ? (c.exp === 'never' ? 'Has never tried DB and has no credits.' : 'Credits depleted after past DB use.')
-    : c.exp === 'never' ? 'Has credits sitting unused — never tried DB.'
-    : c.exp === 'used_leads' ? 'Has used Hot Leads before and has credits. Knows the feature, ready to act.'
+    ? (c.experience === 'never' ? 'Has never tried DB and has no credits.' : 'Credits depleted after past DB use.')
+    : c.experience === 'never' ? 'Has credits sitting unused — never tried DB.'
+    : c.experience === 'used_leads' ? 'Has used Hot Leads before and has credits. Knows the feature, ready to act.'
     : 'Has used the database before but is new to Hot Leads — credits available.';
 
   const situation = [tenure, agePart, appPart, dbPart, leadPart, creditPart].filter(Boolean).join(' ');
@@ -98,13 +97,13 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
     // No credits → never-tried recruiters get a first-purchase intro nudge; recruiters
     // who used Hot Leads before get a repurchase/top-up nudge that reinforces past value.
     // (Matches AppliedCandidateList's nudge banner, keyed on the same signal.)
-    goal = c.exp === 'never'
+    goal = c.experience === 'never'
       ? 'Introduce database value. Motivate the first credit purchase.'
       : 'Reinforce past DB value. Drive credit top-up.';
-  } else if (c.exp === 'never') {
+  } else if (c.experience === 'never') {
     // Has credits, never tried DB → drive the first unlock (HasCreditsApplied).
     goal = 'Drive the first Hot Leads unlock — make it feel effortless.';
-  } else if (c.exp === 'used') {
+  } else if (c.experience === 'used_db') {
     // Has credits, used DB but new to Hot Leads → introduce the feature (HasCreditsApplied).
     goal = 'Introduce Hot Leads to a returning DB user. Make the first unlock easy.';
   } else {
@@ -113,8 +112,6 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
   }
 
   const warnings: string[] = [];
-  if (c.tenure === 'new' && (c.exp === 'used' || c.exp === 'used_leads'))
-    warnings.push('New users cannot have used DB before — DB history reset to Never tried.');
   if (c.db === 'none' && c.leads !== 'zero')
     warnings.push('No database means no Hot Leads — Hot Leads reset to Zero.');
   if (c.age === 'fresh' && c.apps !== 'zero')
@@ -124,12 +121,16 @@ function computeSummary(c: Config): { situation: string; goal: string; warnings:
 }
 
 function configToParams(c: Config): string {
-  const dbTotal = c.db === 'none' ? '0' : c.db === 'low' ? '45' : '300';
+  const dbTotal = c.db === 'none' ? '0' : '300';
   const leads   = c.leads === 'zero' ? '0' : c.leads === 'low' ? '3' : '9';
+  // The journey URL still carries the granular tenure/exp params JobDetail reads — derived
+  // from the single experience axis so no journey variety is lost.
+  const exp     = c.experience === 'used_db' ? 'used_before' : c.experience === 'used_leads' ? 'used_leads' : 'never';
+  const tenure  = c.experience === 'never' ? 'new' : 'old';
   return new URLSearchParams({
-    tenure:  c.tenure,
+    tenure,
     credits: c.credits === 'none' ? '0' : '10',
-    exp:     c.exp === 'used' ? 'used_before' : c.exp,
+    exp,
     db:      dbTotal,
     leads,
     apps:    c.apps === 'zero' ? '0' : c.apps === 'few' ? '3' : '8',
@@ -143,7 +144,11 @@ const STORAGE_KEY = 'apnahire_archetype_config';
 function loadSaved(): { config: Config; ftueVersion: 'v1' | 'v2' | 'off' } {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // Guard against pre-refactor saved shapes (had `tenure`/`exp`, db 'low'/'normal').
+      if (parsed?.config && 'experience' in parsed.config) return parsed;
+    }
   } catch {}
   return { config: DEFAULT_CONFIG, ftueVersion: 'v2' };
 }
@@ -153,6 +158,7 @@ export function Archetypes() {
   const saved = loadSaved();
   const [config, setConfig] = useState<Config>(saved.config);
   const [ftueVersion, setFtueVersion] = useState<'v1' | 'v2' | 'off'>(saved.ftueVersion);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   function persist(nextConfig: Config, nextFtue: 'v1' | 'v2' | 'off') {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ config: nextConfig, ftueVersion: nextFtue })); } catch {}
@@ -161,7 +167,6 @@ export function Archetypes() {
   function set<K extends keyof Config>(key: K, val: Config[K]) {
     setConfig(prev => {
       const next = { ...prev, [key]: val };
-      if (key === 'tenure' && val === 'new') next.exp = 'never';
       if (key === 'db' && val === 'none') next.leads = 'zero';
       if (key === 'age' && val === 'fresh') next.apps = 'zero';
       persist(next, ftueVersion);
@@ -225,15 +230,16 @@ export function Archetypes() {
 
         <div className="px-6 py-5 space-y-5">
 
-          {/* Tenure */}
-          <ConfigRow label="User tenure" hint="First-time vs returning recruiter">
+          {/* Recruiter experience (merged tenure + DB history) */}
+          <ConfigRow label="Recruiter experience" hint="What they've done before — tunes copy, nudges & FTUE">
             <ToggleGroup
               options={[
-                { value: 'new', label: 'New to platform' },
-                { value: 'old', label: 'Returning user' },
+                { value: 'never',      label: 'Never tried' },
+                { value: 'used_db',    label: 'Used database' },
+                { value: 'used_leads', label: 'Used Hot Leads' },
               ]}
-              value={config.tenure}
-              onChange={v => set('tenure', v as Tenure)}
+              value={config.experience}
+              onChange={v => set('experience', v as Experience)}
             />
           </ConfigRow>
 
@@ -246,58 +252,6 @@ export function Archetypes() {
               ]}
               value={config.credits}
               onChange={v => set('credits', v as Credits)}
-            />
-          </ConfigRow>
-
-          {/* DB experience */}
-          <ConfigRow label="DB history" hint="Whether they've unlocked a profile before">
-            <ToggleGroup
-              options={[
-                { value: 'never',      label: 'Never tried DB' },
-                { value: 'used',       label: 'Used DB, new to Hot Leads', disabled: config.tenure === 'new' },
-                { value: 'used_leads', label: 'Used Hot Leads before',     disabled: config.tenure === 'new' },
-              ]}
-              value={config.exp}
-              onChange={v => set('exp', v as DbExp)}
-            />
-          </ConfigRow>
-
-          {/* Database size */}
-          <ConfigRow label="Database size" hint="Total candidates in apna DB matching this job">
-            <ToggleGroup
-              options={[
-                { value: 'none',   label: 'None' },
-                { value: 'low',    label: 'Low (~50)' },
-                { value: 'normal', label: 'Normal (300+)' },
-              ]}
-              value={config.db}
-              onChange={v => set('db', v as DbSize)}
-            />
-          </ConfigRow>
-
-          {/* Job age */}
-          <ConfigRow label="Job age" hint="How long the job has been live (max 15 days)">
-            <ToggleGroup
-              options={[
-                { value: 'fresh',  label: 'Just posted' },
-                { value: 'active', label: 'Day 1–7' },
-                { value: 'aging',  label: 'Day 8–14' },
-              ]}
-              value={config.age}
-              onChange={v => set('age', v as JobAge)}
-            />
-          </ConfigRow>
-
-          {/* Hot Leads */}
-          <ConfigRow label="Hot Leads" hint="Actively looking candidates from that database">
-            <ToggleGroup
-              options={[
-                { value: 'zero',   label: 'Zero',        disabled: false },
-                { value: 'low',    label: 'Low (1–5)',   disabled: config.db === 'none' },
-                { value: 'normal', label: 'Normal (6+)', disabled: config.db === 'none' },
-              ]}
-              value={config.leads}
-              onChange={v => set('leads', v as LeadVol)}
             />
           </ConfigRow>
 
@@ -314,6 +268,19 @@ export function Archetypes() {
             />
           </ConfigRow>
 
+          {/* Hot Leads */}
+          <ConfigRow label="Hot Leads" hint="Actively looking candidates from that database">
+            <ToggleGroup
+              options={[
+                { value: 'zero',   label: 'Zero',        disabled: false },
+                { value: 'low',    label: 'Low (1–5)',   disabled: config.db === 'none' },
+                { value: 'normal', label: 'Normal (6+)', disabled: config.db === 'none' },
+              ]}
+              value={config.leads}
+              onChange={v => set('leads', v as LeadVol)}
+            />
+          </ConfigRow>
+
           {/* Hot Leads location */}
           <ConfigRow label="Hot Leads location" hint="Inside the Database tab, or their own tab between Applied & Database">
             <ToggleGroup
@@ -326,19 +293,62 @@ export function Archetypes() {
             />
           </ConfigRow>
 
-          {/* Divider */}
+          {/* Advanced (collapsed by default) */}
           <div className="border-t border-gray-800 pt-4">
-            <ConfigRow label="FTUE style" hint="First-time user experience version">
-              <ToggleGroup
-                options={[
-                  { value: 'v2',  label: 'Coach mark' },
-                  { value: 'v1',  label: 'Modal' },
-                  { value: 'off', label: 'Off' },
-                ]}
-                value={ftueVersion}
-                onChange={v => { const f = v as 'v1' | 'v2' | 'off'; setFtueVersion(f); persist(config, f); }}
-              />
-            </ConfigRow>
+            <button
+              onClick={() => setAdvancedOpen(o => !o)}
+              className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-300 uppercase tracking-widest transition-colors"
+            >
+              <svg
+                width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                className={`transition-transform ${advancedOpen ? 'rotate-90' : ''}`}
+              >
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+              Advanced
+            </button>
+
+            {advancedOpen && (
+              <div className="space-y-5 mt-5">
+                {/* Job age */}
+                <ConfigRow label="Job age" hint="How long the job has been live (max 15 days)">
+                  <ToggleGroup
+                    options={[
+                      { value: 'fresh',  label: 'Just posted' },
+                      { value: 'active', label: 'Day 1–7' },
+                      { value: 'aging',  label: 'Day 8–14' },
+                    ]}
+                    value={config.age}
+                    onChange={v => set('age', v as JobAge)}
+                  />
+                </ConfigRow>
+
+                {/* Database size */}
+                <ConfigRow label="Database size" hint="Candidates in apna's DB matching this job">
+                  <ToggleGroup
+                    options={[
+                      { value: 'none', label: 'None' },
+                      { value: 'has',  label: 'Has matches (300+)' },
+                    ]}
+                    value={config.db}
+                    onChange={v => set('db', v as DbSize)}
+                  />
+                </ConfigRow>
+
+                {/* FTUE style */}
+                <ConfigRow label="FTUE style" hint="First-time user experience version">
+                  <ToggleGroup
+                    options={[
+                      { value: 'v2',  label: 'Coach mark' },
+                      { value: 'v1',  label: 'Modal' },
+                      { value: 'off', label: 'Off' },
+                    ]}
+                    value={ftueVersion}
+                    onChange={v => { const f = v as 'v1' | 'v2' | 'off'; setFtueVersion(f); persist(config, f); }}
+                  />
+                </ConfigRow>
+              </div>
+            )}
           </div>
 
         </div>
