@@ -9,7 +9,7 @@ import { AppliedCandidateList } from '../components/AppliedCandidateList';
 // Header copy adapts to familiarity: recruiters who've used Hot Leads before get a confident,
 // no-hand-holding line; everyone new to Hot Leads gets an encouraging intro. (The explainer
 // and coach-mark differences are driven separately by dbExperience via JobTabContext.)
-export function HasCreditsApplied({ totalLeads, dbCredits, applicantCount, dbTotal, dbExperience, unlockedIds, creditsRemaining, onUnlock, onUnlockAndView }: ScenarioProps) {
+export function HasCreditsApplied({ totalLeads, dbCredits, applicantCount, dbTotal, dbExperience, unlockedIds, creditsRemaining, onUnlock, onUnlockAndView, onHelpClick }: ScenarioProps) {
   const jobTab = useJobTab();
 
   if (applicantCount === 0) return null;
@@ -38,6 +38,7 @@ export function HasCreditsApplied({ totalLeads, dbCredits, applicantCount, dbTot
           creditsRemaining={creditsRemaining}
           onUnlock={onUnlock}
           onUnlockAndView={onUnlockAndView}
+          onHelpClick={onHelpClick}
         />
       )}
       <AppliedCandidateList

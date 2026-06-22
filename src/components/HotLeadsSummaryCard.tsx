@@ -36,10 +36,7 @@ export function HotLeadsSummaryCard({ totalLeads }: HotLeadsSummaryCardProps) {
         {/* Feature 1 */}
         <div className="flex flex-col gap-2 pb-4 border-b border-[#dfe1e6]">
           <div className="w-8 h-8 flex items-center justify-center">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#172b4d" strokeWidth="1.5">
-              <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/>
-              <path d="M9 15l2 2 4-4" stroke="#1f8268" strokeWidth="2"/>
-            </svg>
+            <span className="material-icons-round text-[28px] text-[#172b4d] select-none">assignment_turned_in</span>
           </div>
           <p className="text-[11px] font-semibold text-[#172b4d]">Actively looking for a job</p>
           <p className="text-[11px] text-[#42526e]">Recently applied to similar jobs</p>
@@ -48,9 +45,7 @@ export function HotLeadsSummaryCard({ totalLeads }: HotLeadsSummaryCardProps) {
         {/* Feature 2 */}
         <div className="flex flex-col gap-2 pb-4 border-b border-[#dfe1e6]">
           <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
+            <span className="material-icons-round text-[16px] text-white select-none">check</span>
           </div>
           <p className="text-[11px] font-semibold text-[#172b4d]">Matching your job requirements</p>
           <p className="text-[11px] text-[#42526e]">Relevant experience as a Field Sales Executive</p>

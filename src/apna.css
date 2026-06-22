@@ -53,7 +53,7 @@ body{
   animation:credits-pulse .5s ease;
 }
 .available-credit:hover{color:var(--green)}
-.available-credit svg{color:var(--green);flex-shrink:0}
+.available-credit svg, .available-credit .material-icons-round{color:var(--green);flex-shrink:0;font-size:20px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 .available-credit-label{color:var(--ink)}
 .available-credit:hover .available-credit-label{color:var(--green)}
 @keyframes credits-pulse{
@@ -114,8 +114,8 @@ body{
   content:"";position:absolute;left:-8px;top:0;bottom:0;width:3px;
   background:var(--green);border-radius:0 4px 4px 0;
 }
-.nav-item.active svg{color:var(--green)}
-.nav-item svg{flex:0 0 20px;width:20px;height:20px;color:var(--ink-soft);stroke-width:1.8}
+.nav-item.active svg, .nav-item.active .material-icons-round{color:var(--green)}
+.nav-item svg, .nav-item .material-icons-round{flex:0 0 20px;width:20px;height:20px;color:var(--ink-soft);font-size:20px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 .nav-item .arrow{margin-left:auto;color:var(--muted);font-size:15px;font-weight:500}
 
 /* Bottom: Contact Sales + Buy credits + Get apna unlimited */
@@ -125,7 +125,7 @@ body{
   border-radius:4px;color:var(--ink);text-decoration:none;font-size:12px;cursor:pointer;
 }
 .contact:hover{background:#f4f5f6}
-.contact svg{flex:0 0 16px;width:16px;height:16px;color:var(--ink-soft);stroke-width:1.8}
+.contact svg, .contact .material-icons-round{flex:0 0 16px;width:16px;height:16px;color:var(--ink-soft);font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 .sidebar-divider-line{height:1px;background:var(--line);margin:8px 0}
 .sidebar-cta-group{display:flex;flex-direction:column;gap:12px;padding:4px 4px 0}
 .sidebar-cta{
@@ -133,7 +133,7 @@ body{
   border-radius:8px;padding:10px 16px;
   font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;width:100%;
 }
-.sidebar-cta svg{flex:0 0 20px;width:20px;height:20px;stroke-width:1.8}
+.sidebar-cta svg, .sidebar-cta .material-icons-round{flex:0 0 20px;width:20px;height:20px;font-size:20px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 /* Keep icon + label centered as a single group (don't let the label grow) */
 .sidebar-cta .nav-label{flex:0 1 auto;text-align:center}
 .sidebar-cta-primary{

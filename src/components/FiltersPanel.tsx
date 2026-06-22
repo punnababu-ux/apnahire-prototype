@@ -15,11 +15,12 @@ interface FiltersPanelProps {
   // When Hot Leads live in their own tab, the DB filter rail must not show the Hot Leads
   // summary card (leads are removed from the Database entirely).
   hideLeadsCard?: boolean;
+  onlyLeadsCard?: boolean;
 }
 
 const DB_FILTER_CHIPS = DB_SKILL_FILTERS;
 
-export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onFiltersChange, resetSignal, hideLeadsCard = false }: FiltersPanelProps) {
+export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onFiltersChange, resetSignal, hideLeadsCard = false, onlyLeadsCard = false }: FiltersPanelProps) {
   const [showCandidates, setShowCandidates] = useState(true);
   const [chips, setChips] = useState<Set<string>>(new Set(DB_FILTER_CHIPS));
   const [hideUnlocked, setHideUnlocked] = useState(false);
@@ -62,6 +63,7 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onF
       <div className="flex flex-col gap-3 w-[280px] flex-shrink-0 self-start">
 
         {/* ── Filters card ── */}
+        {!onlyLeadsCard && (
         <div className="bg-white rounded-xl border border-[#dfe1e6] overflow-hidden">
           {/* Header */}
           <button
@@ -69,14 +71,10 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onF
             className="w-full flex items-center justify-between px-4 py-3"
           >
             <div className="flex items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="#172b4d" stroke="none">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-              </svg>
+              <span className="material-icons-round text-[16px] text-[#172b4d] select-none">filter_alt</span>
               <span className="text-sm font-semibold text-[#172b4d]">Filters ({chips.size})</span>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2" className={`transition-transform ${filtersExpanded ? 'rotate-180' : ''}`}>
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            <span className={`material-icons-round text-[16px] text-[#5e6c84] transition-transform select-none ${filtersExpanded ? 'rotate-180' : ''}`}>expand_more</span>
           </button>
 
           {filtersExpanded && <>
@@ -93,9 +91,7 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onF
                 <span key={chip} className="flex items-center gap-1 bg-[#ebf3fe] border border-[#004ba9] text-[#004ba9] text-[11px] font-semibold px-2.5 py-1 rounded-full">
                   {chip}
                   <button aria-label={`Remove ${chip} filter`} onClick={() => removeChip(chip)} className="ml-0.5 hover:opacity-70">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
+                    <span className="material-icons-round text-[12px] select-none">close</span>
                   </button>
                 </span>
               ))}
@@ -110,9 +106,7 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onF
               className="w-full flex items-center justify-between px-4 py-3"
             >
               <span className="text-xs font-semibold text-[#172b4d]">Hide candidates that are</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2" className={`transition-transform ${hideExpanded ? 'rotate-180' : ''}`}>
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
+              <span className={`material-icons-round text-[14px] text-[#5e6c84] transition-transform select-none ${hideExpanded ? 'rotate-180' : ''}`}>expand_more</span>
             </button>
             {hideExpanded && (
               <div className="px-4 pb-3 flex flex-col gap-2">
@@ -141,6 +135,7 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onF
           </div>
           </>}
         </div>
+        )}
 
         {/* ── Live Leads card — hidden when Hot Leads live in their own tab ── */}
         {!hideLeadsCard && (
@@ -159,10 +154,7 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onF
           {/* Feature 1 */}
           <div className="flex flex-col gap-2 pb-4 border-b border-[#dfe1e6]">
             <div className="w-8 h-8 flex items-center justify-center">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#172b4d" strokeWidth="1.5">
-                <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/>
-                <path d="M9 15l2 2 4-4" stroke="#1f8268" strokeWidth="2"/>
-              </svg>
+              <span className="material-icons-round text-[28px] text-[#172b4d] select-none">assignment_turned_in</span>
             </div>
             <p className="text-[11px] font-semibold text-[#172b4d]">Actively looking for a job</p>
             <p className="text-[11px] text-[#42526e]">Recently applied to similar jobs</p>
@@ -171,9 +163,7 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onF
           {/* Feature 2 */}
           <div className="flex flex-col gap-2 pb-4 border-b border-[#dfe1e6]">
             <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
+              <span className="material-icons-round text-[16px] text-white select-none">check</span>
             </div>
             <p className="text-[11px] font-semibold text-[#172b4d]">Matching your job requirements</p>
             <p className="text-[11px] text-[#42526e]">Relevant experience as a Field Sales Executive</p>
@@ -206,9 +196,7 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onF
   return (
     <aside className="w-[280px] bg-white rounded-xl border border-[#dfe1e6] flex-shrink-0 overflow-y-auto self-start">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-[#dfe1e6]">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="#172b4d" stroke="none">
-          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-        </svg>
+        <span className="material-icons-round text-[16px] text-[#172b4d] select-none">filter_alt</span>
         <span className="text-sm font-semibold text-[#172b4d]">Filters (0)</span>
       </div>
       <FilterSection
@@ -241,12 +229,11 @@ function FilterSection({
         className="w-full flex items-center justify-between px-4 py-3 text-left"
       >
         <span className="text-xs font-semibold text-[#172b4d]">{title}</span>
-        <svg
-          width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2"
-          className={`transition-transform ${expanded ? 'rotate-180' : ''}`}
+        <span
+          className={`material-icons-round text-[14px] text-[#5e6c84] transition-transform select-none ${expanded ? 'rotate-180' : ''}`}
         >
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
+          expand_more
+        </span>
       </button>
       {expanded && children && (
         <div className="px-4 pb-3 flex flex-col gap-1">{children}</div>
@@ -266,19 +253,10 @@ function CheckRow({
         onClick={() => onChange?.(!checked)}
         className={`w-4 h-4 border-2 rounded flex-shrink-0 flex items-center justify-center transition-colors ${checked ? 'bg-[#1f8268] border-[#1f8268]' : 'border-[#dfe1e6]'}`}
       >
-        {checked && (
-          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        )}
+        {checked && <span className="material-icons-round text-[10px] text-white select-none">check</span>}
       </div>
       <span className="text-xs text-[#5e6c84]">{label}</span>
-      {info && (
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-      )}
+      {info && <span className="material-icons-round text-[12px] text-[#5e6c84] select-none">info</span>}
     </label>
   );
 }

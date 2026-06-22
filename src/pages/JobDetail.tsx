@@ -10,7 +10,6 @@ import { CoachMarks } from '../components/ftue/CoachMarks';
 import type { CoachStep } from '../components/ftue/CoachMarks';
 import { ActiveLeadsTab } from '../components/ActiveLeadsTab';
 import { DatabaseTab, DB_SKILL_FILTERS, type DbFilterValues } from '../components/DatabaseTab';
-import { HotLeadsSummaryCard } from '../components/HotLeadsSummaryCard';
 import { NoCreditsApplied } from '../scenarios/NoCreditsApplied';
 import { HasCreditsApplied } from '../scenarios/HasCreditsApplied';
 import { OldHasCreditsUsedDb } from '../scenarios/OldHasCreditsUsedDb';
@@ -37,7 +36,6 @@ function buildDynamicScenario(params: URLSearchParams): UserScenario {
     : (exp === 'never' ? 'first_try'   : 'engage');
   const db = Number(params.get('db') ?? -1);
   const dbTotal = db >= 0 ? db : Math.max(leads * 30 + 180, 200);
-  const leadsLocation = params.get('leadsLoc') === 'individual' ? 'individual' : 'database';
   return {
     id: 'dynamic',
     label: tenure === 'new' ? 'New user' : 'Returning user',
@@ -53,7 +51,7 @@ function buildDynamicScenario(params: URLSearchParams): UserScenario {
     productObjective: '',
     goal: '',
     nudgeVariant: nudge as UserScenario['nudgeVariant'],
-    leadsLocation,
+    leadsLocation: 'database',
   };
 }
 
@@ -83,6 +81,7 @@ export function JobDetail() {
   const [tab, setTab] = useState<Tab>('applied');
   const [ftueCompleted, setFtueCompleted] = useState(false);
   const [ftueOpen, setFtueOpen] = useState(true);
+  const [forceFtueOpen, setForceFtueOpen] = useState(false);
   const [highlightLeadId, setHighlightLeadId] = useState<string | null>(null);
   const [pendingHighlightId, setPendingHighlightId] = useState<string | null>(null);
 
@@ -90,18 +89,16 @@ export function JobDetail() {
   const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set());
   const [creditsRemaining, setCreditsRemaining] = useState(scenario.dbCredits);
 
-  // Database-tab Live Leads pinning. Pinned by default; applying any filter unpins
-  // them (they weave into the results list). The header toggle re-pins.
-  const [dbPinned, setDbPinned] = useState(true);
+  // Database-tab sub tab. 'all' shows all DB profiles; 'hot' shows Hot Leads.
+  const [dbSubTab, setDbSubTab] = useState<'all' | 'hot'>('all');
   const [filterResetKey, setFilterResetKey] = useState(0);
   const [dbFilterValues, setDbFilterValues] = useState<DbFilterValues>({
     skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false,
   });
 
-  function enterDbSearch() { setDbPinned(false); }
-  function toggleDbPin() { setDbPinned(p => !p); }
+  function enterDbSearch() {}
   function resetDbFilters() {
-    setDbPinned(true);
+    setDbSubTab('all');
     setDbFilterValues({ skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false });
     setFilterResetKey(k => k + 1);
   }
@@ -109,27 +106,33 @@ export function JobDetail() {
   const { setCredits, pulse } = useCredits();
   useEffect(() => { setCredits(scenario.dbCredits); }, [scenario.dbCredits, setCredits]);
 
+  useEffect(() => {
+    setUnlockedIds(new Set());
+    setCreditsRemaining(scenario.dbCredits);
+    setDbSubTab('all');
+    setDbFilterValues({ skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false });
+    setFilterResetKey(k => k + 1);
+  }, [scenarioId, scenario.dbCredits]);
+
   const jobAge = (params.get('age') ?? 'active') as 'fresh' | 'active' | 'aging';
   const totalLeads = scenario.jobLeads;
   const dbTotal = scenario.dbTotal;
-  // Hot Leads location: 'individual' gives Hot Leads their own tab (between Applied and
-  // Database) and removes them from the Database tab. Undefined → 'database' (current).
-  const leadsIndividual = (scenario.leadsLocation ?? 'database') === 'individual';
+  // Hot Leads location: always part of database tab by default.
+  const leadsIndividual = false;
 
   // Celebration phase — only runs once on mount when jobAge === 'fresh'
-  const [celebPhase, setCelebPhase] = useState<'celebrate' | 'settling' | 'done'>(jobAge === 'fresh' ? 'celebrate' : 'done');
+  const [celebPhase, setCelebPhase] = useState<'live' | 'radar' | 'done'>(jobAge === 'fresh' ? 'live' : 'done');
   const celebTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   useEffect(() => {
     if (jobAge !== 'fresh') return;
-    const t1 = setTimeout(() => setCelebPhase('settling'), 1800);
-    const t2 = setTimeout(() => setCelebPhase('done'),     2400);
-    celebTimers.current = [t1, t2];
+    const t1 = setTimeout(() => setCelebPhase('radar'), 2000);
+    celebTimers.current = [t1];
     return () => celebTimers.current.forEach(clearTimeout);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // FTUE delayed until celebration settles (Option A)
-  const showFtue = ftueVersion !== 'off' && (scenario.userType === 'new' || scenario.dbExperience === 'never' || scenario.dbExperience === 'used_before') && !ftueCompleted && totalLeads > 0 && celebPhase === 'done';
+  const showFtue = ftueVersion !== 'off' && (scenario.userType === 'new' || scenario.dbExperience === 'never' || scenario.dbExperience === 'used_before') && !ftueCompleted && totalLeads > 0 && (celebPhase === 'radar' || celebPhase === 'done');
 
   // Maps CANDIDATES ids to ACTIVE_LEADS ids in DatabaseTab
   const CANDIDATE_TO_LEAD_ID: Record<string, string> = {
@@ -144,10 +147,7 @@ export function JobDetail() {
     pulse();
   }
 
-  function handleFreeUnlock(id: string) {
-    setUnlockedIds(prev => new Set(prev).add(id));
-    // No credit decrement — this is a free preview unlock
-  }
+
 
   function handleUnlockAndView(candidateId: string) {
     const leadId = CANDIDATE_TO_LEAD_ID[candidateId];
@@ -200,8 +200,15 @@ export function JobDetail() {
   return (
     <div className="flex flex-col flex-1" style={{ margin: '-23px -32px 0' }}>
       {/* FTUE v1 — modal */}
-      {ftueVersion === 'v1' && showFtue && ftueOpen && (
-        <FtueModal hasCredits={scenario.dbCredits > 0} leadsIndividual={leadsIndividual} onComplete={handleFtueComplete} />
+      {(forceFtueOpen || (ftueVersion === 'v1' && showFtue && ftueOpen)) && (
+        <FtueModal
+          hasCredits={scenario.dbCredits > 0}
+          leadsIndividual={leadsIndividual}
+          onComplete={() => {
+            handleFtueComplete();
+            setForceFtueOpen(false);
+          }}
+        />
       )}
 
       {/* Job header — sticky, full width, sits below the topbar */}
@@ -214,9 +221,7 @@ export function JobDetail() {
             onClick={() => navigate('/')}
             className="absolute -left-8 top-0.5 w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 5l-7 7 7 7"/>
-            </svg>
+            <span className="material-icons-round text-[18px]">arrow_back</span>
           </button>
 
           <div className="min-w-0">
@@ -228,15 +233,10 @@ export function JobDetail() {
               </div>
               <div className="flex items-center">
                 <button aria-label="Edit job" className="w-8 h-8 flex items-center justify-center text-gray-400 hover:bg-gray-100 rounded">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
+                  <span className="material-icons-round text-[18px]">edit</span>
                 </button>
                 <button aria-label="More options" className="w-8 h-8 flex items-center justify-center text-gray-400 hover:bg-gray-100 rounded">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
-                  </svg>
+                  <span className="material-icons-round text-[18px]">more_vert</span>
                 </button>
               </div>
             </div>
@@ -247,18 +247,13 @@ export function JobDetail() {
             {/* Underline tabs */}
             <div className="flex items-center gap-2 mt-5">
               <UnderlineTab active={tab === 'applied'} onClick={() => setTab('applied')}>
-                Applied to job ({scenario.applicationsCount})
+                <span className="material-icons-round text-[18px]">business_center</span>
+                <span>Applied to job ({scenario.applicationsCount})</span>
               </UnderlineTab>
-              {leadsIndividual && (
-                <span data-ftue="leads-tab">
-                  <UnderlineTab active={tab === 'leads'} onClick={handleGoToLeads} highlight={totalLeads > 0}>
-                    Hot Leads ({totalLeads})
-                  </UnderlineTab>
-                </span>
-              )}
               <span data-ftue="database-tab">
-                <UnderlineTab active={tab === 'database'} onClick={switchToDatabase} highlight={dbTotal > 0 && !leadsIndividual} disabled={dbTotal === 0}>
-                  Database ({dbTotal})
+                <UnderlineTab active={tab === 'database'} onClick={switchToDatabase} highlight={dbTotal > 0} disabled={dbTotal === 0}>
+                  <span className="material-icons-round text-[18px]">person_search</span>
+                  <span>Database ({dbTotal})</span>
                 </UnderlineTab>
               </span>
             </div>
@@ -328,81 +323,204 @@ export function JobDetail() {
       <div className="flex-1 overflow-hidden bg-gray-50 flex justify-center" style={{ padding: '12px 20px 23px' }}>
         <div className="flex w-full max-w-[1100px] gap-3 min-h-0">
         {tab === 'applied' && scenario.applicationsCount > 0 && <FiltersPanel mode="applied" />}
-        {tab === 'leads' && leadsIndividual && <HotLeadsSummaryCard totalLeads={totalLeads} />}
-        {tab === 'database' && dbTotal > 0 && <FiltersPanel mode="database" totalLeads={dbTotal} onInteract={enterDbSearch} onFiltersChange={setDbFilterValues} resetSignal={filterResetKey} hideLeadsCard={leadsIndividual} />}
+        {tab === 'database' && dbTotal > 0 && <FiltersPanel mode="database" totalLeads={dbTotal} onInteract={enterDbSearch} onFiltersChange={setDbFilterValues} resetSignal={filterResetKey} hideLeadsCard={leadsIndividual} onlyLeadsCard={dbSubTab === 'hot'} />}
 
-        <div className="flex-1 overflow-y-auto bg-gray-50 min-w-0">
+        <div className="flex-1 overflow-y-auto bg-gray-50 min-w-0 relative">
           {tab === 'applied' && (
-            <div className="flex flex-col gap-3">
-              {/* Status card — morphs from celebration → compact when jobAge=fresh */}
-              {scenario.applicationsCount === 0 && (
-                <JobStatusCard phase={celebPhase} totalLeads={totalLeads} dbTotal={dbTotal} jobAge={jobAge} />
+            <div className="flex flex-col gap-3 min-h-full relative pb-8">
+              {/* Radar background container (rendered underneath cards) */}
+              {jobAge === 'fresh' && scenario.applicationsCount === 0 && celebPhase === 'radar' && (
+                <div className="absolute top-0 left-0 right-0 overflow-hidden pointer-events-none z-0 anim-fade-in" style={{ height: '260px' }}>
+                  <div 
+                    className="absolute left-1/2 flex items-center justify-center"
+                    style={{
+                      top: '160px',
+                      left: '50%',
+                      width: '1200px',
+                      height: '1200px',
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                  >
+                    {/* Concentric rings */}
+                    <div className="absolute rounded-full border border-[#1f8268]/20" style={{ width: 120, height: 120 }} />
+                    <div className="absolute rounded-full border border-[#1f8268]/18" style={{ width: 240, height: 240 }} />
+                    <div className="absolute rounded-full border border-[#1f8268]/16" style={{ width: 360, height: 360 }} />
+                    <div className="absolute rounded-full border border-[#1f8268]/14" style={{ width: 480, height: 480 }} />
+                    <div className="absolute rounded-full border border-[#1f8268]/11" style={{ width: 600, height: 600 }} />
+                    <div className="absolute rounded-full border border-[#1f8268]/9" style={{ width: 720, height: 720 }} />
+                    <div className="absolute rounded-full border border-[#1f8268]/7" style={{ width: 840, height: 840 }} />
+                    <div className="absolute rounded-full border border-[#1f8268]/5" style={{ width: 960, height: 960 }} />
+                    <div className="absolute rounded-full border border-[#1f8268]/4" style={{ width: 1080, height: 1080 }} />
+                    <div className="absolute rounded-full border border-[#1f8268]/3" style={{ width: 1200, height: 1200 }} />
+
+                    {/* Sweep Scan Beam */}
+                    <div
+                      className="absolute anim-radar-spin pointer-events-none"
+                      style={{
+                        width: 1200,
+                        height: 1200,
+                        borderRadius: '50%',
+                        clipPath: 'circle(50% at 50% 50%)',
+                        background: 'conic-gradient(from 0deg, rgba(31, 130, 104, 0.08) 0deg, rgba(31, 130, 104, 0.01) 60deg, transparent 61deg)',
+                      }}
+                    />
+
+                    {/* Central Beacon pulse */}
+                    <div className="absolute w-8 h-8 rounded-full bg-[#1f8268] anim-beacon-pulse z-10 flex items-center justify-center text-white shadow-md">
+                      <span className="material-icons-round text-sm">person</span>
+                    </div>
+
+                    {/* Floating Candidate pings with icon (no image) - placed in top hemisphere */}
+                    <div
+                      className="absolute anim-avatar-pop"
+                      style={{
+                        left: 'calc(50% + 180px)',
+                        top: 'calc(50% - 80px)',
+                        animationDelay: '0.8s',
+                        opacity: 0,
+                      }}
+                    >
+                      <div className="relative w-8 h-8 rounded-full border border-white shadow-md flex items-center justify-center bg-[#e8f5e9] text-[#1f8268] z-20">
+                        <span className="material-icons-round text-sm">person</span>
+                        <div className="absolute inset-0 rounded-full border border-[#1f8268]/30 anim-ping-glow" style={{ animationDelay: '0.8s' }} />
+                      </div>
+                    </div>
+
+                    <div
+                      className="absolute anim-avatar-pop"
+                      style={{
+                        left: 'calc(50% - 240px)',
+                        top: 'calc(50% - 120px)',
+                        animationDelay: '1.8s',
+                        opacity: 0,
+                      }}
+                    >
+                      <div className="relative w-8 h-8 rounded-full border border-white shadow-md flex items-center justify-center bg-[#e8f5e9] text-[#1f8268] z-20">
+                        <span className="material-icons-round text-sm">person</span>
+                        <div className="absolute inset-0 rounded-full border border-[#1f8268]/30 anim-ping-glow" style={{ animationDelay: '1.8s' }} />
+                      </div>
+                    </div>
+
+                    <div
+                      className="absolute anim-avatar-pop"
+                      style={{
+                        left: 'calc(50% + 60px)',
+                        top: 'calc(50% - 140px)',
+                        animationDelay: '2.8s',
+                        opacity: 0,
+                      }}
+                    >
+                      <div className="relative w-8 h-8 rounded-full border border-white shadow-md flex items-center justify-center bg-[#e8f5e9] text-[#1f8268] z-20">
+                        <span className="material-icons-round text-sm">person</span>
+                        <div className="absolute inset-0 rounded-full border border-[#1f8268]/30 anim-ping-glow" style={{ animationDelay: '2.8s' }} />
+                      </div>
+                    </div>
+
+                    <div
+                      className="absolute anim-avatar-pop"
+                      style={{
+                        left: 'calc(50% - 140px)',
+                        top: 'calc(50% - 60px)',
+                        animationDelay: '3.8s',
+                        opacity: 0,
+                      }}
+                    >
+                      <div className="relative w-8 h-8 rounded-full border border-white shadow-md flex items-center justify-center bg-[#e8f5e9] text-[#1f8268] z-20">
+                        <span className="material-icons-round text-sm">person</span>
+                        <div className="absolute inset-0 rounded-full border border-[#1f8268]/30 anim-ping-glow" style={{ animationDelay: '3.8s' }} />
+                      </div>
+                    </div>
+
+                    <div
+                      className="absolute anim-avatar-pop"
+                      style={{
+                        left: 'calc(50% + 320px)',
+                        top: 'calc(50% - 100px)',
+                        animationDelay: '4.8s',
+                        opacity: 0,
+                      }}
+                    >
+                      <div className="relative w-8 h-8 rounded-full border border-white shadow-md flex items-center justify-center bg-[#e8f5e9] text-[#1f8268] z-20">
+                        <span className="material-icons-round text-sm">person</span>
+                        <div className="absolute inset-0 rounded-full border border-[#1f8268]/30 anim-ping-glow" style={{ animationDelay: '4.8s' }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Spacer to push content below the radar center */}
+              {scenario.applicationsCount === 0 && jobAge === 'fresh' && celebPhase === 'radar' && (
+                <div style={{ height: '170px' }} className="w-full flex-shrink-0 pointer-events-none" />
+              )}
+
+              {/* Status card / celebration — only when applicationsCount === 0 and celebPhase === 'live' */}
+              {scenario.applicationsCount === 0 && celebPhase === 'live' && (
+                <div className="relative z-10">
+                  <JobStatusCard phase={celebPhase} jobAge={jobAge} />
+                </div>
+              )}
+
+              {/* In radar phase, we show a clean header text instead of the status card */}
+              {scenario.applicationsCount === 0 && jobAge === 'fresh' && celebPhase === 'radar' && (
+                <div className="relative z-10 text-center pb-4 pt-1 flex flex-col items-center anim-fade-in">
+                  <h2 className="text-xl font-bold text-gray-900 tracking-tight">Waiting for applications</h2>
+                </div>
               )}
 
               {/* Live leads widget — only when no applicants yet and leads exist */}
-              {scenario.applicationsCount === 0 && totalLeads > 0 && celebPhase === 'done' && (
-                <ActiveLeadsTab
-                  animateIn={jobAge === 'fresh'}
-                  key={scenarioId ?? 'dynamic'}
-                  totalLeads={totalLeads}
-                  dbMatchCount={dbTotal}
-                  hasCredits={scenario.dbCredits > 0}
-                  credits={scenario.dbCredits}
-                  hasUsedDb={scenario.dbExperience === 'used_before'}
-                  unlockedCount={unlockedIds.size}
-                  lockedCount={Math.max(totalLeads - unlockedIds.size, 0)}
-                  showBuyCredits={scenario.dbCredits === 0}
-                  onExploreAll={() => leadsIndividual ? handleGoToLeads() : (dbTotal > 0 && handleGoToDatabase())}
-                  onGoToDatabase={() => leadsIndividual ? handleGoToLeads() : (dbTotal > 0 && handleGoToDatabase())}
-                  onUnlockAndView={handleUnlockAndView}
-                  unlockedIds={unlockedIds}
-                  creditsRemaining={creditsRemaining}
-                  onUnlock={handleUnlock}
-                />
+              {scenario.applicationsCount === 0 && totalLeads > 0 && (celebPhase === 'radar' || celebPhase === 'done') && (
+                <div className="relative z-10">
+                  <ActiveLeadsTab
+                    animateIn={jobAge === 'fresh'}
+                    key={scenarioId ?? 'dynamic'}
+                    totalLeads={totalLeads}
+                    dbMatchCount={dbTotal}
+                    hasCredits={scenario.dbCredits > 0}
+                    credits={scenario.dbCredits}
+                    hasUsedDb={scenario.dbExperience === 'used_before'}
+                    unlockedCount={unlockedIds.size}
+                    lockedCount={Math.max(totalLeads - unlockedIds.size, 0)}
+                    showBuyCredits={scenario.dbCredits === 0}
+                    onExploreAll={() => leadsIndividual ? handleGoToLeads() : (dbTotal > 0 && handleGoToDatabase())}
+                    onGoToDatabase={() => leadsIndividual ? handleGoToLeads() : (dbTotal > 0 && handleGoToDatabase())}
+                    onUnlockAndView={handleUnlockAndView}
+                    unlockedIds={unlockedIds}
+                    creditsRemaining={creditsRemaining}
+                    onUnlock={handleUnlock}
+                    onHelpClick={() => setForceFtueOpen(true)}
+                  />
+                </div>
               )}
 
               {/* Zero leads empty state */}
               {scenario.applicationsCount === 0 && totalLeads === 0 && (
-                <NoLeadsCard dbTotal={dbTotal} jobAge={jobAge} onGoToDatabase={() => setTab('database')} />
+                <div className="relative z-10">
+                  <NoLeadsCard dbTotal={dbTotal} jobAge={jobAge} onGoToDatabase={() => setTab('database')} />
+                </div>
               )}
 
               {/* Applied candidates from scenario */}
-              <AppliedContent
-                key={`applied-${scenarioId ?? 'dynamic'}`}
-                totalLeads={totalLeads}
-                dbCredits={scenario.dbCredits}
-                applicantCount={scenario.applicationsCount}
-                hasUsedDb={scenario.dbExperience === 'used_before' || scenario.dbExperience === 'used_leads'}
-                dbExperience={scenario.dbExperience}
-                dbTotal={dbTotal}
-                unlockedIds={unlockedIds}
-                creditsRemaining={creditsRemaining}
-                onUnlock={handleUnlock}
-                onUnlockAndView={handleUnlockAndView}
-              />
+              <div className="relative z-10">
+                <AppliedContent
+                  key={`applied-${scenarioId ?? 'dynamic'}`}
+                  totalLeads={totalLeads}
+                  dbCredits={scenario.dbCredits}
+                  applicantCount={scenario.applicationsCount}
+                  hasUsedDb={scenario.dbExperience === 'used_before' || scenario.dbExperience === 'used_leads'}
+                  dbExperience={scenario.dbExperience}
+                  dbTotal={dbTotal}
+                  unlockedIds={unlockedIds}
+                  creditsRemaining={creditsRemaining}
+                  onUnlock={handleUnlock}
+                  onUnlockAndView={handleUnlockAndView}
+                  onHelpClick={() => setForceFtueOpen(true)}
+                />
+              </div>
             </div>
           )}
 
-          {/* Standalone Hot Leads tab — leads only, unfiltered, with an index to the DB */}
-          {tab === 'leads' && leadsIndividual && (
-            <DatabaseTab
-              key={`leads-${scenarioId ?? 'dynamic'}`}
-              variant="leads"
-              hasCredits={scenario.dbCredits > 0}
-              credits={scenario.dbCredits}
-              totalLeads={totalLeads}
-              dbTotal={dbTotal}
-              highlightLeadId={highlightLeadId}
-              pendingHighlightId={pendingHighlightId}
-              onHighlightClear={() => setHighlightLeadId(null)}
-              unlockedIds={unlockedIds}
-              creditsRemaining={creditsRemaining}
-              onUnlock={handleUnlock}
-              onFreeUnlock={handleFreeUnlock}
-              ftueVersion={ftueVersion}
-              onExploreDatabase={handleGoToDatabase}
-            />
-          )}
+
 
           {tab === 'database' && (
             <DatabaseTab
@@ -418,10 +536,9 @@ export function JobDetail() {
               unlockedIds={unlockedIds}
               creditsRemaining={creditsRemaining}
               onUnlock={handleUnlock}
-              onFreeUnlock={handleFreeUnlock}
               ftueVersion={ftueVersion}
-              pinned={dbPinned}
-              onTogglePin={toggleDbPin}
+              dbSubTab={dbSubTab}
+              onSubTabChange={setDbSubTab}
               onEnterSearch={enterDbSearch}
               onResetFilters={resetDbFilters}
               dbFilters={dbFilterValues}
@@ -437,10 +554,7 @@ export function JobDetail() {
         onClick={() => navigate('/archetypes')}
         className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-full shadow-xl border border-gray-700 transition-colors"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
+        <span className="material-icons-round text-sm">home</span>
         Go to all journeys
       </button>
     </div>
@@ -489,10 +603,10 @@ function NoLeadsCard({ dbTotal, jobAge, onGoToDatabase }: { dbTotal: number; job
   }
 
   const iconEl = icon === 'db'
-    ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.657 4.03 3 9 3s9-1.343 9-3V5"/><path d="M3 12c0 1.657 4.03 3 9 3s9-1.343 9-3"/></svg>
+    ? <span className="material-icons-round text-xl text-[#1f8268]">dns</span>
     : icon === 'clock'
-    ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-    : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>;
+    ? <span className="material-icons-round text-xl text-[#b45309]">schedule</span>
+    : <span className="material-icons-round text-xl text-[#5e6c84]">search</span>;
 
   const isWarning = icon === 'clock';
   const iconBg = icon === 'db' ? 'bg-emerald-50' : isWarning ? 'bg-amber-50' : 'bg-gray-100';
@@ -516,161 +630,80 @@ function NoLeadsCard({ dbTotal, jobAge, onGoToDatabase }: { dbTotal: number; job
           }`}
         >
           {cta.label}
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <span className="material-icons-round text-xs">arrow_forward</span>
         </button>
       )}
     </div>
   );
 }
 
-type CelebPhase = 'celebrate' | 'settling' | 'done';
+type CelebPhase = 'live' | 'radar' | 'done';
 
 function JobStatusCard({
-  phase, totalLeads, dbTotal, jobAge,
+  phase, jobAge,
 }: {
-  phase: CelebPhase; totalLeads: number; dbTotal: number; jobAge: JobAge;
+  phase: CelebPhase; jobAge: JobAge;
 }) {
-  // Trigger initial fade-in without an animation class (avoids CSS animation/transition conflicts)
-  const [appeared, setAppeared] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setAppeared(true), 50); return () => clearTimeout(t); }, []);
-
-  const isDone = phase === 'done';
-
-  let title: string;
-  let iconStroke = '#1f8268';
-  let iconBg = '#d1fae5';
-  if (jobAge === 'aging') {
-    title = 'Your job is in its final week.';
-    iconStroke = '#b45309';
-    iconBg = '#fef3c7';
-  } else {
-    title = 'Your job is live!';
-  }
-
-  const isCelebrating = phase === 'celebrate';
-  // During settling we move toward compact positions but keep celebration text until done
-  const compact = !isCelebrating;
-
-  const T = 'all 520ms cubic-bezier(0.4, 0, 0.2, 1)';
-
-  // Icon: 80px centered during celebrate → 40px top-left during compact
-  // Use fixed px for all positions — no % in top/left — so the transition is a true diagonal
-  // Celebration: card is 220px tall, icon is 80px → center Y = (220/2) - 40 = 70px
-  // Celebration: icon centered horizontally via calc(50% - 40px) — card width is static so % is stable
-  const iconSize  = compact ? 40             : 80;
-  const iconTop   = compact ? 16             : 70;
-  const iconLeft  = compact ? 20             : 'calc(50% - 40px)';
-  const iconXform = 'none';   // no transform needed — position is fully encoded in top/left
-
-  const textTop   = compact ? 18  : 170;
-  const textLeft  = compact ? 76  : 20;
-  const textRight = compact ? 20  : 20;
-  const titleSize = compact ? 14  : 18;    // px
+  // If the animation is not in live phase or it's not a fresh job, don't show it here
+  if (phase !== 'live' || jobAge !== 'fresh') return null;
 
   return (
     <div
-      className="relative bg-white rounded-xl border border-[#dfe1e6] overflow-hidden"
+      className="relative flex flex-col items-center justify-center py-8 w-full overflow-visible bg-transparent border-0 select-none"
       style={{
-        minHeight: isCelebrating ? 260 : 0,
-        transition: 'min-height 520ms cubic-bezier(0.4, 0, 0.2, 1)',
-        // Spacer: compact layer height (py-4 = 16px×2 + ~40px icon = 72px)
+        minHeight: 320,
+        opacity: 1,
       }}
     >
-      {/* Invisible in-flow spacer keeps compact height when min-height collapses */}
-      <div style={{ height: 72 }} />
-
-      {/* ── Icon — single element, morphs size + position ── */}
+      {/* ── Central Beacon / Done Checkmark ── */}
       <div
+        className="absolute rounded-full bg-[#d1fae5] flex items-center justify-center z-10"
         style={{
-          position: 'absolute',
-          width:  iconSize,
-          height: iconSize,
-          top:    iconTop,
-          left:   iconLeft,
-          transform: iconXform,
-          borderRadius: '50%',
-          backgroundColor: iconBg,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          transition: T,
+          width: 80,
+          height: 80,
+          top: 80,
+          left: 'calc(50% - 40px)',
         }}
       >
         <svg
-          width="100%" height="100%"
-          viewBox="0 0 48 48" fill="none"
+          width="100%"
+          height="100%"
+          viewBox="0 0 48 48"
+          fill="none"
         >
-          <circle cx="24" cy="24" r="22" stroke={isCelebrating ? '#e7f9f9' : 'transparent'} strokeWidth="3" style={{ transition: T }} />
+          <circle cx="24" cy="24" r="22" stroke="#e7f9f9" strokeWidth="3" />
           <circle
             cx="24" cy="24" r="22"
-            stroke={iconStroke} strokeWidth="3" strokeLinecap="round"
+            stroke="#1f8268" strokeWidth="3" strokeLinecap="round"
             strokeDasharray="151" className="anim-circle"
-            style={{ transformOrigin: 'center', transform: 'rotate(-90deg)', transition: T }}
+            style={{ transformOrigin: 'center', transform: 'rotate(-90deg)' }}
           />
           <polyline
             points="13,25 21,33 35,15"
-            stroke={iconStroke} strokeWidth="3.5"
-            strokeLinecap="round" strokeLinejoin="round"
-            strokeDasharray="36" className="anim-check"
+            stroke="#1f8268"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="36"
+            className="anim-check"
           />
         </svg>
       </div>
 
-      {/* ── Text block — single element, morphs position + size ── */}
+      {/* ── Text block ── */}
       <div
+        className="absolute text-center flex flex-col items-center justify-center w-full"
         style={{
-          position: 'absolute',
-          top:    textTop,
-          left:   textLeft,
-          right:  textRight,
-          textAlign: compact ? 'left' : 'center',
-          transition: T,
-          pointerEvents: isDone ? 'auto' : 'none',
+          top: 180,
+          left: 0,
+          right: 0,
         }}
       >
-        <p
-          style={{
-            fontSize: titleSize,
-            fontWeight: 600,
-            color: '#111827',
-            lineHeight: 1.4,
-            margin: 0,
-            textAlign: compact ? 'left' : 'center',
-            whiteSpace: compact ? 'normal' : 'nowrap',
-            opacity: isDone ? 1 : (appeared ? 1 : 0),
-            transform: appeared && isCelebrating ? 'translateY(0)' : isCelebrating ? 'translateY(8px)' : 'none',
-            transition: isCelebrating
-              ? 'opacity 0.4s ease 0.8s, transform 0.4s ease 0.8s, font-size 520ms cubic-bezier(0.4,0,0.2,1)'
-              : T,
-          }}
-        >
-          {isDone ? title : 'Your job is live!'}
+        <p className="font-semibold text-[#111827] text-lg leading-snug m-0">
+          Your job is live!
         </p>
-        <p
-          style={{
-            fontSize: 12,
-            color: compact ? '#6b7280' : '#9ca3af',
-            marginTop: compact ? 2 : 6,
-            lineHeight: 1.5,
-            textAlign: compact ? 'left' : 'center',
-            opacity: isDone ? 1 : (appeared ? 1 : 0),
-            transform: isDone ? 'none' : (appeared ? 'translateY(0)' : 'translateY(8px)'),
-            transition: 'opacity 0.4s ease 1.0s, transform 0.4s ease 1.0s',
-          }}
-        >
-          {jobAge === 'aging'
-            ? <>{dbTotal} candidates in the database match your role.{' '}<span className="font-medium text-amber-700">Reach out to them now — your job expires soon.</span></>
-            : <>
-                Finding matching candidates right now
-                {!isDone && <span>…</span>}
-                {isDone && totalLeads > 0 && (
-                  <span className="anim-fade-in">
-                    {' '}— meanwhile <span className="text-emerald-600 font-medium">{totalLeads} Hot Leads</span> from the apna database are already matching your requirements.
-                  </span>
-                )}
-              </>
-          }
+        <p className="text-gray-500 text-sm mt-1 m-0">
+          Finding right matches right now…
         </p>
       </div>
     </div>

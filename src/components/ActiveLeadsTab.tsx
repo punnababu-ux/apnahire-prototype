@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { CANDIDATES } from '../types';
 import { InsufficientCreditsModal } from './InsufficientCreditsModal';
-import { useJobTab } from '../context/JobTabContext';
 
 interface ActiveLeadsTabProps {
   totalLeads: number;
@@ -23,32 +22,27 @@ interface ActiveLeadsTabProps {
   unlockedIds?: Set<string>;
   creditsRemaining?: number;
   onUnlock?: (id: string) => void;
+  onHelpClick?: () => void;
 }
 
 const HOW_IT_WORKS = [
   {
     icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
+      <span className="material-icons-round text-[16px] text-[#1f8268] select-none">search</span>
     ),
     title: 'We shortlist the best matches',
     body: 'Active candidates relevant to your job, filtered from 42,000+ profiles.',
   },
   {
     icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2">
-        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-      </svg>
+      <span className="material-icons-round text-[16px] text-[#1f8268] select-none">lock</span>
     ),
     title: 'Unlock who you want to contact',
     body: '1 credit per candidate. Only pay for profiles you choose.',
   },
   {
     icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2">
-        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.06 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16l.92.92z"/>
-      </svg>
+      <span className="material-icons-round text-[16px] text-[#1f8268] select-none">phone</span>
     ),
     title: 'Reach out before someone else does',
     body: 'Hot Leads get hired fast. Contact them directly via call or WhatsApp.',
@@ -58,146 +52,109 @@ const HOW_IT_WORKS = [
 export function ActiveLeadsTab({
   totalLeads,
   dbMatchCount,
-  hasCredits,
   credits,
-  hasUsedDb = false,
   onExploreAll,
   onGoToDatabase,
   onUnlockAndView,
   headerTitle,
-  headerSubtitle,
   creditsRemaining,
   animateIn = false,
+  onHelpClick,
 }: ActiveLeadsTabProps) {
-  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
   const [showBuyModal, setShowBuyModal] = useState(false);
+  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
 
-  const remaining = creditsRemaining ?? credits;
-  // The "How Hot Leads and credits work" explainer is educational — show it to anyone
-  // seeing Hot Leads for the first time (regardless of credits), and hide it for
-  // recruiters who've used Hot Leads before. Defaults to shown outside a provider.
-  const newToHotLeads = useJobTab()?.newToHotLeads ?? true;
-
-  return (
+  const remaining = creditsRemaining ?? credits;  return (
     <div data-ftue="live-leads-section" className="bg-white rounded-xl border border-[#dfe1e6] overflow-hidden">
       {/* Header */}
-      <div className="px-5 pt-5 pb-4">
-        <p className="flex items-center gap-2 text-base font-semibold text-gray-900 mb-1">
-          {!headerTitle && (
-            <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+      <div className="px-5 pt-5 pb-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div>
+          <p className="flex items-center gap-2 text-base font-semibold text-gray-900 mb-1">
+            {!headerTitle && (
+              <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+              </span>
+            )}
+            <span>
+              While applications come in, unlock database{' '}
+              <span className="relative inline-block pb-1 text-[#007a64] font-semibold">
+                hot leads
+                <svg className="absolute -bottom-1.5 left-0 w-full h-[8px] text-[#007a64]" viewBox="0 0 100 8" fill="none" preserveAspectRatio="none">
+                  <path d="M1 5C20 8 40 2 60 5C80 8 95 3 99 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </span>
             </span>
-          )}
-          {headerTitle ?? `${totalLeads} Hot Leads from apna database`}
-        </p>
-        <p className="text-sm text-gray-500">
-          {headerSubtitle ?? 'Hot Leads are actively looking for jobs, recently applied to similar roles, and match your requirements.'}
-        </p>
+          </p>
+        </div>
+
+        {/* Right side: Database Credits pill / segment */}
+        {remaining > 0 ? (
+          <button
+            onClick={() => setShowBuyModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#eaf8f4] hover:bg-[#d8f3eb] border border-[#b6ecec] text-[#007a64] rounded-full text-xs font-semibold transition-all shadow-sm flex-shrink-0 self-end sm:self-start h-8"
+          >
+            <span className="material-icons-round text-amber-500 text-[18px] select-none flex-shrink-0">paid</span>
+            <span>{remaining} Database Credits</span>
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 flex-shrink-0 self-end sm:self-start text-xs font-semibold">
+            <div className="flex items-center gap-1.5 px-3.5 h-8 bg-[#fff1f0] border border-[#ffa39e] text-[#cf1322] rounded-full shadow-sm">
+              <span className="material-icons-round text-amber-500 text-[18px] select-none flex-shrink-0">paid</span>
+              <span>0 Database Credits</span>
+            </div>
+            <button
+              onClick={() => setShowBuyModal(true)}
+              className="px-4 h-8 bg-[#1f8268] hover:bg-[#186b55] text-white transition-colors rounded-full shadow-sm flex items-center justify-center"
+            >
+              Buy credits
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* How Hot Leads & credits work — for anyone new to Hot Leads, regardless of credits */}
-      {newToHotLeads && (
-        <div className="mx-5 mb-4 rounded-xl border border-[#dfe1e6] bg-[#f4f5f7] overflow-hidden">
-          <button
-            onClick={() => setHowItWorksOpen(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-3"
-          >
-            <div className="flex items-center gap-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
-              <span className="text-xs font-semibold text-[#172b4d]">How Hot Leads and credits work</span>
-            </div>
-            <svg
-              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2"
-              className={`transition-transform ${howItWorksOpen ? 'rotate-180' : ''}`}
-            >
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </button>
-          {howItWorksOpen && (
-            <div className="px-4 pb-4 flex flex-col gap-4 border-t border-[#dfe1e6]">
-              {HOW_IT_WORKS.map((step, i) => (
-                <div key={i} className="flex items-start gap-3 pt-3">
-                  <div className="w-7 h-7 rounded-full bg-white border border-[#b6ecec] flex items-center justify-center flex-shrink-0">
-                    {step.icon}
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-[#172b4d]">{step.title}</p>
-                    <p className="text-[11px] text-[#42526e] mt-0.5 leading-snug">{step.body}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Candidate cards */}
-      <div className="grid grid-cols-4 gap-3 px-5 pb-4">
+      <div className="grid grid-cols-4 gap-[18px] px-5 pb-4">
         {CANDIDATES.slice(0, 3).map((c, idx) => {
-          const isPreview = !hasCredits && idx === 0;
-
           return (
             <div
               key={c.id}
-              className={`rounded-xl overflow-hidden hover:shadow-sm transition-all flex flex-col ${animateIn ? `anim-lead-${idx}` : ''} ${
-                isPreview
-                  ? 'border-2 border-[#1f8268] cursor-pointer'
-                  : 'border border-[#dfe1e6] hover:border-[#1f8268]'
-              }`}
-              onClick={isPreview ? () => onUnlockAndView?.(c.id) : undefined}
+              onClick={() => onUnlockAndView?.(c.id)}
+              className={`flex flex-col border-[1.5px] border-[#dfe1e6] hover:border-[#1f8268] rounded-xl overflow-hidden bg-white hover:shadow-sm transition-all cursor-pointer ${animateIn ? `anim-lead-${idx}` : ''}`}
             >
-              {/* Teal banner with avatar */}
-              <div className="relative h-14 bg-[#eaf8f4] flex-shrink-0">
-                {isPreview && (
-                  <span className="absolute top-2 right-2 text-[10px] font-semibold bg-[#1f8268] text-white px-2 py-0.5 rounded-full">
-                    Free
-                  </span>
-                )}
-                <div
-                  className="absolute bottom-0 left-4 translate-y-1/2 w-12 h-12 rounded-full border-2 border-white flex items-center justify-center text-sm font-semibold text-gray-700 shadow-sm"
-                  style={{ background: c.avatarColor }}
-                >
-                  {c.initials}
+              {/* Top Half */}
+              <div className="bg-[#eaf8f4] p-[18px] border-b border-[#dfe1e6] flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  {c.avatarUrl ? (
+                    <img
+                      src={c.avatarUrl}
+                      alt={c.name}
+                      className="w-8 h-8 rounded-full object-cover flex-shrink-0 shadow-sm border border-white"
+                    />
+                  ) : (
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-sm flex-shrink-0 ${c.avatarColor === '#4a154b' ? 'text-white' : 'text-gray-700'}`}
+                      style={{ background: c.avatarColor }}
+                    >
+                      {c.initials}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug min-h-[40px] flex items-center">{c.name}</p>
+                  </div>
                 </div>
+                <span className="material-icons-round text-[18px] text-[#1f8268] flex-shrink-0 select-none">chevron_right</span>
               </div>
 
-              {/* Content */}
-              <div className="px-3 pt-8 pb-3 flex flex-col flex-1">
-                <p className="text-xs font-semibold text-gray-900 truncate">{c.name}</p>
-                <p className="text-[11px] text-gray-500 leading-snug mt-0.5 line-clamp-2">{c.role}</p>
-                <p className="text-[10px] text-gray-400 mt-1.5 truncate">
-                  {c.experience} • {c.salary} • {c.location}
-                </p>
-                <p className="flex items-center gap-1 mt-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-                  <span className="text-[10px] text-emerald-600 font-medium">Active {c.lastActive}</span>
-                </p>
-
-                {/* Blurred contact hint — preview card only */}
-                {isPreview && (
-                  <div className="mt-2 flex items-center gap-1.5 px-2 py-1.5 bg-[#f4f5f7] rounded-lg">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#5e6c84" strokeWidth="2">
-                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.06 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16l.92.92z"/>
-                    </svg>
-                    <span className="text-[10px] text-[#5e6c84] font-medium blur-[3px] select-none">+91 98•• •••••</span>
-                  </div>
-                )}
-
-                <div className="flex-1" />
-
-                <button
-                  data-ftue="first-lead-unlock-btn"
-                  onClick={e => { e.stopPropagation(); onUnlockAndView?.(c.id); }}
-                  className="mt-2 w-full py-2 text-xs font-semibold border border-[#1f8268] text-[#1f8268] rounded-xl hover:bg-[#eaf8f4] transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                  </svg>
-                  View Profile
-                </button>
+              {/* Bottom Half */}
+              <div className="bg-white p-[18px] flex-1 flex flex-col justify-between">
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-semibold text-[#172b4d] leading-snug line-clamp-2 min-h-[40px]">{c.role}</p>
+                  <p className="text-xs text-[#5e6c84] truncate">{c.location}</p>
+                  <p className="text-xs text-[#5e6c84] truncate mt-1">
+                    {c.experience} • {c.salary}
+                  </p>
+                </div>
               </div>
             </div>
           );
@@ -205,71 +162,86 @@ export function ActiveLeadsTab({
 
         {/* +more card — pivots to DB promo when all live leads are already shown */}
         {totalLeads > 3 ? (
-          <div className="border border-[#b6ecec] rounded-xl overflow-hidden flex flex-col">
-            <div className="relative h-14 bg-[#eaf8f4] flex-shrink-0">
-              <div className="absolute bottom-0 left-4 translate-y-1/2 flex -space-x-2">
-                {['#a7f3d0', '#bfdbfe', '#fde68a'].map((bg, i) => (
-                  <div
-                    key={i}
-                    className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-xs font-semibold text-gray-600 shadow-sm"
-                    style={{ background: bg }}
-                  >
-                    {['S', 'R', 'A'][i]}
+          <div
+            onClick={onExploreAll}
+            className="flex flex-col border-[1.5px] border-[#dfe1e6] hover:border-[#1f8268] rounded-xl overflow-hidden bg-white hover:shadow-sm transition-all cursor-pointer"
+          >
+            {/* Top Half */}
+            <div className="bg-[#eaf8f4] p-[18px] border-b border-[#dfe1e6] flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 rounded-full border-2 border-white bg-[#fecdd3] flex items-center justify-center text-[10px] font-bold text-gray-700 shadow-sm flex-shrink-0 z-0">
+                    PN
                   </div>
-                ))}
+                  <div className="w-8 h-8 rounded-full border-2 border-white bg-[#d8b4fe] flex items-center justify-center text-[10px] font-bold text-gray-700 shadow-sm flex-shrink-0 -ml-2 z-10">
+                    AM
+                  </div>
+                  <img
+                    src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150"
+                    alt="avatar"
+                    className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm flex-shrink-0 -ml-2 z-20"
+                  />
+                </div>
+                <span className="text-sm font-bold text-[#172b4d] min-h-[40px] flex items-center">+{totalLeads - 3} more</span>
               </div>
+              <span className="material-icons-round text-[18px] text-[#1f8268] flex-shrink-0 select-none">chevron_right</span>
             </div>
-            <div className="px-3 pt-9 pb-3 flex flex-col flex-1">
-              <p className="text-sm font-bold text-gray-800">+ {totalLeads - 3} more</p>
-              <p className="text-[11px] text-gray-500 leading-snug mt-1">See all matching candidates</p>
-              <div className="flex-1" />
-              <button onClick={onExploreAll} className={`mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl transition-colors ${
-                hasCredits
-                  ? 'bg-[#1f8268] hover:bg-[#186b55] text-white'
-                  : 'border border-[#1f8268] text-[#1f8268] hover:bg-[#eaf8f4]'
-              }`}>
-                See all Hot Leads
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <polyline points="5 12 12 12 19 12"/><polyline points="13 6 19 12 13 18"/>
-                </svg>
+
+            {/* Bottom Half */}
+            <div className="bg-white p-[18px] flex-1 flex flex-col justify-between gap-6">
+              <div className="text-sm font-semibold text-[#172b4d] leading-snug">
+                Connect with candidates instantly
+              </div>
+
+              <button
+                onClick={e => { e.stopPropagation(); onExploreAll?.(); }}
+                className="text-[#1f8268] hover:text-[#186b55] text-sm font-semibold underline decoration-[1.5px] underline-offset-4 self-start mt-auto"
+              >
+                View all leads
               </button>
             </div>
           </div>
         ) : (dbMatchCount ?? 0) > 0 ? (
-          <div className={`border border-[#dfe1e6] rounded-xl overflow-hidden hover:shadow-sm transition-all cursor-pointer flex flex-col ${animateIn ? 'anim-lead-3' : ''}`} onClick={onGoToDatabase}>
-            {/* Same teal banner as candidate cards */}
-            <div className="relative h-14 bg-[#eaf8f4] flex-shrink-0">
-              {/* Overlapping avatar stack */}
-              <div className="absolute bottom-0 left-4 translate-y-1/2 flex items-center">
-                {[
-                  { bg: '#b2dfdb', initials: 'RK' },
-                  { bg: '#c8e6c9', initials: 'AS' },
-                  { bg: '#bbdefb', initials: 'PM' },
-                ].map((av, i) => (
-                  <div
-                    key={i}
-                    style={{ backgroundColor: av.bg, marginLeft: i === 0 ? 0 : -10, zIndex: i }}
-                    className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center shadow-sm flex-shrink-0"
-                  >
-                    <span className="text-[10px] font-bold text-[#1f8268]">{av.initials}</span>
+          <div
+            onClick={onGoToDatabase}
+            className={`flex flex-col border-[1.5px] border-[#dfe1e6] hover:border-[#1f8268] rounded-xl overflow-hidden bg-white hover:shadow-sm transition-all cursor-pointer ${animateIn ? 'anim-lead-3' : ''}`}
+          >
+            {/* Top Half */}
+            <div className="bg-[#eaf8f4] p-[18px] border-b border-[#dfe1e6] flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 rounded-full border-2 border-white bg-[#b2dfdb] flex items-center justify-center text-[10px] font-bold text-gray-700 shadow-sm flex-shrink-0 z-0">
+                    RK
                   </div>
-                ))}
-                <div
-                  style={{ marginLeft: -10, zIndex: 3 }}
-                  className="w-9 h-9 rounded-full border-2 border-white bg-[#1f8268] flex items-center justify-center shadow-sm flex-shrink-0"
-                >
-                  <span className="text-[9px] font-bold text-white leading-none">{(dbMatchCount ?? 300) >= 100 ? (dbMatchCount ?? 300) + '+' : dbMatchCount}</span>
+                  <div className="w-8 h-8 rounded-full border-2 border-white bg-[#c8e6c9] flex items-center justify-center text-[10px] font-bold text-gray-700 shadow-sm flex-shrink-0 -ml-2 z-10">
+                    AS
+                  </div>
+                  <img
+                    src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150"
+                    alt="avatar"
+                    className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm flex-shrink-0 -ml-2 z-20"
+                  />
+                  <div
+                    style={{ marginLeft: -8, zIndex: 30 }}
+                    className="w-8 h-8 rounded-full border-2 border-white bg-[#1f8268] flex items-center justify-center shadow-sm flex-shrink-0"
+                  >
+                    <span className="text-[9px] font-bold text-white leading-none">{(dbMatchCount ?? 300) >= 100 ? (dbMatchCount ?? 300) + '+' : dbMatchCount}</span>
+                  </div>
                 </div>
+                <span className="text-sm font-bold text-[#172b4d] min-h-[40px] flex items-center">+{dbMatchCount?.toLocaleString()} more</span>
               </div>
+              <span className="material-icons-round text-[18px] text-[#1f8268] flex-shrink-0 select-none">chevron_right</span>
             </div>
-            {/* Same content layout as candidate cards */}
-            <div className="px-3 pt-8 pb-3 flex flex-col flex-1">
-              <p className="text-xs font-semibold text-gray-900">{dbMatchCount?.toLocaleString()} more matches</p>
-              <p className="text-[11px] text-gray-500 leading-snug mt-0.5 line-clamp-2">Explore all candidates who fit your role</p>
-              <div className="flex-1" />
+
+            {/* Bottom Half */}
+            <div className="bg-white p-[18px] flex-1 flex flex-col justify-between gap-6">
+              <div className="text-sm font-semibold text-[#172b4d] leading-snug">
+                Connect with candidates instantly
+              </div>
+
               <button
                 onClick={e => { e.stopPropagation(); onGoToDatabase?.(); }}
-                className="mt-2 w-full py-2 text-xs font-semibold border border-[#1f8268] text-[#1f8268] rounded-xl hover:bg-[#eaf8f4] transition-colors"
+                className="text-[#1f8268] hover:text-[#186b55] text-sm font-semibold underline decoration-[1.5px] underline-offset-4 self-start mt-auto"
               >
                 Browse profiles
               </button>
@@ -278,56 +250,47 @@ export function ActiveLeadsTab({
         ) : null}
       </div>
 
-      {/* Merged footer + nudge bar — state follows the live credit balance */}
-      <div className="mx-4 mb-4">
-        {remaining > 0 ? (
-          <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-[#eaf8f4] border border-[#b6ecec] rounded-xl">
-            <div className="flex items-center gap-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" className="flex-shrink-0">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-              </svg>
-              <p className="text-xs text-[#42526e]">
-                <span className="text-[#1f8268] font-semibold">{totalLeads} Hot Leads matched for you</span>
-                {' · '}
-                <span className="font-semibold text-[#172b4d]">{remaining} credits available</span>
-                {' — view a profile to unlock & contact'}
-              </p>
-            </div>
-          </div>
-        ) : (hasCredits || hasUsedDb) ? (
-          <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-[#eaf8f4] border border-[#b6ecec] rounded-xl">
-            <div className="flex items-center gap-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" className="flex-shrink-0">
-                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              <p className="text-xs text-[#42526e]">
-                <span className="font-semibold text-[#172b4d]">All credits used.</span>
-                {' '}
-                <span className="text-[#1f8268] font-semibold">{totalLeads} Hot Leads still waiting</span>
-                {' — top up to keep contacting.'}
-              </p>
-            </div>
-            <button className="flex-shrink-0 px-3 py-1.5 bg-[#1f8268] hover:bg-[#186b55] text-white text-xs font-semibold rounded-xl transition-colors">
-              Top up credits
+
+      {/* Collasible Help drawer */}
+      {howItWorksOpen && (
+        <div className="mx-5 my-4 rounded-xl border border-[#dfe1e6] bg-[#f4f5f7] p-4 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-[#172b4d]">How Hot Leads and credits work</span>
+            <button onClick={() => setHowItWorksOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <span className="material-icons-round text-[16px] text-gray-400 select-none">close</span>
             </button>
           </div>
-        ) : (
-          <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-[#eaf8f4] border border-[#b6ecec] rounded-xl">
-            <div className="flex items-center gap-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1f8268" strokeWidth="2" className="flex-shrink-0">
-                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              <p className="text-xs text-[#42526e]">
-                <span className="text-[#1f8268] font-semibold">{totalLeads} Hot Leads matched for you</span>
-                {' · '}
-                <span className="font-semibold text-[#172b4d]">buy credits to view & contact</span>
-              </p>
-            </div>
-            <button onClick={() => setShowBuyModal(true)} className="flex-shrink-0 px-3 py-1.5 bg-[#1f8268] hover:bg-[#186b55] text-white text-xs font-semibold rounded-xl transition-colors">
-              Buy credits
-            </button>
+          <div className="flex flex-col gap-3 border-t border-[#dfe1e6] pt-2">
+            {HOW_IT_WORKS.map((step, i) => (
+              <div key={i} className="flex items-start gap-3 pt-2">
+                <div className="w-7 h-7 rounded-full bg-white border border-[#b6ecec] flex items-center justify-center flex-shrink-0">
+                  {step.icon}
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#172b4d]">{step.title}</p>
+                  <p className="text-[11px] text-[#42526e] mt-0.5 leading-snug">{step.body}</p>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Cleaned up footer */}
+      <div className="px-5 py-4 border-t border-[#dfe1e6] flex items-center justify-between text-xs text-gray-500 bg-[#f8f9fa] mt-2">
+        <div className="flex items-center gap-2">
+          {/* Lock icon */}
+          <span className="material-icons-round text-[16px] text-gray-400 select-none">lock</span>
+          <span className="font-medium text-gray-600">1 Profile Unlock = 1 Database Credit</span>
+        </div>
+        <button
+          onClick={onHelpClick ? onHelpClick : () => setHowItWorksOpen(v => !v)}
+          className="flex items-center gap-1.5 text-[#0074e8] hover:text-[#005cb3] font-semibold"
+        >
+          {/* Blue circle with question mark */}
+          <span className="material-icons-round text-[18px] text-[#0074e8] flex-shrink-0 select-none">help</span>
+          <span>Help</span>
+        </button>
       </div>
 
       {showBuyModal && <InsufficientCreditsModal onClose={() => setShowBuyModal(false)} />}

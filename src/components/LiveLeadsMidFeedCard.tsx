@@ -24,9 +24,7 @@ export function LiveLeadsMidFeedCard({ totalLeads, hasCredits, onExplore }: Live
     <div data-ftue="leads-ingress" className="mb-3 rounded-xl border border-[#b6ecec] bg-[#eaf8f4]/40 px-4 py-3.5 flex items-center gap-4">
       {/* Icon */}
       <div className="w-9 h-9 rounded-full bg-[#1f8268] flex items-center justify-center flex-shrink-0">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-        </svg>
+        <span className="material-icons-round text-[16px] text-white select-none">bolt</span>
       </div>
 
       {/* Text + avatars */}
@@ -63,9 +61,7 @@ export function LiveLeadsMidFeedCard({ totalLeads, hasCredits, onExplore }: Live
         }`}
       >
         Explore Hot Leads
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <polyline points="5 12 12 12 19 12"/><polyline points="13 6 19 12 13 18"/>
-        </svg>
+        <span className="material-icons-round text-[14px] select-none">arrow_forward</span>
       </button>
     </div>
   );

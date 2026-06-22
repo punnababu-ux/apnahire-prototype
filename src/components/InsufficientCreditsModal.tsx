@@ -10,10 +10,8 @@ export function InsufficientCreditsModal({ onClose }: Props) {
         className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 flex flex-col items-center text-center"
         onClick={e => e.stopPropagation()}
       >
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 6L6 18M6 6l12 12"/>
-          </svg>
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 flex items-center justify-center">
+          <span className="material-icons-round text-[20px] select-none">close</span>
         </button>
 
         <div className="mb-6">

@@ -9,7 +9,6 @@ type DbSize   = 'none' | 'has';
 type LeadVol  = 'zero' | 'low' | 'normal';
 type AppVol   = 'zero' | 'few' | 'many';
 type JobAge   = 'fresh' | 'active' | 'aging';
-type LeadsLoc = 'database' | 'individual';
 
 interface Config {
   experience: Experience;
@@ -18,11 +17,10 @@ interface Config {
   leads:      LeadVol;
   apps:       AppVol;
   age:        JobAge;
-  leadsLoc?:  LeadsLoc;
 }
 
 const DEFAULT_CONFIG: Config = {
-  experience: 'never', credits: 'none', db: 'has', leads: 'normal', apps: 'zero', age: 'active', leadsLoc: 'database',
+  experience: 'never', credits: 'none', db: 'has', leads: 'normal', apps: 'zero', age: 'active',
 };
 
 const PRESETS: Array<{ label: string; color: string; config: Config }> = [
@@ -55,8 +53,7 @@ const PRESETS: Array<{ label: string; color: string; config: Config }> = [
 
 function configMatches(a: Config, b: Config) {
   return a.experience === b.experience && a.credits === b.credits &&
-    a.db === b.db && a.leads === b.leads && a.apps === b.apps && a.age === b.age &&
-    (a.leadsLoc ?? 'database') === (b.leadsLoc ?? 'database');
+    a.db === b.db && a.leads === b.leads && a.apps === b.apps && a.age === b.age;
 }
 
 function computeSummary(c: Config): { situation: string; goal: string; warnings: string[] } {
@@ -135,7 +132,6 @@ function configToParams(c: Config): string {
     leads,
     apps:    c.apps === 'zero' ? '0' : c.apps === 'few' ? '3' : '8',
     age:     c.age,
-    leadsLoc: c.leadsLoc ?? 'database',
   }).toString();
 }
 
@@ -199,7 +195,7 @@ export function Archetypes() {
           to="/scenario-map"
           className="inline-flex items-center gap-1.5 mt-4 text-xs font-semibold text-gray-500 hover:text-emerald-400 transition-colors"
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span className="material-icons-round text-[12px] select-none">grid_view</span>
           View scenario map
         </Link>
       </div>
@@ -281,17 +277,7 @@ export function Archetypes() {
             />
           </ConfigRow>
 
-          {/* Hot Leads location */}
-          <ConfigRow label="Hot Leads location" hint="Inside the Database tab, or their own tab between Applied & Database">
-            <ToggleGroup
-              options={[
-                { value: 'database',   label: 'Part of database' },
-                { value: 'individual', label: 'Own tab' },
-              ]}
-              value={config.leadsLoc ?? 'database'}
-              onChange={v => set('leadsLoc', v as LeadsLoc)}
-            />
-          </ConfigRow>
+
 
           {/* Advanced (collapsed by default) */}
           <div className="border-t border-gray-800 pt-4">
@@ -299,12 +285,11 @@ export function Archetypes() {
               onClick={() => setAdvancedOpen(o => !o)}
               className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-300 uppercase tracking-widest transition-colors"
             >
-              <svg
-                width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                className={`transition-transform ${advancedOpen ? 'rotate-90' : ''}`}
+              <span
+                className={`material-icons-round text-[12px] transition-transform select-none ${advancedOpen ? 'rotate-90' : ''}`}
               >
-                <path d="M9 18l6-6-6-6"/>
-              </svg>
+                chevron_right
+              </span>
               Advanced
             </button>
 
@@ -357,10 +342,7 @@ export function Archetypes() {
         <div className="px-6 py-5 bg-gray-950/50 border-t border-gray-800 space-y-4">
           {summary.warnings.map((w, i) => (
             <div key={i} className="flex items-start gap-2 text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="flex-shrink-0 mt-0.5">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
+              <span className="material-icons-round text-[14px] text-amber-400 flex-shrink-0 mt-0.5 select-none">warning</span>
               <p className="text-xs leading-relaxed">{w}</p>
             </div>
           ))}
@@ -383,9 +365,7 @@ export function Archetypes() {
             className="w-full flex items-center justify-center gap-2.5 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-xl transition-colors"
           >
             Experience this journey
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
+            <span className="material-icons-round text-[16px] select-none">arrow_forward</span>
           </button>
         </div>
       </div>

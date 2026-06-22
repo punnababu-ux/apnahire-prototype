@@ -34,9 +34,7 @@ export function Dashboard() {
         <h1 className="jobs-title">All Jobs ({JOBS.length})</h1>
         <button className="post-btn">
           Post a new job
-          <svg className="post-btn-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
+          <span className="material-icons-round text-[18px] select-none align-middle ml-1">expand_more</span>
         </button>
       </div>
 
@@ -64,6 +62,7 @@ export function Dashboard() {
             <div className="job-row-stats">
               <Link to={`/job/${job.id}?scenario=${job.scenarioId}`} className="job-row-stat">
                 <div className="job-row-stat-top">
+                  <span className="material-icons-round text-[18px] text-[#5e6c84] select-none">business_center</span>
                   <span className="job-row-stat-num">{job.appliedCount}</span>
                   <span className="job-row-stat-chevron" aria-hidden="true">›</span>
                   {job.toReview > 0 && (
@@ -77,6 +76,7 @@ export function Dashboard() {
 
               <Link to={`/job/${job.id}?scenario=${job.scenarioId}`} className="job-row-stat">
                 <div className="job-row-stat-top">
+                  <span className="material-icons-round text-[18px] text-[#5e6c84] select-none">person_search</span>
                   <span className="job-row-stat-num">{job.matchesCount.toLocaleString()}</span>
                   <span className="job-row-stat-chevron" aria-hidden="true">›</span>
                 </div>
@@ -88,11 +88,7 @@ export function Dashboard() {
               Duplicate
             </button>
             <button className="job-row-more" aria-label="More options" onClick={e => { e.preventDefault(); e.stopPropagation(); }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="12" cy="5" r="1.6"/>
-                <circle cx="12" cy="12" r="1.6"/>
-                <circle cx="12" cy="19" r="1.6"/>
-              </svg>
+              <span className="material-icons-round text-[20px] select-none text-gray-500">more_vert</span>
             </button>
           </div>
         ))}
@@ -102,10 +98,7 @@ export function Dashboard() {
         to="/archetypes"
         className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-full shadow-xl border border-gray-700 transition-colors"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
+        <span className="material-icons-round text-[16px] select-none">home</span>
         Go to all journeys
       </Link>
     </>

@@ -66,9 +66,7 @@ export function FtueModal({ onComplete, hasCredits, leadsIndividual = false }: F
           onClick={onComplete}
           className="absolute top-3 right-3 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/80 hover:bg-white text-gray-600"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
+          <span className="material-icons-round text-[16px] select-none">close</span>
         </button>
 
         {/* Preview area */}
@@ -163,7 +161,7 @@ function PreviewCard({ step, accentLight, accent }: { step: string; accentLight:
     return (
       <div className="flex flex-col items-center gap-2 scale-100">
         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 rounded-full">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span className="material-icons-round text-[10px] text-white select-none">search</span>
           <span className="text-[9px] font-semibold text-white">9 Hot Leads from apna database</span>
         </div>
         <div className="flex gap-2">
@@ -216,7 +214,7 @@ function PreviewCard({ step, accentLight, accent }: { step: string; accentLight:
           <div className="text-[11px] font-semibold text-gray-800">Rohan Roy</div>
           <div className="text-[9px] text-gray-500 mt-0.5">Sales Exec · Delhi</div>
           <div className="mt-2 flex items-center gap-1.5 px-2 py-1.5 bg-gray-100 rounded-lg">
-            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.06 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16l.92.92z"/></svg>
+            <span className="material-icons-round text-[10px] text-gray-400 select-none">phone</span>
             <span className="text-[9px] text-gray-400 blur-[2.5px] select-none">+91 98765</span>
           </div>
           <button className="mt-2 w-full py-1.5 text-[9px] font-semibold rounded-lg border" style={{ borderColor: accent, color: accent }}>
@@ -226,9 +224,7 @@ function PreviewCard({ step, accentLight, accent }: { step: string; accentLight:
       </div>
 
       {/* Arrow */}
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-        <polyline points="5 12 12 12 19 12"/><polyline points="13 6 19 12 13 18"/>
-      </svg>
+      <span className="material-icons-round text-[20px] text-white select-none">arrow_forward</span>
 
       {/* Unlocked card */}
       <div className="bg-white rounded-xl shadow-md overflow-hidden w-[148px]">
@@ -241,7 +237,7 @@ function PreviewCard({ step, accentLight, accent }: { step: string; accentLight:
           <div className="text-[11px] font-semibold text-gray-800">Rohan Roy</div>
           <div className="text-[9px] text-gray-500 mt-0.5">Sales Exec · Delhi</div>
           <div className="mt-2 flex items-center gap-1.5 px-2 py-1.5 rounded-lg" style={{ background: accentLight }}>
-            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.06 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16l.92.92z"/></svg>
+            <span className="material-icons-round text-[10px] select-none" style={{ color: accent }}>phone</span>
             <span className="text-[9px] font-semibold" style={{ color: accent }}>+91 98765 43210</span>
           </div>
           <button className="mt-2 w-full py-1.5 text-[9px] font-semibold rounded-lg text-white" style={{ background: '#1f8268' }}>
