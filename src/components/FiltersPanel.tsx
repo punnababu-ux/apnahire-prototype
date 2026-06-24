@@ -81,7 +81,7 @@ export function FiltersPanel({
   if (mode === 'database') {
     const leadsExpanded = !dbPinned || !scrolledBeyondLeads;
     return (
-      <div className="flex flex-col gap-3 w-[280px] flex-shrink-0 self-start sticky top-3">
+      <div className="flex flex-col gap-3 w-[280px] flex-shrink-0 self-start sticky top-[178px]">
 
         {/* ── Filters card ── */}
         <div className="bg-white rounded-xl border border-[#dfe1e6] overflow-hidden">

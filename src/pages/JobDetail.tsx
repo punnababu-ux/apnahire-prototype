@@ -122,6 +122,17 @@ export function JobDetail() {
     }
   }, [tab]);
 
+  // Listen to window scroll when database tab is active (in case layout scrolls window instead of right panel)
+  useEffect(() => {
+    if (tab !== 'database') return;
+    function handleWindowScroll() {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      setScrolledBeyondLeads(scrollTop > 200);
+    }
+    window.addEventListener('scroll', handleWindowScroll);
+    return () => window.removeEventListener('scroll', handleWindowScroll);
+  }, [tab]);
+
   const { setCredits, pulse } = useCredits();
   useEffect(() => { setCredits(scenario.dbCredits); }, [scenario.dbCredits, setCredits]);
 
