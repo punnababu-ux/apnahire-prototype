@@ -15,12 +15,11 @@ interface FiltersPanelProps {
   // When Hot Leads live in their own tab, the DB filter rail must not show the Hot Leads
   // summary card (leads are removed from the Database entirely).
   hideLeadsCard?: boolean;
-  onlyLeadsCard?: boolean;
 }
 
 const DB_FILTER_CHIPS = DB_SKILL_FILTERS;
 
-export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onFiltersChange, resetSignal, hideLeadsCard = false, onlyLeadsCard = false }: FiltersPanelProps) {
+export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onFiltersChange, resetSignal, hideLeadsCard = false }: FiltersPanelProps) {
   const [showCandidates, setShowCandidates] = useState(true);
   const [chips, setChips] = useState<Set<string>>(new Set(DB_FILTER_CHIPS));
   const [hideUnlocked, setHideUnlocked] = useState(false);
@@ -63,7 +62,6 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onF
       <div className="flex flex-col gap-3 w-[280px] flex-shrink-0 self-start">
 
         {/* ── Filters card ── */}
-        {!onlyLeadsCard && (
         <div className="bg-white rounded-xl border border-[#dfe1e6] overflow-hidden">
           {/* Header */}
           <button
@@ -135,7 +133,6 @@ export function FiltersPanel({ mode = 'applied', totalLeads = 4, onInteract, onF
           </div>
           </>}
         </div>
-        )}
 
         {/* ── Live Leads card — hidden when Hot Leads live in their own tab ── */}
         {!hideLeadsCard && (

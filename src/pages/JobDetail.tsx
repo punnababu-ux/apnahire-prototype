@@ -89,16 +89,18 @@ export function JobDetail() {
   const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set());
   const [creditsRemaining, setCreditsRemaining] = useState(scenario.dbCredits);
 
-  // Database-tab sub tab. 'all' shows all DB profiles; 'hot' shows Hot Leads.
-  const [dbSubTab, setDbSubTab] = useState<'all' | 'hot'>('all');
+  // Database-tab Live Leads pinning. Pinned by default; applying any filter unpins
+  // them (they weave into the results list). The header toggle re-pins.
+  const [dbPinned, setDbPinned] = useState(true);
   const [filterResetKey, setFilterResetKey] = useState(0);
   const [dbFilterValues, setDbFilterValues] = useState<DbFilterValues>({
     skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false,
   });
 
-  function enterDbSearch() {}
+  function enterDbSearch() { setDbPinned(false); }
+  function toggleDbPin() { setDbPinned(p => !p); }
   function resetDbFilters() {
-    setDbSubTab('all');
+    setDbPinned(true);
     setDbFilterValues({ skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false });
     setFilterResetKey(k => k + 1);
   }
@@ -109,7 +111,7 @@ export function JobDetail() {
   useEffect(() => {
     setUnlockedIds(new Set());
     setCreditsRemaining(scenario.dbCredits);
-    setDbSubTab('all');
+    setDbPinned(true);
     setDbFilterValues({ skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false });
     setFilterResetKey(k => k + 1);
   }, [scenarioId, scenario.dbCredits]);
@@ -323,7 +325,7 @@ export function JobDetail() {
       <div className="flex-1 overflow-hidden bg-gray-50 flex justify-center" style={{ padding: '12px 20px 23px' }}>
         <div className="flex w-full max-w-[1100px] gap-3 min-h-0">
         {tab === 'applied' && scenario.applicationsCount > 0 && <FiltersPanel mode="applied" />}
-        {tab === 'database' && dbTotal > 0 && <FiltersPanel mode="database" totalLeads={dbTotal} onInteract={enterDbSearch} onFiltersChange={setDbFilterValues} resetSignal={filterResetKey} hideLeadsCard={leadsIndividual} onlyLeadsCard={dbSubTab === 'hot'} />}
+        {tab === 'database' && dbTotal > 0 && <FiltersPanel mode="database" totalLeads={dbTotal} onInteract={enterDbSearch} onFiltersChange={setDbFilterValues} resetSignal={filterResetKey} hideLeadsCard={leadsIndividual} />}
 
         <div className="flex-1 overflow-y-auto bg-gray-50 min-w-0 relative">
           {tab === 'applied' && (
@@ -537,8 +539,8 @@ export function JobDetail() {
               creditsRemaining={creditsRemaining}
               onUnlock={handleUnlock}
               ftueVersion={ftueVersion}
-              dbSubTab={dbSubTab}
-              onSubTabChange={setDbSubTab}
+              pinned={dbPinned}
+              onTogglePin={toggleDbPin}
               onEnterSearch={enterDbSearch}
               onResetFilters={resetDbFilters}
               dbFilters={dbFilterValues}

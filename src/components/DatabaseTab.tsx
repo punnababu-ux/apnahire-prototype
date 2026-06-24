@@ -62,6 +62,23 @@ function freshnessLabel(days: number): string {
 
 
 
+// Deterministically weave Live Leads in between DB profiles (for the unpinned list).
+// No randomness — stable across re-renders. Starts with a DB profile so leads land
+// "in between" rather than clustered at the top.
+function interleaveLeads(leads: Profile[], dbs: Profile[]): { profile: Profile; live: boolean }[] {
+  if (leads.length === 0) return dbs.map(p => ({ profile: p, live: false }));
+  if (dbs.length === 0) return leads.map(p => ({ profile: p, live: true }));
+  const out: { profile: Profile; live: boolean }[] = [];
+  const step = Math.max(1, Math.round(dbs.length / leads.length));
+  let li = 0;
+  for (let i = 0; i < dbs.length; i++) {
+    out.push({ profile: dbs[i], live: false });
+    if ((i + 1) % step === 0 && li < leads.length) out.push({ profile: leads[li++], live: true });
+  }
+  while (li < leads.length) out.push({ profile: leads[li++], live: true });
+  return out;
+}
+
 const ACTIVE_LEADS: Profile[] = [
   {
     id: 'al0', name: 'Simran Sharma', initials: 'SS', color: '#a7f3d0',
@@ -232,8 +249,10 @@ interface DatabaseTabProps {
   onUnlock?: (id: string) => void;
   onFreeUnlock?: (id: string) => void;
   ftueVersion?: 'v1' | 'v2' | 'off';
-  dbSubTab?: 'all' | 'hot';
-  onSubTabChange?: (tab: 'all' | 'hot') => void;
+  // Pinning wiring: Live Leads are pinned to the top by default; applying any filter
+  // unpins them (they weave into the results list). The header toggle re-pins.
+  pinned?: boolean;
+  onTogglePin?: () => void;
   onEnterSearch?: () => void;
   onResetFilters?: () => void;
   dbFilters?: DbFilterValues;
@@ -248,7 +267,7 @@ interface DatabaseTabProps {
 
 const DEFAULT_DB_FILTERS: DbFilterValues = { skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false };
 
-export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highlightLeadId, pendingHighlightId, onHighlightClear, unlockedIds, creditsRemaining, onUnlock, onFreeUnlock, ftueVersion, dbSubTab = 'all', onSubTabChange, onEnterSearch, onResetFilters, dbFilters = DEFAULT_DB_FILTERS, variant = 'database', hideLeads = false, onExploreDatabase }: DatabaseTabProps) {
+export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highlightLeadId, pendingHighlightId, onHighlightClear, unlockedIds, creditsRemaining, onUnlock, onFreeUnlock, ftueVersion, pinned = true, onTogglePin, onEnterSearch, onResetFilters, dbFilters = DEFAULT_DB_FILTERS, variant = 'database', hideLeads = false, onExploreDatabase }: DatabaseTabProps) {
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
   const [viewing, setViewing] = useState<Set<string>>(new Set());
   const [remaining, setRemaining] = useState(credits);
@@ -308,7 +327,11 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
   function toggleSelect(id: string) {
     setSelectedIds(prev => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   }
@@ -323,22 +346,22 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
   // Skill chips are OR-combined (candidate matches any selected skill); period is
   // recency; "hide already unlocked" drops unlocked rows. All AND-combined.
   const periodMax = PERIOD_DAYS[activePeriod] ?? 9999;
-  function passesFilter(p: Profile, isLead: boolean = false): boolean {
-    const skipSkills = isLead && dbSubTab === 'hot';
-    if (skipSkills) {
-      const hideOk = !(dbFilters.hideUnlocked && unlocked.has(p.id));
-      return hideOk;
-    }
+  function passesFilter(p: Profile): boolean {
     const skillOk = dbFilters.skills.length === 0
-      ? false
+      ? false // no skills selected → nothing matches
       : p.filterTags.some(t => dbFilters.skills.includes(t));
     const recencyOk = p.lastActiveDays <= periodMax;
     const hideOk = !(dbFilters.hideUnlocked && unlocked.has(p.id));
     return skillOk && recencyOk && hideOk;
   }
 
-  const visibleLeads = shownLeads.filter(p => passesFilter(p, true));
-  const visibleDb = DB_PROFILES.filter(p => passesFilter(p, false));
+  const visibleLeads = shownLeads.filter(passesFilter);
+  const visibleDb = DB_PROFILES.filter(passesFilter);
+  const liveCount = visibleLeads.length;
+
+  // In the unpinned list we weave the unique leads (no cloned duplicates) among DB rows.
+  // Cap to the job's lead count so a 3-lead job doesn't surface all 5 sample leads.
+  const uniqueLeads = ACTIVE_LEADS.slice(0, Math.min(totalLeads, ACTIVE_LEADS.length)).filter(passesFilter);
 
 
   function renderLeadRow(profile: Profile, inline: boolean) {
@@ -490,54 +513,26 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
     <div className="flex flex-col gap-0">
       <style>{SHIMMER_STYLE}</style>
 
-      {/* Segmented chips: All / Hot Leads (top of hierarchy) */}
-      <div className="flex items-center gap-2 pb-3 mb-4 border-b border-gray-200">
-        <button
-          onClick={() => onSubTabChange?.('all')}
-          className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-            dbSubTab === 'all'
-              ? 'bg-gray-900 border-gray-900 text-white shadow-sm'
-              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          All ({dbTotal})
-        </button>
-        <button
-          onClick={() => onSubTabChange?.('hot')}
-          className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all flex items-center gap-1.5 ${
-            dbSubTab === 'hot'
-              ? 'bg-[#e7f9f9] border-[#b6ecec] text-[#005c62] shadow-sm'
-              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          <span className={`w-1.5 h-1.5 rounded-full ${dbSubTab === 'hot' ? 'bg-[#00857c] animate-pulse' : 'bg-gray-400'}`} />
-          Hot Leads ({totalLeads})
-        </button>
-      </div>
-
       {/* ── Filter toolbar ── */}
       <div className="flex items-center gap-3 mb-3">
-
         {/* Active period dropdown */}
-        {dbSubTab === 'all' && (
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-gray-500 font-medium">Active in</span>
-            <div className="relative">
-              <select
-                value={activePeriod}
-                onChange={e => { setActivePeriod(e.target.value); onEnterSearch?.(); }}
-                className="appearance-none pl-2.5 pr-6 py-1.5 rounded-lg border border-[#dfe1e6] bg-white text-xs font-medium text-gray-700 hover:border-[#b3bac5] transition-colors cursor-pointer focus:outline-none focus:border-[#1f8268] focus-visible:ring-2 focus-visible:ring-[#186b55]"
-              >
-                <option value="7d">Last 7 days</option>
-                <option value="14d">Last 14 days</option>
-                <option value="30d">Last 30 days</option>
-                <option value="3m">Last 3 months</option>
-                <option value="6m">Last 6 months</option>
-              </select>
-              <span className="material-icons-round text-[10px] text-gray-400 pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 select-none">expand_more</span>
-            </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-gray-500 font-medium">Active in</span>
+          <div className="relative">
+            <select
+              value={activePeriod}
+              onChange={e => { setActivePeriod(e.target.value); onEnterSearch?.(); }}
+              className="appearance-none pl-2.5 pr-6 py-1.5 rounded-lg border border-[#dfe1e6] bg-white text-xs font-medium text-gray-700 hover:border-[#b3bac5] transition-colors cursor-pointer focus:outline-none focus:border-[#1f8268] focus-visible:ring-2 focus-visible:ring-[#186b55]"
+            >
+              <option value="7d">Last 7 days</option>
+              <option value="14d">Last 14 days</option>
+              <option value="30d">Last 30 days</option>
+              <option value="3m">Last 3 months</option>
+              <option value="6m">Last 6 months</option>
+            </select>
+            <span className="material-icons-round text-[10px] text-gray-400 pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 select-none">expand_more</span>
           </div>
-        )}
+        </div>
 
         <div className="flex-1" />
 
@@ -549,47 +544,43 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
         )}
 
         {/* Showing N per page */}
-        {dbSubTab === 'all' && (
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-gray-500">Showing</span>
-            <div className="relative">
-              <select
-                value={perPage}
-                onChange={e => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                className="appearance-none pl-2 pr-5 py-1 rounded-lg border border-[#dfe1e6] bg-white text-xs font-medium text-gray-700 hover:border-gray-400 transition-colors cursor-pointer focus:outline-none focus:border-[#1f8268] focus-visible:ring-2 focus-visible:ring-[#186b55]"
-              >
-                {[10, 20, 30, 50].map(n => <option key={n} value={n}>{n}</option>)}
-              </select>
-              <span className="material-icons-round text-[9px] text-gray-400 pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 select-none">expand_more</span>
-            </div>
-            <span className="text-xs text-gray-500">of {dbTotal}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-gray-500">Showing</span>
+          <div className="relative">
+            <select
+              value={perPage}
+              onChange={e => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
+              className="appearance-none pl-2 pr-5 py-1 rounded-lg border border-[#dfe1e6] bg-white text-xs font-medium text-gray-700 hover:border-gray-400 transition-colors cursor-pointer focus:outline-none focus:border-[#1f8268] focus-visible:ring-2 focus-visible:ring-[#186b55]"
+            >
+              {[10, 20, 30, 50].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+            <span className="material-icons-round text-[9px] text-gray-400 pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 select-none">expand_more</span>
           </div>
-        )}
+          <span className="text-xs text-gray-500">of {dbTotal}</span>
+        </div>
 
         {/* Pagination */}
-        {dbSubTab === 'all' && (
-          <div className="flex items-center gap-1">
-            <button
-              aria-label="Previous page"
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="w-6 h-6 flex items-center justify-center rounded-lg border border-[#dfe1e6] text-[#5e6c84] hover:border-[#b3bac5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            >
-              <span className="material-icons-round text-[12px] select-none">chevron_left</span>
-            </button>
-            <span className="text-xs text-gray-500 px-1">
-              Page <span className="font-semibold text-gray-800">{currentPage}</span> of {Math.ceil(dbTotal / perPage)}
-            </span>
-            <button
-              aria-label="Next page"
-              onClick={() => setCurrentPage(p => Math.min(Math.ceil(dbTotal / perPage), p + 1))}
-              disabled={currentPage === Math.ceil(dbTotal / perPage)}
-              className="w-6 h-6 flex items-center justify-center rounded-lg border border-[#dfe1e6] text-[#5e6c84] hover:border-[#b3bac5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            >
-              <span className="material-icons-round text-[12px] select-none">chevron_right</span>
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-1">
+          <button
+            aria-label="Previous page"
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="w-6 h-6 flex items-center justify-center rounded-lg border border-[#dfe1e6] text-[#5e6c84] hover:border-[#b3bac5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <span className="material-icons-round text-[12px] select-none">chevron_left</span>
+          </button>
+          <span className="text-xs text-gray-500 px-1">
+            Page <span className="font-semibold text-gray-800">{currentPage}</span> of {Math.ceil(dbTotal / perPage)}
+          </span>
+          <button
+            aria-label="Next page"
+            onClick={() => setCurrentPage(p => Math.min(Math.ceil(dbTotal / perPage), p + 1))}
+            disabled={currentPage === Math.ceil(dbTotal / perPage)}
+            className="w-6 h-6 flex items-center justify-center rounded-lg border border-[#dfe1e6] text-[#5e6c84] hover:border-[#b3bac5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <span className="material-icons-round text-[12px] select-none">chevron_right</span>
+          </button>
+        </div>
       </div>
 
       {/* ── Multi-select action bar ── */}
@@ -670,12 +661,82 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
         </div>
       ) : null}
 
+      {/* ── Live Leads region: pinned card (default) OR slim unpinned banner.
+            Omitted entirely when Hot Leads live in their own tab (hideLeads). ── */}
+      {!hideLeads && pinned && !pendingHighlightId ? (
+        <div className="border border-[#b6ecec] rounded-xl bg-[#e7f9f9] mb-3 overflow-hidden">
+          {/* Container header — title left, pin toggle far right */}
+          <div className="px-4 py-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                {liveCount > 0 ? (
+                  <span className="relative flex h-2 w-2 flex-shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#1f8268]" />
+                  </span>
+                ) : (
+                  <span className="w-2 h-2 rounded-full flex-shrink-0 bg-gray-300" />
+                )}
+                <span className="text-sm font-semibold text-[#172b4d]">Hot Leads ({liveCount})</span>
+                {liveCount > 0 && (
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-white bg-[#1f8268] px-2 py-0.5 rounded-full uppercase tracking-wide">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                    New
+                  </span>
+                )}
+              </div>
+              {totalLeads > 0 && <PinToggle pinned onToggle={onTogglePin} />}
+            </div>
+            <p className="text-xs text-gray-400 mt-0.5 ml-4">
+              {totalLeads > 0
+                ? 'Relevant candidates actively looking for jobs, recently applied to similar roles'
+                : 'Candidates from the database who are currently active on the app will appear here'}
+            </p>
+          </div>
+
+          {totalLeads > 0 ? (
+            visibleLeads.length > 0 ? (
+              /* Cards inside the green container */
+              <div className="p-3 flex flex-col gap-2">
+                {visibleLeads.map(profile => renderLeadRow(profile, false))}
+              </div>
+            ) : (
+              /* Filtered out — no Live Leads match */
+              <p className="px-4 pb-4 text-xs text-[#5e6c84]">No Hot Leads match these filters.</p>
+            )
+          ) : (
+            /* Pending state — no active leads yet */
+            <div className="px-4 pb-4 flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-white border border-[#b6ecec] flex items-center justify-center flex-shrink-0">
+                <span className="material-icons-round text-[14px] text-[#1f8268] select-none">notifications</span>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#1f8268]">Hot Leads will appear here</p>
+                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                  We're watching {dbTotal} matching candidates in the database and will notify you as soon as any become active on the app.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : !hideLeads && !pendingHighlightId ? (
+        /* Unpinned — slim banner; Live Leads now flow into the results list below */
+        <div className="flex items-center justify-between gap-3 mb-3 px-4 py-2.5 rounded-xl border border-[#b6ecec] bg-[#e7f9f9]">
+          <span className="flex items-center gap-2 text-xs text-[#172b4d] min-w-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+            <span className="font-semibold">Hot Leads ({liveCount})</span>
+            <span className="text-gray-500 truncate hidden sm:inline">· unpinned — flagged in your results below</span>
+          </span>
+          <PinToggle pinned={false} onToggle={onTogglePin} />
+        </div>
+      ) : null}
+
       {/* Spacing */}
       <div className="mb-2" />
       {!pendingHighlightId && (() => {
-        const rows = dbSubTab === 'hot'
-          ? visibleLeads.map(p => ({ profile: p, live: true }))
-          : visibleDb.map(p => ({ profile: p, live: false }));
+        const rows = (hideLeads || pinned)
+          ? visibleDb.map(p => ({ profile: p, live: false }))
+          : interleaveLeads(uniqueLeads, visibleDb);
 
         if (rows.length === 0) {
           return (
@@ -683,12 +744,8 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
               <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
                 <span className="material-icons-round text-[22px] text-[#adb5bd] select-none">search</span>
               </div>
-              <p className="text-sm font-semibold text-[#172b4d] mb-1">
-                {dbSubTab === 'hot' ? 'No Hot Leads active in this period' : 'No candidates match these filters'}
-              </p>
-              <p className="text-xs text-gray-500 mb-4 max-w-xs">
-                {dbSubTab === 'hot' ? 'Try widening the active period.' : 'Try widening the active period or selecting more skills.'}
-              </p>
+              <p className="text-sm font-semibold text-[#172b4d] mb-1">No candidates match these filters</p>
+              <p className="text-xs text-gray-500 mb-4 max-w-xs">Try widening the active period or selecting more skills.</p>
               <button onClick={onResetFilters} className="px-4 py-2 border border-[#1f8268] text-[#1f8268] text-xs font-semibold rounded-lg hover:bg-[#eaf8f4] transition-colors">
                 Clear filters
               </button>
@@ -699,7 +756,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
         return rows.map(({ profile, live }) => live ? renderLeadRow(profile, true) : renderDbRow(profile));
       })()}
 
-      {!pendingHighlightId && dbSubTab === 'all' && visibleDb.length > 0 && (
+      {!pendingHighlightId && visibleDb.length > 0 && (
         <div className="text-center py-6">
           <button
             onClick={() => setAllLoaded(true)}
@@ -717,6 +774,25 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
 }
 
 
+
+function PinToggle({ pinned, onToggle }: { pinned: boolean; onToggle?: () => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={pinned}
+      aria-label={pinned ? 'Unpin Live Leads from top' : 'Pin Live Leads to top'}
+      onClick={onToggle}
+      className={`flex items-center gap-1.5 flex-shrink-0 ${pinned ? 'text-[#1f8268]' : 'text-[#5e6c84]'}`}
+    >
+      <span className="material-icons-round text-[12px] select-none">push_pin</span>
+      <span className="text-[11px] font-semibold">{pinned ? 'Pinned to top' : 'Pin to top'}</span>
+      <span className={`relative w-7 h-4 rounded-full transition-colors ${pinned ? 'bg-[#1f8268]' : 'bg-[#c1c7d0]'}`}>
+        <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${pinned ? 'left-[14px]' : 'left-0.5'}`} />
+      </span>
+    </button>
+  );
+}
 
 interface ProfileRowProps {
   profile: Profile;
