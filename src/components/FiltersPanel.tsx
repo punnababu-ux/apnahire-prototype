@@ -79,7 +79,6 @@ export function FiltersPanel({
   }
 
   if (mode === 'database') {
-    const leadsExpanded = !dbPinned || !scrolledBeyondLeads;
     return (
       <div className="flex flex-col gap-3 w-[280px] flex-shrink-0 self-start sticky top-[190px]">
 
@@ -158,76 +157,54 @@ export function FiltersPanel({
 
         {/* ── Live Leads card — hidden when Hot Leads live in their own tab ── */}
         {!hideLeadsCard && (
-          leadsExpanded ? (
-            <div className="bg-white rounded-xl border border-[#dfe1e6] p-4 flex flex-col gap-4 transition-all duration-300">
-              {/* Title */}
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-base font-semibold text-[#172b4d]">Hot Leads</span>
-                  {totalLeads > 0 && <span className="text-[11px] font-semibold text-[#005c62] bg-[#e7f9f9] px-2 py-0.5 rounded-full">New</span>}
-                </div>
-                <p className="text-[11px] text-[#172b4d] leading-snug">
-                  <span className="text-[#005062] font-medium">Relevant</span>{' '}candidates who are more likely to respond
-                </p>
+          <div className="bg-white rounded-xl border border-[#dfe1e6] p-4 flex flex-col gap-4">
+            {/* Title */}
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-base font-semibold text-[#172b4d]">Hot Leads</span>
+                {totalLeads > 0 && <span className="text-[11px] font-semibold text-[#005c62] bg-[#e7f9f9] px-2 py-0.5 rounded-full">New</span>}
               </div>
-
-              {/* Feature 1 */}
-              <div className="flex flex-col gap-2 pb-4 border-b border-[#dfe1e6]">
-                <div className="w-8 h-8 flex items-center justify-center">
-                  <span className="material-icons-round text-[28px] text-[#172b4d] select-none">assignment_turned_in</span>
-                </div>
-                <p className="text-[11px] font-semibold text-[#172b4d]">Actively looking for a job</p>
-                <p className="text-[11px] text-[#42526e]">Recently applied to similar jobs</p>
-              </div>
-
-              {/* Feature 2 */}
-              <div className="flex flex-col gap-2 pb-4 border-b border-[#dfe1e6]">
-                <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-                  <span className="material-icons-round text-[16px] text-white select-none">check</span>
-                </div>
-                <p className="text-[11px] font-semibold text-[#172b4d]">Matching your job requirements</p>
-                <p className="text-[11px] text-[#42526e]">Relevant experience as a Field Sales Executive</p>
-              </div>
-
-              {/* Countdown timer */}
-              <div>
-                <p className="text-[11px] font-semibold text-[#172b4d] mb-2">New Leads in:</p>
-                <div className="flex items-center gap-1">
-                  {[[hh[0], hh[1]], [mm[0], mm[1]], [ss[0], ss[1]]].map(([a, b], i) => (
-                    <div key={i} className="flex items-center gap-0.5">
-                      {i > 0 && <span className="text-lg font-light text-[#c1c7d0] mx-0.5">:</span>}
-                      <div className="bg-[#f4f5f7] border border-[#dfe1e6] rounded px-1.5 py-0.5">
-                        <span className="text-lg font-semibold text-[#42526e] leading-none">{a}</span>
-                      </div>
-                      <div className="bg-[#f4f5f7] border border-[#dfe1e6] rounded px-1.5 py-0.5">
-                        <span className="text-lg font-semibold text-[#42526e] leading-none">{b}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* Collapsed/pinned state */
-            <div className="bg-[#e7f9f9] rounded-xl border border-[#b6ecec] p-3 flex flex-col gap-1 transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#1f8268]" />
-                  </span>
-                  <span className="text-xs font-semibold text-[#172b4d] truncate">Hot Leads</span>
-                </div>
-                <div className="flex items-center gap-1 text-[#1f8268]">
-                  <span className="material-icons-round text-[12px] select-none">push_pin</span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider">Pinned</span>
-                </div>
-              </div>
-              <p className="text-[10px] text-gray-500 ml-3.5">
-                {totalLeads} active leads at top of results
+              <p className="text-[11px] text-[#172b4d] leading-snug">
+                <span className="text-[#005062] font-medium">Relevant</span>{' '}candidates who are more likely to respond
               </p>
             </div>
-          )
+
+            {/* Feature 1 */}
+            <div className="flex flex-col gap-2 pb-4 border-b border-[#dfe1e6]">
+              <div className="w-8 h-8 flex items-center justify-center">
+                <span className="material-icons-round text-[28px] text-[#172b4d] select-none">assignment_turned_in</span>
+              </div>
+              <p className="text-[11px] font-semibold text-[#172b4d]">Actively looking for a job</p>
+              <p className="text-[11px] text-[#42526e]">Recently applied to similar jobs</p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="flex flex-col gap-2 pb-4 border-b border-[#dfe1e6]">
+              <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                <span className="material-icons-round text-[16px] text-white select-none">check</span>
+              </div>
+              <p className="text-[11px] font-semibold text-[#172b4d]">Matching your job requirements</p>
+              <p className="text-[11px] text-[#42526e]">Relevant experience as a Field Sales Executive</p>
+            </div>
+
+            {/* Countdown timer */}
+            <div>
+              <p className="text-[11px] font-semibold text-[#172b4d] mb-2">New Leads in:</p>
+              <div className="flex items-center gap-1">
+                {[[hh[0], hh[1]], [mm[0], mm[1]], [ss[0], ss[1]]].map(([a, b], i) => (
+                  <div key={i} className="flex items-center gap-0.5">
+                    {i > 0 && <span className="text-lg font-light text-[#c1c7d0] mx-0.5">:</span>}
+                    <div className="bg-[#f4f5f7] border border-[#dfe1e6] rounded px-1.5 py-0.5">
+                      <span className="text-lg font-semibold text-[#42526e] leading-none">{a}</span>
+                    </div>
+                    <div className="bg-[#f4f5f7] border border-[#dfe1e6] rounded px-1.5 py-0.5">
+                      <span className="text-lg font-semibold text-[#42526e] leading-none">{b}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     );
