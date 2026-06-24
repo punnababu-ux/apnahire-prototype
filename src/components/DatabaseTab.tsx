@@ -664,7 +664,7 @@ export function DatabaseTab({ hasCredits, credits, totalLeads, dbTotal, highligh
       {/* ── Live Leads region: pinned card (default) OR slim unpinned banner.
             Omitted entirely when Hot Leads live in their own tab (hideLeads). ── */}
       {!hideLeads && pinned && !pendingHighlightId ? (
-        <div className="border border-[#b6ecec] rounded-xl bg-[#e7f9f9] mb-3 overflow-hidden">
+        <div id="db-hot-leads-container" className="border border-[#b6ecec] rounded-xl bg-[#e7f9f9] mb-3 overflow-hidden">
           {/* Container header — title left, pin toggle far right */}
           <div className="px-4 py-3">
             <div className="flex items-center justify-between gap-2">

@@ -111,7 +111,15 @@ export function JobDetail() {
 
   function handleScroll(e: React.UIEvent<HTMLDivElement>) {
     if (tab !== 'database') return;
-    setScrolledBeyondLeads(e.currentTarget.scrollTop > 200);
+    const leadsEl = document.getElementById('db-hot-leads-container');
+    if (leadsEl) {
+      const containerRect = e.currentTarget.getBoundingClientRect();
+      const elRect = leadsEl.getBoundingClientRect();
+      // Scrolled beyond when the bottom of the Hot Leads container is above the top of the scroll container
+      setScrolledBeyondLeads(elRect.bottom <= containerRect.top + 20);
+    } else {
+      setScrolledBeyondLeads(e.currentTarget.scrollTop > 200);
+    }
   }
 
   // Reset scroll and scroll state when tab changes
@@ -120,14 +128,23 @@ export function JobDetail() {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
     }
+    window.scrollTo(0, 0);
   }, [tab]);
 
   // Listen to window scroll when database tab is active (in case layout scrolls window instead of right panel)
   useEffect(() => {
     if (tab !== 'database') return;
     function handleWindowScroll() {
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      setScrolledBeyondLeads(scrollTop > 200);
+      const leadsEl = document.getElementById('db-hot-leads-container');
+      if (leadsEl) {
+        const elRect = leadsEl.getBoundingClientRect();
+        // Since the window is scrolling, it's scrolled beyond when the bottom of the leads element
+        // is above the top of the viewport (or below the sticky job header, which is at 178px)
+        setScrolledBeyondLeads(elRect.bottom <= 178);
+      } else {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        setScrolledBeyondLeads(scrollTop > 200);
+      }
     }
     window.addEventListener('scroll', handleWindowScroll);
     return () => window.removeEventListener('scroll', handleWindowScroll);
@@ -351,7 +368,7 @@ export function JobDetail() {
 
       {/* Content */}
       <JobTabContext.Provider value={{ goToDatabase: handleExploreLeads, jobAge, newToHotLeads: scenario.dbExperience !== 'used_leads' }}>
-      <div className="flex-1 overflow-hidden bg-gray-50 flex justify-center" style={{ padding: '12px 20px 23px' }}>
+      <div className="flex-1 bg-gray-50 flex justify-center" style={{ padding: '12px 20px 23px' }}>
         <div className="flex w-full max-w-[1100px] gap-3 min-h-0">
         {tab === 'applied' && scenario.applicationsCount > 0 && <FiltersPanel mode="applied" />}
         {tab === 'database' && dbTotal > 0 && (
