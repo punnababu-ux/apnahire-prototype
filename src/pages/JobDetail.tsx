@@ -92,6 +92,9 @@ export function JobDetail() {
   // Database-tab Live Leads pinning. Pinned by default; applying any filter unpins
   // them (they weave into the results list). The header toggle re-pins.
   const [dbPinned, setDbPinned] = useState(true);
+  const [scrolledBeyondLeads, setScrolledBeyondLeads] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   const [filterResetKey, setFilterResetKey] = useState(0);
   const [dbFilterValues, setDbFilterValues] = useState<DbFilterValues>({
     skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false,
@@ -101,9 +104,23 @@ export function JobDetail() {
   function toggleDbPin() { setDbPinned(p => !p); }
   function resetDbFilters() {
     setDbPinned(true);
+    setScrolledBeyondLeads(false);
     setDbFilterValues({ skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false });
     setFilterResetKey(k => k + 1);
   }
+
+  function handleScroll(e: React.UIEvent<HTMLDivElement>) {
+    if (tab !== 'database') return;
+    setScrolledBeyondLeads(e.currentTarget.scrollTop > 200);
+  }
+
+  // Reset scroll and scroll state when tab changes
+  useEffect(() => {
+    setScrolledBeyondLeads(false);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [tab]);
 
   const { setCredits, pulse } = useCredits();
   useEffect(() => { setCredits(scenario.dbCredits); }, [scenario.dbCredits, setCredits]);
@@ -112,6 +129,7 @@ export function JobDetail() {
     setUnlockedIds(new Set());
     setCreditsRemaining(scenario.dbCredits);
     setDbPinned(true);
+    setScrolledBeyondLeads(false);
     setDbFilterValues({ skills: DB_SKILL_FILTERS, hideUnlocked: false, hideExcel: false, hideWhatsApp: false });
     setFilterResetKey(k => k + 1);
   }, [scenarioId, scenario.dbCredits]);
@@ -325,9 +343,24 @@ export function JobDetail() {
       <div className="flex-1 overflow-hidden bg-gray-50 flex justify-center" style={{ padding: '12px 20px 23px' }}>
         <div className="flex w-full max-w-[1100px] gap-3 min-h-0">
         {tab === 'applied' && scenario.applicationsCount > 0 && <FiltersPanel mode="applied" />}
-        {tab === 'database' && dbTotal > 0 && <FiltersPanel mode="database" totalLeads={dbTotal} onInteract={enterDbSearch} onFiltersChange={setDbFilterValues} resetSignal={filterResetKey} hideLeadsCard={leadsIndividual} />}
+        {tab === 'database' && dbTotal > 0 && (
+          <FiltersPanel
+            mode="database"
+            totalLeads={dbTotal}
+            onInteract={enterDbSearch}
+            onFiltersChange={setDbFilterValues}
+            resetSignal={filterResetKey}
+            hideLeadsCard={leadsIndividual}
+            scrolledBeyondLeads={scrolledBeyondLeads}
+            dbPinned={dbPinned}
+          />
+        )}
 
-        <div className="flex-1 overflow-y-auto bg-gray-50 min-w-0 relative">
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto bg-gray-50 min-w-0 relative"
+        >
           {tab === 'applied' && (
             <div className="flex flex-col gap-3 min-h-full relative pb-8">
               {/* Radar background container (rendered underneath cards) */}
